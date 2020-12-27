@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Hypergraph 3D</title>
+
+  <meta charset="utf-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta content='width=device-width, height=device-height, minimum-scale=1, initial-scale=1.0' name='viewport'/>
+
+<style>
+html{ width:100%; height:100%; font-size: 10px; font-family: Verdana, Geneva, sans-serif; letter-spacing: -0.3px; }
+body{ width: 100%; height: 100%; margin: 0; padding: 0; background-color: white; color: black; line-height:1.5rem;  overflow: hidden; cursor: crosshair; text-align: left; }
+div.controls { margin: 2px; padding: 2px; position: fixed; z-index: 3; opacity: 0.7; cursor: default; pointer-events: none; }
+#topleft { top:0; left:0; }
+#topright { top:0; right:0; text-align: right; }
+#bottomleft { bottom:0; left:0; }
+#bottomright { bottom:0; right:0; margin-right: 32px; text-align: right; }
+#logo { margin: 4px; padding: 4px; position: fixed; z-index: 3; opacity: 0.7; bottom: 0; right: 0; width: 32px; height: 32px; }
+.button { display: inline-block; margin: 0; padding: 0; background-color: black; color: white; width: 32px; height: 14px; border: 1px solid black; border-radius: 3px; font-size: 8px; font-weight: bold; line-height:14px; text-align: center; vertical-align: middle; pointer-events: auto; }
+.button:active { opacity: 0.2; }
+.button-disabled { opacity: 0.2; pointer-events: none; }
+#red { background-color: hotpink; border-color: hotpink; }
+#blue { background-color: deepskyblue; border-color: deepskyblue; }
+#cancel { float: right; margin: 0 0 0 10px; padding: 0;}
+.text { display: inline-block; margin: 1px 0 0 3px; padding: 0 5px; background-color: transparent; color: black; width: auto; line-height: 16px; font-size: 10px; font-weight: bold; text-align:left; text-transform: lowercase; vertical-align: top; }
+.text-disabled { opacity: 0.2; }
+.text[contenteditable="true"] { min-width: 320px; -webkit-touch-callout: text; -webkit-user-select: text; -khtml-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; opacity: 1; }
+div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
+.option { display: inline-block; margin: 0; padding: 0; width: 32px; height:14px; background-color: transparent; color: black;  border: 1px solid white; border-radius: 3px; font-size: 8px; font-weight: bold; line-height: 14px; text-align: center; vertical-align: middle; pointer-events: auto; }
+.limit, .ruleordering, .eventordering { width: 20px; }
+.fps-selected, .mode-selected, .ruleordering-selected, .eventordering-selected, .limit-selected { border: 1px solid grey; }
+.label { display: inline-block; line-height: 16px; font-size: 8px; font-weight: bold; text-align:left; text-transform: uppercase; color: grey; margin: 2px; }
+.status { min-width: 38px; }
+.up { position: absolute; transform: translateY(-15px); z-index: -1; }
+.down { position: absolute; transform: translateY(15px); z-index: -1; }
+.up:before, .down:before { content: "|"; }
+#progress { position:absolute; width: 300px; height: 16px; z-index: 15; top: 45%; left: 50%; margin: 0 0 0 -150px; display: none;}
+#progress-bar { display: inline-block; width: 250px; background-color: #e0e0e0; margin: 0; padding: 0; line-height: 16px; height: 16px; border-radius: 3px; }
+#progress-bar-fill { display: inline-block; height: 16px; background-color: #659cef; border-radius: 3px; transition: width 100ms ease-in-out; }
+.noselect { -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+.nodeLabelGraph3d, .linkLabelGraph3d { display: inline-block; background-color: olive; color: white; font-size: 14px; font-weight: bold; line-height: 20px; padding: 0 4px; height: 20px; min-width: 14px; border-radius: 10px; text-align: center; vertical-align: middle; }
+.linkLabelGraph3d { background-color: darkkhaki; }
+</style>
+
+<script src="https://threejs.org/build/three.min.js"></script>
+<script src="https://threejs.org/examples/js/exporters/GLTFExporter.js"></script>
+<script src="https://unpkg.com/3d-force-graph"></script>
+<script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+
+<script type="module">
+
+  import {Hypergraph3D} from "./modules/Hypergraph3D.mjs";
+
+  // Hypergraph object and define colors, sizes and widths for different graph styles
+  // Note: use CSS to define node/link label styles .nodeLabelGraph3d and .linkLabelGraph3d
+  const graph3d = new Hypergraph3D();
+  const spatialStyles = [
+          {  nColor: "black", lColor: "grey", nVal: 6, lWidth: 4, bgColor: "white", nRelSize: 3 }, // 0 defaults
+          {  nColor: "purple", lColor: "hotpink", nVal: 10, lWidth: 7 }, // 1 Red
+          {  nColor: "blue", lColor: "deepskyblue", nVal: 10, lWidth: 7 }, // 2 Blue
+          {  nColor: "darkblue", lColor: "darkblue", nVal: 10, lWidth: 7 }, // 3 Red + Blue
+          {  nColor: "lightgrey", lColor: "lightgrey", fill: "#B0E0E6", opacity: 0.2, nVal: 6, lWidth: 2 } // 4 Multiedge
+        ];
+  const causalStyles = [
+          {  nColor: "black", lColor: "grey", nVal: 6, lWidth: 3, bgColor: "white", nRelSize: 2 }, // 0 defaults
+          {  nColor: "purple", lColor: "hotpink", nVal: 10, lWidth: 6 }, // 1 Red
+          {  nColor: "blue", lColor: "deepskyblue", nVal: 10, lWidth: 6 }, // 2 Blue
+          {  nColor: "darkblue", lColor: "darkblue", nVal: 10, lWidth: 6 } // 3 Red + Blue
+        ];
+
+  $(document).ready(function() {
+
+    // Setup graph element
+    var element = document.getElementById("3d-graph");
+    graph3d.setup( element, spatialStyles, causalStyles );
+
+    // Window resize event, update graph dimensions
+    $(window).on('resize', function(){
+      graph3d.size( $(this).width(), $(this).height() );
+    });
+
+    // Paste as plain text (work-a-round)
+    document.querySelector('.text').addEventListener('paste', function (event) {
+      event.preventDefault();
+      document.execCommand('inserttext', false, event.clipboardData.getData('text/plain'));
+    });
+
+    // Open settings dialogs
+    [ "#rule", "#red", "#blue" ].forEach( x => {
+      $(x).on("click", function() {
+        if ( $(x+"-settings").is(":visible") ) {
+          $(x+"-text").prop("contenteditable","false");
+          $(x+"-settings").hide();
+          if ( $(".settings:visible").length === 0 ) $("#topleft").css("pointer-events","none");
+        } else {
+          $(x+"-text").prop("contenteditable","true").focus();
+          $(x+"-settings").show();
+          $("#topleft").css("pointer-events","auto");
+        }
+      });
+    });
+
+    // Check the rule
+    $("#rule-check").on("click", function() {
+      try {
+        var rulestxt = $("#rule-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
+        var rules = Hypergraph3D.parseRules( rulestxt );
+        var rulesnew = "";
+        rules.forEach( r => {
+          if ( rulesnew !== "" ) rulesnew = rulesnew + "<br>";
+          r.lhs.forEach( e => { rulesnew = rulesnew + "(" + e.map( v => v + 1 ).join(",") + ")"; });
+          if ( typeof r.rhs !== 'undefined' ) {
+            rulesnew = rulesnew + "->";
+            r.rhs.forEach( e => { rulesnew = rulesnew + "(" + e.map( v => v + 1 ).join(",") + ")"; });
+          }
+        });
+        $("#rule-text").html( rulesnew );
+      }
+      catch (e) {
+        alert(e);
+      }
+    });
+
+    // Run the given rule
+    $("#rule-run").on("click", function() {
+      try {
+        $("#red, #blue, #reset, #playstop, #final").addClass('button-disabled');
+
+        graph3d.stop();
+        $("#progress-bar-fill").css("width", "0");
+        $("#progress").show();
+
+        // Run rules
+        var rules = $("#rule-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
+        var ruleordering = $(".ruleordering-selected").data("value");
+        var eventordering = $(".eventordering-selected").data("value");
+        var maxevents = parseInt( $(".limit-selected").data("value") );
+        graph3d.run( rules, ruleordering, eventordering, maxevents, function(e) {
+          $("#progress-bar-fill").css("width", Math.min(100, Math.round( 100 * e / maxevents))+"%" );
+        }, function() {
+            $("#progress").hide();
+            $("#reset, #playstop, #final").removeClass('button-disabled').css("background-color","black");
+            $("#rule-text").prop("contenteditable","false");
+            $(".settings").hide();
+            $("#topleft").css("pointer-events","none");
+            $("#reset").click();
+        });
+      }
+      catch (e) {
+        $("#progress").hide();
+        alert(e);
+      }
+    });
+
+    // Cancel running the rule
+    $("#cancel").on("click", function() {
+        graph3d.cancel();
+    });
+
+    // Show/hide red/blue subgraph
+    [ "#red", "#blue" ].forEach( (x,i) => {
+      $(x+"-show").on("click", function() {
+        try {
+          const command = $(x+"-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
+          const result = graph3d.execute( command );
+          graph3d.setHighlight( result , i+1 );
+          $(x+"-result").text( result.r.toString() );
+          $(x+"-text").prop("contenteditable","false").removeClass("text-disabled");
+          $(x+"-settings").hide();
+          if ( $(".settings:visible").length === 0 ) $("#topleft").css("pointer-events","none");
+        }
+        catch(e) {
+          alert(e);
+        }
+      });
+      $(x+"-hide").on("click", function() {
+        try {
+          graph3d.clearHighlight( i+1 );
+          $(x+"-result").text("");
+          $(x+"-text").prop("contenteditable","false").addClass("text-disabled");
+          $(x+"-settings").hide();
+          if ( $(".settings:visible").length === 0 ) $("#topleft").css("pointer-events","none");
+        }
+        catch(e) {
+          alert(e);
+        }
+      });
+    });
+
+    // Rule settings
+    [ "ruleordering", "eventordering", "limit" ].forEach( x => {
+      $("."+x).on("click", function(e) {
+        $("."+x).removeClass(x+"-selected");
+        $(this).addClass(x+"-selected");
+      });
+    });
+
+    // Mode setting for animation
+    $("#reset").on("click", function(e) {
+      try {
+        var mode = $(".mode-selected").data("value");
+        graph3d.reset( mode );
+
+        // Get status
+        var s = graph3d.status();
+        var str = "";
+        Object.keys(s).forEach( k => {
+          str = str + '<span class="label up">'+k+'</span><span class="label status">'+s[k]+'</span>';
+        });
+        $("#status").html( str );
+        $("#red-result, #blue-result").text("");
+
+        $("#red, #blue").addClass("button-disabled");
+        $("#red-text, #blue-text").addClass("text-disabled");
+        $("#playstop").removeClass("button-disabled").css("background-color","black");
+        $("#play").show();
+        $("#stop").hide();
+      }
+      catch(e) {
+        alert(e);
+      }
+    });
+
+    $(".mode").on("click", function(e) {
+      $(".mode").removeClass("mode-selected");
+      $(this).addClass("mode-selected");
+      $("#reset").click();
+    });
+
+    // Speed setting for animation
+    $(".fps").on("click", function(e) {
+      $(".fps").removeClass("fps-selected");
+      $(this).addClass("fps-selected");
+      graph3d.speed( $(this).data("value") );
+    });
+
+    // Play / stop animation
+    $("#playstop").on("click", function() {
+      try {
+        if ( $("#play").is(":visible") ) {
+          graph3d.play( $(".fps-selected").data("value"), function() {
+            $("#red, #blue").removeClass("button-disabled");
+            $("#playstop").addClass("button-disabled").css("background-color","black");
+          });
+          $("#playstop").css("background-color","darkred");
+          $("#play").hide();
+          $("#stop").show();
+        } else {
+          graph3d.stop();
+          $("#playstop").css("background-color","black");
+          $("#play").show();
+          $("#stop").hide();
+        }
+      }
+      catch(e) {
+        alert(e);
+      }
+    });
+
+    // Final state
+    $("#final").on("click", function() {
+      try {
+        graph3d.final();
+        $("#red, #blue").removeClass("button-disabled");
+        $("#playstop").addClass("button-disabled").css("background-color","black");;
+
+        $("#play").show();
+        $("#stop").hide();
+      }
+      catch(e) {
+        alert(e);
+      }
+    });
+
+    // Export to GLB
+    $("#glb").on("click", function() {
+      graph3d.export( true );
+    });
+
+    // Export to glTF
+    $("#gltf").on("click", function() {
+      graph3d.export( false );
+    });
+
+    // Run default rule
+    $("#rule-run").click();
+
+  });
+
+</script>
+</head>
+<body>
+  <div id="topleft" class="controls noselect">
+    <span id ="rule" class="button">RULE</span>
+      <span id="rule-text" class="text" spellcheck="false">(1,1,2)(2,3,4)->(1,5,4)(2,5,3)(5,5,4)<br>(1,1,1)(1,1,1)</span><br/>
+    <div id="rule-settings" class="settings">
+      <span class="label down">Rule order</span>
+        <span class="option ruleordering ruleordering-selected" data-value="mixed">MIX</span>
+        <span class="option ruleordering" data-value="index">NDX</span>
+        <span class="option ruleordering" data-value="indexrev">REV</span>
+      <span class="label down">Event order</span>
+        <span class="option eventordering eventordering-selected" data-value="random">RND</span>
+        <span class="option eventordering" data-value="old">OLD</span>
+        <span class="option eventordering" data-value="new">NEW</span>
+      <span class="label down">Size</span>
+        <span class="option limit limit-selected" data-value="500">500</span>
+        <span class="option limit" data-value="1000">1K</span>
+        <span class="option limit" data-value="2000">2K</span>
+      <span class="label down">Rule</span>
+        <span id ="rule-check" class="button">CHECK</span>
+        <span id ="rule-run" class="button">RUN</span>
+    </div>
+    <span id="red" class="button button-disabled">RED</span>
+      <span id="red-text" class="text text-disabled" spellcheck="false">geodesic(0,10,all)</span><br/>
+    <div id="red-settings" class="settings">
+      <span class="label down">Highlight</span>
+        <span id="red-show" class="button">SHOW</span>
+        <span id="red-hide" class="button">HIDE</span>
+    </div>
+    <span id="blue" class="button button-disabled">BLUE</span>
+      <span id="blue-text" class="text text-disabled" spellcheck="false">nball(0,4)</span><br/>
+    <div id="blue-settings" class="settings">
+      <span class="label down">Highlight</span>
+        <span id ="blue-show" class="button">SHOW</span>
+        <span id ="blue-hide" class="button">HIDE</span>
+    </div>
+  </div>
+  <div id="topright" class="controls noselect">
+    <span class="label down">Mode</span>
+      <span class="option mode mode-selected" data-value="spatial">SPACE</span>
+      <span class="option mode" data-value="causal">TIME</span>
+    <span class="label down">Animation</span>
+      <span id="reset" class="button button-disabled"><svg viewBox="0 0 32 14"><polygon fill="white" points="12,3 14,3 14,11 12,11"/><polygon fill="white" points="14,7 20,3 20,11" /></svg></span>
+      <span id="playstop" class="button button-disabled"><svg id="play" viewBox="0 0 32 16"><polygon fill="white" points="14,3 14,11 20,7"/></svg><svg id="stop" viewBox="0 0 32 14"><polygon fill="white" points="12,3 15,3 15,11 12,11"/><polygon fill="white" points="17,3 20,3 20,11 17,11"/></svg></span>
+      <span id="final" class="button button-disabled"><svg viewBox="0 0 32 14"><polygon fill="white" points="12,3 12,11 18,7"/><polygon fill="white" points="18,3 20,3 20,11 18,11" /></svg></span>
+    <span class="label down">Speed</span>
+      <span class="option fps" data-value="300">SLOW</span>
+      <span class="option fps fps-selected" data-value="250">FAST</span>
+  </div>
+  <div id="bottomleft" class="controls noselect">
+      <span class="label up">Download</span>
+      <span id="glb" class="button">GLB</span>
+      <span id="gltf" class="button">GLTF</span>
+      <span class="label up">Mouse</span>
+      <span class="label">left-rotate, wheel-zoom, right-pan</span>
+  </div>
+  <div id="bottomright" class="controls noselect">
+    <span id="red-result-label" class="label up">Red</span>
+      <span id="red-result" class="label status"></span>
+    <span id="blue-result-label" class="label up">Blue</span>
+      <span id="blue-result" class="label status"></span>
+    <span id="status"></span>
+  </div>
+  <div id="3d-graph" class="noselect"></div>
+  <div id="progress" class="noselect"><span id="progress-label" class="label">Rewriting</span><div id="progress-bar"><span id="progress-bar-fill"></span></div><span id="cancel" class="button">STOP</span></div>
+  <img id="logo" src="data:image/png;base64,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" alt="" />
+</body></html>
