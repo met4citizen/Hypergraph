@@ -56,7 +56,7 @@ is related to physical energy and momentum.
 Media control buttons let you rewind to the beginning, start/pause animation and
 skip to the end of the animation. `Speed` selects the frame rate (slow/fast).
 
-## Highlighting
+## Highlighting Subgraphs
 
 Subgraph can be highlighted by clicking `RED`/`BLUE`and adding one or more
 commands:
