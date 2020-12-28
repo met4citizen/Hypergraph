@@ -13,11 +13,12 @@
 html{ width:100%; height:100%; font-size: 10px; font-family: Verdana, Geneva, sans-serif; letter-spacing: -0.3px; }
 body{ width: 100%; height: 100%; margin: 0; padding: 0; background-color: white; color: black; line-height:1.5rem;  overflow: hidden; cursor: crosshair; text-align: left; }
 div.controls { margin: 2px; padding: 2px; position: fixed; z-index: 3; opacity: 0.7; cursor: default; pointer-events: none; }
+a { cursor: default; pointer-events: auto; }
 #topleft { top:0; left:0; }
 #topright { top:0; right:0; text-align: right; }
-#bottomleft { bottom:0; left:0; }
-#bottomright { bottom:0; right:0; margin-right: 32px; text-align: right; }
-#logo { margin: 4px; padding: 4px; position: fixed; z-index: 3; opacity: 0.7; bottom: 0; right: 0; width: 32px; height: 32px; }
+#bottomleft { bottom:0; left:0; margin-left: 42px; }
+#bottomright { bottom:0; right:0; text-align: right; }
+#logo { margin: 3px; padding: 3px; position: fixed; z-index: 3; opacity: 0.7; bottom: 0; left: 0; width: 32px; height: 32px; }
 .button { display: inline-block; margin: 0; padding: 0; background-color: black; color: white; width: 32px; height: 14px; border: 1px solid black; border-radius: 3px; font-size: 8px; font-weight: bold; line-height:14px; text-align: center; vertical-align: middle; pointer-events: auto; }
 .button:active { opacity: 0.2; }
 .button-disabled { opacity: 0.2; pointer-events: none; }
@@ -340,11 +341,10 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
       <span class="option fps fps-selected" data-value="250">FAST</span>
   </div>
   <div id="bottomleft" class="controls noselect">
-      <span class="label up">Download</span>
-      <span id="glb" class="button">GLB</span>
-      <span id="gltf" class="button">GLTF</span>
+      <span class="label up">Docs</span>
+      <span class="label"><a href="https://github.com/met4citizen/Hypergraph" target="_blank">github</a></span>
       <span class="label up">Mouse</span>
-      <span class="label">left-rotate, wheel-zoom, right-pan</span>
+      <span class="label">left-rotate wheel-zoom right-pan</span>
   </div>
   <div id="bottomright" class="controls noselect">
     <span id="red-result-label" class="label up">Red</span>
@@ -352,6 +352,9 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
     <span id="blue-result-label" class="label up">Blue</span>
       <span id="blue-result" class="label status"></span>
     <span id="status"></span>
+    <span class="label up">Download</span>
+    <span id="glb" class="button">GLB</span>
+    <span id="gltf" class="button">GLTF</span>
   </div>
   <div id="3d-graph" class="noselect"></div>
   <div id="progress" class="noselect"><span id="progress-label" class="label">Rewriting</span><div id="progress-bar"><span id="progress-bar-fill"></span></div><span id="cancel" class="button">STOP</span></div>
