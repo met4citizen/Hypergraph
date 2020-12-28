@@ -38,6 +38,13 @@ Several types of parentheses are also supported. That is, a rule like
 `{x,y}{x,z}->{x,y}{x,w}{y,w}{z,w}` is valid and can be converted to
 default format by clicking `Check`.
 
+Some rules to copy-paste:
+
+- (1,2,3)(1,4,5)->(3,3,6)(4,5,6)(6,6,5);(1,1,1)(1,1,1)
+- (1,1,2)(3,2,4)->(5,1,4)(3,2,3)(5,5,4);(1,1,1)(1,1,1)
+- (1,2,2)(1,3,4)->(3,2,5)(5,5,2)(4,5,5);(1,1,1)(1,1,1) | Set event order: OLD
+- (1,2,2)(1,3,4)->(1,5,2)(2,3,4)(4,5,5);(1,1,1)(1,1,1) | Set event order: OLD
+
 ## Simulation
 
 Force-simulation has two modes: `Space` and `Time`.
