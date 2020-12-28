@@ -1,6 +1,6 @@
 # Hypergraph Rewriting System 3D
 
-A web application to rewrite and represent hypergraphs in 3D:
+A web app to rewrite and simulate hypergraphs in 3D:
 
 https://met4citizen.github.io/Hypergraph/
 
@@ -8,6 +8,10 @@ The app uses [3d Force-Directed Graph](https://github.com/vasturiano/3d-force-gr
 [ThreeJS](https://github.com/mrdoob/three.js/)/WebGL for 3D rendering and
 [d3-force-3d](https://github.com/vasturiano/d3-force-3d) for the underlying
 physics engine.
+
+For more information on Hypergraph Rewriting Systems as potential systems to
+represent fundamental physics see [The Wolfram Physics Project](https://www.wolframphysics.org)
+and the project's [technical documents](https://www.wolframphysics.org/technical-documents/). 
 
 ## Rules
 
@@ -61,8 +65,5 @@ Command | Description | Examples
 `worldline(v)` | Time-like curve of the vertex `v`. Only in `TIME` mode. | `worldline(0)`
 `lightcone(v,length)` | Lightcone centered at `v` with length `length` Only in `TIME` mode. | `lightcone(200,4)`
 
-## References
-
-[^1]: <https://www.wolframphysics.org/technical-documents/>
 
 
