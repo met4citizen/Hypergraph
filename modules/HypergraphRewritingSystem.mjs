@@ -97,12 +97,11 @@ class HypergraphRewritingSystem {
 		}
 	}
 
-	// Process the given rewriting rule 'lhs' 'rhs' using the given array of mappings 'maps'
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	 * Process the given rewriting rule 'lhs' 'rhs' using the given
+	 * array of mappings 'maps'.
+	 * @param {Hypergraph} spatial Spatial hypergraph
+	 * @param {Hypergraph} causal Causal hypergraph
 	 */
 	processMatches( spatial, causal ) {
 		// Remove overlapping parts from the rules
@@ -137,12 +136,8 @@ class HypergraphRewritingSystem {
 
 	}
 
-	// Timed rewriting process
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	 * Timed rewriting process.
 	 */
 	rewrite = () => {
 		let start = performance.now();
@@ -195,12 +190,26 @@ class HypergraphRewritingSystem {
 
 	}
 
-	// Run abstract rewriting rules, return events
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	 * Callback for rewriting progress update.
+	 * @callback progressfn
+	 * @param {numeric} eventcnt Number of events processed.
+	 */
+
+	 /**
+	 * Callback for rewriting process finished.
+	 * @callback finishedfn
+	 */
+
+	/**
+	 * Run abstract rewriting rules.
+	 * @param {Rules} rules Rewriting rules
+	 * @param {Rules} initial Rewriting rules
+	 * @param {string} [ruleOrdering="mixed"] Rewriting rules
+	 * @param {string} [eventOrdering="random"] Rewriting rules
+	 * @param {number} [maxevents=500] Rewriting rules
+	 * @param {progressfn} progressfn Progress update callback function
+	 * @param {finishedfn} finishedfn Rewriting finished callback function
 	 */
 	run( rules, initial, ruleOrdering = "mixed", eventOrdering = "random", maxevents = 500, progressfn = null, finishedfn = null ) {
 

@@ -2,12 +2,9 @@ import { HypergraphRewritingSystem } from "./HypergraphRewritingSystem.mjs";
 
 class Hypergraph3D {
 
-	// Init variables
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	 * Creates an instance of Hypergraph3D.
+	 * @constructor
 	 */
 	constructor() {
 		this.hrs = new HypergraphRewritingSystem();
@@ -41,12 +38,10 @@ class Hypergraph3D {
 		return ( arr.length !== new Set( arr ).size );
 	}
 
-	// Parse string based rules to array structure
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	 * Parse string based rules to array structure.
+	 * @param {string} r Rule string
+	 * @return {Rules} Rules.
 	 */
 	static parseRules( r ) {
 		// Change parenthesis types and remove extra ones
@@ -91,7 +86,26 @@ class Hypergraph3D {
 		return s;
 	}
 
-	// Run abstract rewriting rules, return events
+	/**
+	 * Callback for rewriting progress update.
+	 * @callback progressfn
+	 * @param {numeric} eventcnt Number of events processed.
+	 */
+
+	 /**
+	 * Callback for rewriting process finished.
+	 * @callback finishedfn
+	 */
+
+	/**
+	 * Run abstract rewriting rules.
+	 * @param {string} rulestring Rule string
+	 * @param {string} [ruleOrdering="mixed"] Rewriting rules
+	 * @param {string} [eventOrdering="random"] Rewriting rules
+	 * @param {number} [maxevents=500] Rewriting rules
+	 * @param {progressfn} progressfn Progress update callback function
+	 * @param {finishedfn} finishedfn Rewriting finished callback function
+	 */
 	run( rulestring, ruleOrdering = "mixed", eventOrdering = "random", maxevents = 500, progressfn = null, finishedfn = null ) {
 
 		let rules, initial;
@@ -114,23 +128,17 @@ class Hypergraph3D {
 
 	}
 
-	// Cancel rewrite process
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	 * Cancel rewrite process.
 	 */
 	cancel() {
 		this.hrs.cancel();
 	}
 
-	// Run commands given in string format
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	 * Run commands given in string format.
+	 * @param {string} str Commands in string format
+	 * @return {Object} Edges, vertices, points and results.
 	 */
 	execute( str ) {
 		// Change parenthesis types and remove extra ones
@@ -195,12 +203,12 @@ class Hypergraph3D {
 
 	}
 
-	// coordinates = { start, end }
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	 * Update hyperedges.
+	 * @param {Object} linkObject Link
+	 * @param {Object} coordinates Start and end
+	 * @param {Object} link Link
+	 * @return {boolean} False.
 	 */
 	static linkPositionUpdate( linkObject, coordinates, link ) {
 		if ( link.hyperedge ) {
@@ -221,10 +229,10 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	 * Setup 3d force directed graph.
+	 * @param {Object} element DOM element of the canvas
+	 * @param {Object} spatialStyles Styles for spatial graph
+	 * @param {Object} causalStyles Styles for causal graph
 	 */
 	setup( element, spatialStyles, causalStyles ) {
 		this.spatialStyles = spatialStyles;
@@ -243,22 +251,20 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	 * Update 3d force directed graph size.
+	 * @param {number} width New window width
+	 * @param {number} height New window height
 	 */
 	size( width, height ) {
 		this.graph3d.width( width );
 		this.graph3d.height( height );
 	}
 
-	// Add a hyperedge
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	 * Add a hyperedge.
+	 * @param {Object} event Event with edges to add
+	 * @param {Object} nodes Nodes
+	 * @param {Object} links Links
 	 */
 	add( event, nodes, links ) {
 		let k = { x: Math.random() - 0.5, y: Math.random() - 0.5, z: Math.random() - 0.5 };
@@ -336,12 +342,11 @@ class Hypergraph3D {
 		}
 	}
 
-	// Remove a hyperedge
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	 * Remove a hyperedge.
+	 * @param {Object} event Event with edges to remove
+	 * @param {Object} nodes Nodes
+	 * @param {Object} links Links
 	 */
 	remove( event, nodes, links ) {
 		// Remove by decreasing the reference number; nodes with ref 0 get hidden
@@ -444,10 +449,9 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	 * Process events.
+	 * @param {number} [steps=1] Number of steps to process
+	 * @return {boolean} True there are more events to process.
 	 */
 	tick( steps = 1 ) {
 		let { nodes, links } = this.graph3d.graphData();
@@ -468,10 +472,7 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	 * Timed update process.
 	 */
 	update = () => {
 		const steps = Math.min( 50, Math.ceil( ( this.pos + 1 ) / 10) );
@@ -482,23 +483,25 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	* Callback for animation end.
+	* @callback stopcallbackfn
+	*/
+
+	/**
+	 * Play animation.
+	 * @param {number} msec Timed interval in msecs
+	 * @param {stopcallbackfn} stopcallbackfn Animation stopped callback function
 	 */
-	play( msec, stopcallback = null ) {
+	play( msec, stopcallbackfn = null ) {
 		this.graph3d.enablePointerInteraction( false );
 		if ( this.updatetimer ) clearInterval( this.updatetimer );
-		this.stopfn = stopcallback;
+		this.stopfn = stopcallbackfn;
 		this.updatetimer = setInterval( this.update, msec );
 	}
 
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	 * Set/change animation speed.
+	 * @param {number} msec Timed interval in msecs
 	 */
 	speed( msec ) {
 		if ( this.updatetimer ) {
@@ -508,10 +511,7 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	 * Stop animation.
 	 */
 	stop() {
 		if ( this.updatetimer ) {
@@ -522,10 +522,7 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	 * Skip to the end of the animation.
 	 */
 	final() {
 		this.stop();
@@ -533,10 +530,9 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	 * Highlight nodes/edges.
+	 * @param {Object} subgraph Edges, nodes and points to highlight.
+	 * @param {number} style Style to use in highlighting.
 	 */
 	setHighlight( subgraph, style ) {
 		let { nodes, links } = this.graph3d.graphData();
@@ -569,10 +565,8 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	 * Clear highlight style.
+	 * @param {number} style Style to be removed.
 	 */
 	clearHighlight( style ) {
 		let { nodes, links } = this.graph3d.graphData();
@@ -582,10 +576,10 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	 * Start downloading a file.
+	 * @param {Object} content Content
+	 * @param {string} fileName Filename
+	 * @param {string} contentType Content type
 	 */
 	static download(content, fileName, contentType) {
 		const a = document.createElement("a");
@@ -596,10 +590,8 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	 * Export 3D model in GLB/GLTF format.
+	 * @param {boolean} binary If TRUE use BLB format, otherwise use GLTF.
 	 */
 	export( binary = true ) {
 		// Instantiate a exporter
@@ -618,10 +610,8 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
+	 * Report status.
+	 * @return {Object} Status of the Hypergraph3D.
 	 */
 	status() {
 		return { ...this.data.status(), ...this.hrs.status() };
