@@ -38,12 +38,12 @@ Several types of parentheses are also supported. That is, a rule like
 `{x,y}{x,z}->{x,y}{x,w}{y,w}{z,w}` is valid and can be converted to
 default format by clicking `Check`.
 
-Some rules to copy-paste:
+Some rules you can try out (just copy-paste the rule part):
 
 - (1,2,3)(1,4,5)->(3,3,6)(4,5,6)(6,6,5);(1,1,1)(1,1,1)
 - (1,1,2)(3,2,4)->(5,1,4)(3,2,3)(5,5,4);(1,1,1)(1,1,1)
-- (1,2,2)(1,3,4)->(3,2,5)(5,5,2)(4,5,5);(1,1,1)(1,1,1) | Set event order: OLD
-- (1,2,2)(1,3,4)->(1,5,2)(2,3,4)(4,5,5);(1,1,1)(1,1,1) | Set event order: OLD
+- (1,2,2)(1,3,4)->(3,2,5)(5,5,2)(4,5,5);(1,1,1)(1,1,1) | Set event ordering: OLD
+- (1,2,2)(1,3,4)->(1,5,2)(2,3,4)(4,5,5);(1,1,1)(1,1,1) | Set event ordering: OLD
 
 ## Simulation
 
@@ -68,12 +68,12 @@ commands:
 
 Command | Description | Examples
 --- | --- | ---
-`geodesic(v1,v2,[dir],[rev],[all])` | Shortest path between two nodes. In general relativity, the paths of particles acted on only by gravity are geodesics in curved space. Optional keywords: `dir` = directed edges, `rev` = reverse edge direction, `all` = show all shortest paths. | `geodesic(0,10,all)`
-`nball(center,radius,[dir],[rev])` | A the set of nodes/edges within a certain graph distance `radius` of a given node `center`. If the graph or hypergraph approximates n-dimensional space, the leading term in the growth rate of geodesic balls with radius is r^n. Optional keywords: `dir` = directed edges, `rev` = reverse edge direction. | `nball(0,4)`
-`nsphere(center,radius,[dir],[rev])` | N-dimensional sphere from vertex `center` with radius `radius`. Optional keywords: `dir` = directed edges, `rev` = reverse direction. | `nsphere(0,4,dir)`
-`random(v,[distance],[dir],[rev])` | Random walk from starting from node `v` . Optional parameter: `distance` max steps, optimal keywords: `dir` = use directed edges, `rev` = reverse direction. | `random(1)`
-`worldline(v)` | Time-like curve of the node `v`. Available only in `TIME` mode. | `worldline(0)`
-`lightcone(v,length)` | Lightcone centered at `v` with length `length`. Available only in `TIME` mode. | `lightcone(200,4)`
+`geodesic(v1,v2,[dir],[rev],[all])` | Shortest path between two nodes. In general relativity, the paths of particles acted on only by gravity are geodesics in curved space.<br/>Optional keywords: `dir` = directed edges, `rev` = reverse edge direction, `all` = show all shortest paths. | `geodesic(0,10,all)`
+`nball(center,radius,[dir],[rev])` | A the set of nodes/edges within a certain graph distance `radius` of a given node `center`. If the graph or hypergraph approximates n-dimensional space, the leading term in the growth rate of geodesic balls with radius is r^n.<br/>Optional keywords: `dir` = directed edges, `rev` = reverse edge direction. | `nball(0,4)`
+`nsphere(center,radius,[dir],[rev])` | N-dimensional sphere from vertex `center` with radius `radius`.<br/>Optional keywords: `dir` = directed edges, `rev` = reverse direction. | `nsphere(0,4,dir)`
+`random(v,[distance],[dir],[rev])` | Random walk from starting from node `v` .<br/>Optional parameter: `distance` max steps, keywords: `dir` = use directed edges, `rev` = reverse direction. | `random(1)`
+`worldline(v)` | Time-like curve of the node `v`.<br/>Available only in `TIME` mode. | `worldline(0)`
+`lightcone(v,length)` | Lightcone centered at `v` with length `length`.<br/>Available only in `TIME` mode. | `lightcone(200,4)`
 
 
 
