@@ -9,13 +9,13 @@ physics engine.
 
 For more information on Hypergraph Rewriting Systems and their potential to
 represent fundamental physics see [The Wolfram Physics Project](https://www.wolframphysics.org)
-and its [technical documents](https://www.wolframphysics.org/technical-documents/).
+website and especially their [technical documents](https://www.wolframphysics.org/technical-documents/).
 
 ## Rules
 
-Change the rewriting rule or its settings by clicking `RULE`. Run the rule
-by clicking `RUN`. Settings include different rule/event orderings and maximum
-number of rewriting events (size).
+Change the rewriting rule and related settings by clicking `RULE`.
+Settings include different rule and event orderings and maximum
+number of rewriting events (size). Run the rule by clicking `RUN`. 
 
 An example of a hypergraph rewriting rule:
 
@@ -30,8 +30,8 @@ right-hand side `(1,5,4)(2,5,3)(5,5,4)`. The two sides are
 separated with an arrow `->`.
 
 The system supports several rules separated either with a semicolon `;` or
-each rule written on a separate line. A rule without the right-hand side is used as
-the initial state of the spatial hypergraph.
+each rule written on a separate line. A rule without the right-hand side
+is used as the initial state of the spatial hypergraph.
 
 Hyperedge patterns can be described by using numbers and/or characters.
 Several types of parentheses are also supported. That is, a rule like
@@ -43,20 +43,20 @@ default format by clicking `Check`.
 Force-simulation has two modes: `Space` and `Time`.
 
 In `Space` mode the system simulates the evolution of the spatial hypergraph. The
-spatial hypergraph represents a space-like state of the universe with nodes as
-"atoms of space" joined by hyperedges.
+spatial hypergraph represents a space-like state of the universe in which nodes
+represent "atoms of space" joined by hyperedges.
 
 In `Time` mode the system builds up a causal graph between updating events.
-The nodes of the DAG are updating events and the directed edges causal relationships.
+The nodes are updating events and the directed acyclic edges causal relationships.
 According to the Wolfram Physics Model, the flux of edges in the causal graph
 is related to physical energy and momentum.
 
 Media control buttons let you rewind to the beginning, start/pause animation and
-skip to the end of the animation. `Speed` selects the frame rate (slow/fast).
+skip to the end of the animation. `Speed` selects either slow or fast frame rate.
 
 ## Highlighting Subgraphs
 
-Subgraph can be highlighted by clicking `RED`/`BLUE`and adding one or more
+Subgraphs can be highlighted by clicking `RED`/`BLUE` and adding one or more
 commands:
 
 Command | Description | Examples
