@@ -68,12 +68,12 @@ commands:
 
 Command | Description | Examples
 --- | --- | ---
-`geodesic(v1,v2,[dir],[rev],[all])` | Shortest path between two nodes. In general relativity, the paths of particles acted on only by gravity are geodesics in curved space.<br/>Optional keywords: `dir` = directed edges, `rev` = reverse edge direction, `all` = show all shortest paths. | `geodesic(0,10,all)`
-`nball(center,radius,[dir],[rev])` | A the set of nodes/edges within a certain graph distance `radius` of a given node `center`. If the graph or hypergraph approximates n-dimensional space, the leading term in the growth rate of geodesic balls with radius is r^n.<br/>Optional keywords: `dir` = directed edges, `rev` = reverse edge direction. | `nball(0,4)`
-`nsphere(center,radius,[dir],[rev])` | N-dimensional sphere from vertex `center` with radius `radius`.<br/>Optional keywords: `dir` = directed edges, `rev` = reverse direction. | `nsphere(0,4,dir)`
-`random(v,[distance],[dir],[rev])` | Random walk from starting from node `v` .<br/>Optional parameter: `distance` max steps, keywords: `dir` = use directed edges, `rev` = reverse direction. | `random(1)`
-`worldline(v)` | Time-like curve of the node `v`.<br/>Available only in `TIME` mode. | `worldline(0)`
-`lightcone(v,length)` | Lightcone centered at `v` with length `length`.<br/>Available only in `TIME` mode. | `lightcone(200,4)`
+`geodesic(v1,v2,[dir],[rev],[all])`<br/>Optional keywords: `dir` = directed edges, `rev` = reverse edge direction, `all` = show all shortest paths. | Shortest path between two nodes. In general relativity, the paths of particles acted on only by gravity are geodesics in curved space. | `geodesic(0,10,all)`
+`nball(center,radius,[dir],[rev])`<br/>Optional keywords: `dir` = directed edges, `rev` = reverse edge direction. | A the set of nodes/edges within a certain graph distance `radius` of a given node `center`. If the graph or hypergraph approximates n-dimensional space, the leading term in the growth rate of geodesic balls with radius is r^n. | `nball(0,4)`
+`nsphere(center,radius,[dir],[rev])`<br/>Optional keywords: `dir` = directed edges, `rev` = reverse direction. | N-dimensional sphere from vertex `center` with radius `radius`. | `nsphere(0,4,dir)`
+`random(v,[distance],[dir],[rev])`<br/>Optional parameter: `distance` max steps, keywords: `dir` = use directed edges, `rev` = reverse direction. | Random walk from starting from node `v` . | `random(1)`
+`worldline(v)`<br/>Note: Available only in `TIME` mode. | Time-like curve of the node `v`. | `worldline(0)`
+`lightcone(v,length)`<br/>Note: Available only in `TIME` mode. | Lightcone centered at `v` with length `length`. | `lightcone(200,4)`
 
 
 
