@@ -1,7 +1,5 @@
 # Hypergraph Rewriting System 3D
 
-A web app to rewrite and simulate hypergraphs in 3D:
-
 https://met4citizen.github.io/Hypergraph/
 
 The app uses [3d Force-Directed Graph](https://github.com/vasturiano/3d-force-graph),
