@@ -1,6 +1,6 @@
-# 3D Hypergraph Rewriting System
+# Hypergraph Rewriting System 3D
 
-A web application to rewrite/represent hypergraphs in 3D:
+A web application to rewrite and represent hypergraphs in 3D:
 
 https://met4citizen.github.io/Hypergraph/
 
@@ -11,11 +11,11 @@ physics engine.
 
 ## Rules
 
-The default rewriting rule can be changed by clicking the button `RULE` and
-processed by clicking `RUN`. Settings include different rule/event orderings
-and maximum number of rewriting events (size).
+Change the rewriting rule by clicking `RULE`. Run the rule by clicking `RUN`.
+Settings include different rule/event orderings and maximum number of
+rewriting events (size).
 
-A simple example of a hypergraph rewriting rule:
+An example of a hypergraph rewriting rule:
 
 ```
 (1,1,2)(2,3,4)->(1,5,4)(2,5,3)(5,5,4)
@@ -23,40 +23,46 @@ A simple example of a hypergraph rewriting rule:
 ```
 
 Whenever a subgraph matching the rule's left-hand side `(1,1,2)(2,3,4)` is
-found on the hypergrap, it is rewritten with a subgraph following
-the pattern of to the rule's right-hand side `(1,5,4)(2,5,3)(5,5,4)`.
-Lhs and rhs are separated with an arrow `->`.
+found on the hypergraph, it is replaced with the pattern of to the rule's
+right-hand side `(1,5,4)(2,5,3)(5,5,4)`. The two sides should be separated with
+an arrow `->`.
 
-Rules are separated either with a semicolon `;` or they can be written on
-separate lines. A rule without the right-hand side is used as the initial state
-of the hypergraph.
+The app support several rules. Separate them either with a semicolon `;` or
+write them on separate lines. A rule without the right-hand side is used as
+the initial state of the hypergraph.
 
-Hyperedge patterns can be specified by using numbers and/or characters.
-Several types of parentheses are supported.  For example, a rule like
+Hyperedge patterns on rules can be described by using numbers and/or characters.
+Several types of parentheses are supported. That is, a rule like
 `{x,y}{x,z}->{x,y}{x,w}{y,w}{z,w}` is valid.
 
-## Animation
+## Simulation
 
-Animation supports two modes: `Space` and `Time`. `Space` mode displays
-the evolution of the spatial graph. `Time` mode displays causal graph of
-rewriting events.
+Simulation has two modes: `Space` and `Time`.
 
-Media controls let you rewind to the beginning, start/pause animation and
+In `Space` mode the system simulates the evolution of the spatial hypergraph, which
+represents a space-like state of the universe. The nodes of the spatial hypergraph
+are "atoms of space" joined by hyperedges.
+
+In `Time` mode the system displays causal relationships between updating events.
+The nodes of the causal graph are updating events and the edges show causal relationships.
+The flux of edges in the causal graph is related to physical energy and momentum[^1].
+
+Media controls of the simulation let you rewind to the beginning, start/pause animation and
 skip to the end of the animation. `Speed` selects the frame rate (slow/fast).
 
-## Commands (RED/BLUE)
+## Highlighting (RED/BLUE)
 
-Command | Description
---- | ---
-`geodesic(v1,v2,[dir],[rev],[all])` | Shortest path from vertex `v1` to `v2`. Optional: `dir` directed edges, Optional: `rev` reverse direction, `all` show all shortest paths.
-`nball(center,radius,[dir],[rev])` | N-dimensional ball from vertex `center` with radius `radius`. Optional: `dir` directed edges, `rev` reverse direction.
-`nsphere(center,radius,[dir],[rev])` | N-dimensional sphere from vertex `center` with radius `radius`. Optional: `dir` directed edges, `rev` reverse direction.
-`random(v,[distance],[dir],[rev])` | Random walk from vertex `v` . Optional: `distance` max steps, `dir` use directed edges, `rev` reverse direction.
-`worldline(v)` | Time-like curve of the vertex `v`. Only in TIME view.
-`lightcone(v,length)` | Lightcone centered at `v` with length `length` Only in TIME view.
+Command | Description | Examples
+--- | --- | ---
+`geodesic(v1,v2,[dir],[rev],[all])` | Shortest path from node `v1` to `v2`. In general relativity, the paths of particles acted on only by gravity are geodesics in curved space. Optional: `dir` directed edges, Optional: `rev` reverse direction, `all` show all shortest paths. | `geodesic(0,10,all)`
+`nball(center,radius,[dir],[rev])` | N-dimensional ball from vertex `center` with radius `radius`. a geodesic ball is the set of nodes within a certain graph distance of a given node. If the graph or hypergraph approximates d-dimensional space, the leading term in the growth rate of geodesic balls with radius is r^d. Optional: `dir` directed edges, `rev` reverse direction.
+`nsphere(center,radius,[dir],[rev])` | N-dimensional sphere from vertex `center` with radius `radius`. Optional: `dir` directed edges, `rev` reverse direction. | `nball(0,4)`
+`random(v,[distance],[dir],[rev])` | Random walk from vertex `v` . Optional: `distance` max steps, `dir` use directed edges, `rev` reverse direction. | `nsphere(0,4,dir)`
+`worldline(v)` | Time-like curve of the vertex `v`. Only in `TIME` mode. | `worldline(0)`
+`lightcone(v,length)` | Lightcone centered at `v` with length `length` Only in `TIME` mode. | `lightcone(200,4)`
 
 ## References
 
-[Technical documents of the Wolfram Physics Project](https://www.wolframphysics.org/technical-documents/)
+[^1]: <https://www.wolframphysics.org/technical-documents/>
 
 
