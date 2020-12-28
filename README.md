@@ -1,10 +1,10 @@
 # 3D Hypergraph Rewriting System
 
-A web application to rewrite hypergraphs and represent them in a 3-dimensional space:
+A web application to rewrite/represent hypergraphs in 3D:
 
 https://met4citizen.github.io/Hypergraph/
 
-Uses [3d Force-Directed Graph](https://github.com/vasturiano/3d-force-graph),
+The app uses [3d Force-Directed Graph](https://github.com/vasturiano/3d-force-graph),
 [ThreeJS](https://github.com/mrdoob/three.js/)/WebGL for 3D rendering and
 [d3-force-3d](https://github.com/vasturiano/d3-force-3d) for the underlying
 physics engine.
