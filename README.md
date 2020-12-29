@@ -15,7 +15,7 @@ hypergraph is transformed step by step by replacing a subhypergraph with a parti
 canonical form with another subhypergraph with a different canonical form based on
 some abstract *rewriting rule*.
 
-For information about hypergraph rewriting systems and their potential to
+For more information about hypergraph rewriting systems and their potential to
 represent fundamental physics visit [The Wolfram Physics Project](https://www.wolframphysics.org)
 website and see [technical documents](https://www.wolframphysics.org/technical-documents/).
 
