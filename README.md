@@ -6,9 +6,9 @@ https://met4citizen.github.io/Hypergraph/
 
 A *hypergraph* is a generalization of a graph in which an edge (called *hyperedge*)
 can join any number of *nodes*. In a *hypergraph rewriting system* some initial
-hypergraph is transformed step by step by replacing a subhypergraph with a particular
-canonical form with another subhypergraph with a different canonical form based on
-some abstract *rewriting rule*.
+hypergraph is transformed incrementally by following some abstract *rewriting rule*.
+In each step subhypergraphs with particular canonical form are replaced with
+other subhypergraphs with different canonical form.
 
 For more information about hypergraph rewriting systems and their potential to
 represent fundamental physics visit [The Wolfram Physics Project](https://www.wolframphysics.org)
@@ -21,9 +21,9 @@ physics engine.
 
 ## Rules
 
-Click `RULE` to modify the rewriting rule and related settings. Settings include
-different options for rule ordering and event orderings and the max number of
-rewriting events. Click `RUN` to start the rewriting process. 
+Click `RULE` to modify the rewriting rule. Settings include different options for
+rule ordering and event orderings and the max number of rewriting events.
+Click `RUN` to start the rewriting process. 
 
 An example of a hypergraph rewriting rule:
 
@@ -32,17 +32,15 @@ An example of a hypergraph rewriting rule:
 (1,1,1)(1,1,1)
 ```
 
-Wherever a subhypergraph in the form of the left-hand pattern `(1,1,2)(2,3,4)`
+Wherever a subhypergraph in the form of the left-hand side pattern `(1,1,2)(2,3,4)`
 is found on the hypergraph, it is replaced with a new subhypergraph in the
-form of the right-hand pattern `(1,5,4)(2,5,3)(5,5,4)`. The two sides must be
-separated with an arrow `->`.
-
-The system supports several rules separated with a semicolon `;` or written
-on separate lines. A rule without the right-hand side is used as the initial
+form of the right-hand side pattern `(1,5,4)(2,5,3)(5,5,4)`. The two sides must be
+separated with an arrow `->`. A rule without the right-hand side is used as the initial
 state.
 
-Hyperedge patterns can be described by using numbers and/or characters.
-Several types of parentheses are supported. For example, a rule like
+The system supports several rules separated with a semicolon `;` or written
+on separate lines. Hyperedge patterns can be described by using numbers and/or
+characters. Several types of parentheses are supported. For example, a rule like
 `[{x,y}{x,z}]->[{x,y}{x,w}{y,w}{z,w}]` is considered valid and can be
 converted to the default format by clicking `Check`.
 
@@ -55,25 +53,24 @@ Some rules to try out (copy-paste only the rule part):
 
 ## Simulation
 
-Simulation has two modes: `Space` and `Time`.
+Simulation has two supported modes: `Space` and `Time`.
 
-In `Space` mode the system simulates the evolution of the spatial hypergraph. The
-nodes represent "atoms of space". According to the Wolfram Model, the spatial
-hypergraph represents a spacelike state of the universe, in which elementary
-particles are localized persistent structures.
+In `Space` mode the system simulates the evolution of the spatial hypergraph with
+nodes representing "atoms of space". According to the Wolfram Model, the spatial
+hypergraph represents a spacelike state of the universe.
 
 In `Time` mode the system builds up the causal graph. In this view, the nodes are
-updating events and the directed edges causal relationships. According to the
+updating events and the directed edges their causal relationships. According to the
 Wolfram Model, the flux of causal edges through spacelike and timelike hypersurfaces
-is related to energy and momentum.
+is related to energy and momentum respectively.
 
 Media control buttons let you rewind to the beginning, start/pause simulation and
 skip to the end. `Speed` sets the frame rate.
 
 ## Highlighting
 
-Subgraphs can be highlighted by clicking `RED`/`BLUE` and using one or more
-of the supported commands:
+When the simulation ends, subgraphs can be highlighted by clicking `RED`/`BLUE`
+and using one or more of the following commands:
 
 Command | Description | Examples
 --- | --- | ---
