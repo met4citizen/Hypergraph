@@ -1,5 +1,7 @@
 # Hypergraph Rewriting System
 
+<img src="https://repository-images.githubusercontent.com/324783458/88643280-493e-11eb-87cb-910353f32066" width="600">
+
 https://met4citizen.github.io/Hypergraph/
 
 The app uses [3d Force-Directed Graph](https://github.com/vasturiano/3d-force-graph) for
