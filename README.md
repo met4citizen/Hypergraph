@@ -55,9 +55,9 @@ Some rules to try out (copy-paste only the rule part):
 
 Simulation has two supported modes: `Space` and `Time`.
 
-In `Space` mode the system simulates the evolution of the spatial hypergraph with
-nodes representing "atoms of space". According to the Wolfram Model, the spatial
-hypergraph represents a spacelike state of the universe.
+In `Space` mode the system simulates the evolution of the spatial hypergraph.
+According to the Wolfram Model, the spatial hypergraph represents a spacelike
+state of the universe with nodes as "atoms of space".
 
 In `Time` mode the system builds up the causal graph. In this view, the nodes are
 updating events and the directed edges their causal relationships. According to the
