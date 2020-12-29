@@ -2,9 +2,10 @@
 
 https://met4citizen.github.io/Hypergraph/
 
-The app uses [3d Force-Directed Graph](https://github.com/vasturiano/3d-force-graph),
-[ThreeJS](https://github.com/mrdoob/three.js/)/WebGL for 3D rendering and
-[d3-force-3d](https://github.com/vasturiano/d3-force-3d) for the physics engine.
+The app uses [3d Force-Directed Graph](https://github.com/vasturiano/3d-force-graph) for
+representing graph structures, [ThreeJS](https://github.com/mrdoob/three.js/)/WebGL for
+3D rendering and [d3-force-3d](https://github.com/vasturiano/d3-force-3d) for the
+physics engine.
 
 For more information about hypergraph rewriting systems and their potential to
 represent fundamental physics see [The Wolfram Physics Project](https://www.wolframphysics.org)
@@ -26,11 +27,11 @@ An example of a hypergraph rewriting rule:
 Wherever the left-hand side pattern `(1,1,2)(2,3,4)` is
 found on the hypergraph, it is replaced with the  right-hand
 side pattern `(1,5,4)(2,5,3)(5,5,4)`. The two sides must be
-separated with an arrow symbol `->`.
+separated with an arrow `->`.
 
-The system supports several rules. The rules must be separated with a semicolon
-`;` or written on separate lines. A rule without the right-hand side
-is used as the initial state of the spatial hypergraph.
+The system supports several rules. The rules must be separated with
+a semicolon `;` or written on separate lines. A rule without the
+right-hand side is used as the initial state of the spatial hypergraph.
 
 Hyperedge patterns can be described by using numbers and/or characters.
 Several types of parentheses are supported. For example, a rule like
@@ -46,7 +47,7 @@ Some rules to try out (just copy-paste the rule part):
 
 ## Simulation
 
-Simulation has two modes: `Space` and `Time`.
+Simulation has two modes/views: `Space` and `Time`.
 
 In `Space` mode the system simulates the evolution of the spatial hypergraph. The
 nodes representing "atoms of space" are joined by hyperedges representing their
@@ -56,8 +57,8 @@ state of the universe.
 In `Time` mode the system builds up a causal graph. In this view, the nodes are
 updating events and the edges their causal relationships. According to the Wolfram
 Physics Model, the flux of edges in the causal graph is related to physical
-energy and momentum. Causal cones correspond to a physical light cones and their
-lengths are related to the speed of light.
+energy and momentum, and causal cones correspond to physical light cones with
+lengths related to the speed of light.
 
 Media control buttons let you rewind to the beginning, start/pause simulation and
 skip to the end. `Speed` sets the frame rate.
@@ -65,7 +66,7 @@ skip to the end. `Speed` sets the frame rate.
 ## Highlighting Subgraphs
 
 Subgraphs can be highlighted by clicking `RED`/`BLUE` and using one or more
-of the currently supported commands:
+of the supported commands:
 
 Command | Description | Examples
 --- | --- | ---
