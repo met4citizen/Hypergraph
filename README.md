@@ -1,6 +1,6 @@
 # Hypergraph Rewriting System
 
-<img src="https://repository-images.githubusercontent.com/324783458/88643280-493e-11eb-87cb-910353f32066" width="600">
+<img src="https://repository-images.githubusercontent.com/324783458/88643280-493e-11eb-87cb-910353f32066" width="500">
 
 https://met4citizen.github.io/Hypergraph/
 
@@ -72,12 +72,12 @@ of the supported commands:
 
 Command | Description | Examples
 --- | --- | ---
-`geodesic(v1,v2,[dir],[rev],[all])`<br/><br/>Optional keywords: `dir` = directed edges, `rev` = reverse edge direction, `all` = show all shortest paths. | Shortest path between two nodes. | `geodesic(0,10,all)`
-`nball(center,radius,[dir],[rev])`<br/><br/>Optional keywords: `dir` = directed edges, `rev` = reverse edge direction. | A the set of nodes/edges within a certain graph distance `radius` of a given node `center`. | `nball(0,4)`
-`nsphere(center,radius,[dir],[rev])`<br/><br/>Optional keywords: `dir` = directed edges, `rev` = reverse direction. | N-dimensional sphere from vertex `center` with radius `radius`. | `nsphere(0,4,dir)`
-`random(v,[distance],[dir],[rev])`<br/><br/>Optional parameter: `distance` max steps, keywords: `dir` = use directed edges, `rev` = reverse direction. | Random walk starting from node `v` . | `random(1)`
-`worldline(v)`<br/><br/>*Note: Available only in `TIME` mode* | Time-like curve of the space-like node `v`. | `worldline(0)`
-`lightcone(v,length)`<br/><br/>*Note: Available only in `TIME` mode* | Lightcone centered at node `v` with length `length`. | `lightcone(200,4)`
+`geodesic(v1,v2,[dir],[rev],[all])`<br/><br/>Options:<br/>`dir` = directed edges<br/>`rev` = reverse edge direction<br/>`all` = show all shortest paths | Shortest path between two nodes. | `geodesic(0,10,all)`
+`nball(center,radius,[dir],[rev])`<br/><br/>Options:<br/>`dir` = directed edges<br/>`rev` = reverse edge direction | A the set of nodes/edges within a certain graph distance `radius` of a given node `center`. | `nball(0,4)`
+`nsphere(center,radius,[dir],[rev])`<br/><br/>Options:<br/>`dir` = directed edges<br/>`rev` = reverse direction | N-dimensional sphere from vertex `center` with radius `radius`. | `nsphere(0,4,dir)`
+`random(v,[distance],[dir],[rev])`<br/><br/>Options:<br/>`distance` = max steps<br/>`dir` = use directed edges<br/>`rev` = reverse direction | Random walk starting from node `v` . | `random(1)`
+`worldline(v)`<br/><br/>*Note: Available in `TIME` mode* | Time-like curve of the space-like node `v`. | `worldline(0)`
+`lightcone(v,length)`<br/><br/>*Note: Available in `TIME` mode* | Lightcone centered at node `v` with length `length`. | `lightcone(200,4)`
 
 
 
