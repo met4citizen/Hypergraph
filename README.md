@@ -9,9 +9,15 @@ representing graph structures, [ThreeJS](https://github.com/mrdoob/three.js/)/We
 3D rendering and [d3-force-3d](https://github.com/vasturiano/d3-force-3d) for the
 physics engine.
 
+A *hypergraph* is a generalization of a graph in which an edge (called *hyperedge*)
+can join any number of nodes. In a *hypergraph rewriting system* some initial
+hypergraph is transformed step by step by replacing a subhypergraph with a particular
+canonical form with another subhypergraph with a different canonical form based on
+some abstract *rewriting rule*.
+
 For information about hypergraph rewriting systems and their potential to
-represent fundamental physics see [The Wolfram Physics Project](https://www.wolframphysics.org)
-website and [technical documents](https://www.wolframphysics.org/technical-documents/).
+represent fundamental physics visit [The Wolfram Physics Project](https://www.wolframphysics.org)
+website and see [technical documents](https://www.wolframphysics.org/technical-documents/).
 
 ## Rules
 
@@ -52,15 +58,15 @@ Some rules to try out (just copy-paste the rule part):
 Simulation has two modes/views: `Space` and `Time`.
 
 In `Space` mode the system simulates the evolution of the spatial hypergraph. The
-nodes representing "atoms of space" are joined by hyperedges representing their
-relations. In the large-scale limit, the spatial hypergraph represents a space-like
-state of the universe.  
+nodes, joined by hyperedges, represent "atoms of space". According to the Wolfram
+Model, the spatial hypergraph represents a spacelike state of the universe,
+in which elementary particles are localized persistent structures.
 
 In `Time` mode the system builds up a causal graph. In this view, the nodes are
-updating events and the edges their causal relationships. According to the Wolfram
-Physics Model, the flux of edges in the causal graph is related to physical
-energy and momentum, and causal cones correspond to physical light cones with
-lengths related to the speed of light.
+updating events and the directed edges their causal relationships. According to the
+Wolfram Model, the flux of causal edges through spacelike hypersurfaces is
+related to energy and the flux of causal edges through timelike hypersurfaces is
+related to momentum.
 
 Media control buttons let you rewind to the beginning, start/pause simulation and
 skip to the end. `Speed` sets the frame rate.
