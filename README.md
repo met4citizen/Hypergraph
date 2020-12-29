@@ -1,6 +1,6 @@
 # Hypergraph Rewriting System
 
-<img src="https://repository-images.githubusercontent.com/324783458/88643280-493e-11eb-87cb-910353f32066" width="500">
+<img src="https://repository-images.githubusercontent.com/324783458/88643280-493e-11eb-87cb-910353f32066" width="600">
 
 https://met4citizen.github.io/Hypergraph/
 
@@ -9,7 +9,7 @@ representing graph structures, [ThreeJS](https://github.com/mrdoob/three.js/)/We
 3D rendering and [d3-force-3d](https://github.com/vasturiano/d3-force-3d) for the
 physics engine.
 
-For more information about hypergraph rewriting systems and their potential to
+For information about hypergraph rewriting systems and their potential to
 represent fundamental physics see [The Wolfram Physics Project](https://www.wolframphysics.org)
 website and [technical documents](https://www.wolframphysics.org/technical-documents/).
 
