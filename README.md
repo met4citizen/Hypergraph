@@ -4,11 +4,11 @@
 
 https://met4citizen.github.io/Hypergraph/
 
-A *hypergraph* is a generalization of a graph in which an edge (called *hyperedge*)
+A *hypergraph* is a generalization of a regular graph in which an edge (called *hyperedge*)
 can join any number of *nodes*. In a *hypergraph rewriting system* some initial
-hypergraph is transformed incrementally by following some abstract *rewriting rule*.
-In these *updating events* subhypergraphs with particular canonical form are replaced with
-other subhypergraphs with different canonical form.
+hypergraph is transformed incrementally by making a series of *updating events* that follow
+some abstract *rewriting rule*. That is, following the rule, subhypergraphs with particular
+canonical form are replaced with other subhypergraphs with different canonical form.
 
 For more information about hypergraph rewriting systems and their potential to
 represent fundamental physics visit [The Wolfram Physics Project](https://www.wolframphysics.org)
