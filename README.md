@@ -74,10 +74,10 @@ and using one or more of the following commands:
 
 Command | Description | Examples
 --- | --- | ---
-`geodesic(n1,n2,[dir],[rev],[all])` | Shortest path between two nodes.<br/><br/>Options:<br/>`dir` = directed edges<br/>`rev` = reverse edge direction<br/>`all` = show all shortest paths | `geodesic(0,10)`<br/>`geodesic(10,200,all)`
-`nball(center,radius,[dir],[rev])` | N-dimensional ball is a set of nodes and edges within a distance `radius` of a given node `center`.<br/><br/>Options:<br/>`dir` = directed edges<br/>`rev` = reverse edge direction | `nball(0,4)`
-`nsphere(center,radius,[dir],[rev])` | N-dimensional sphere is a set of nodes within a distance `radius` of a given node `center`.<br/><br/>Options:<br/>`dir` = directed edges<br/>`rev` = reverse direction | `nsphere(0,4)`
-`random(n,distance,[dir],[rev])` | Random walk starting from a specific node with some maximum `distance`.<br/><br/>Options:<br/>`dir` = use directed edges<br/>`rev` = reverse direction | `random(1,100,dir)`
+`geodesic(n1,n2,[dir],[rev],[all])` | Shortest path between two nodes.<br/><br/>`dir` = directed edges<br/>`rev` = reverse edge direction<br/>`all` = show all shortest paths | `geodesic(0,10)`<br/>`geodesic(10,200,all)`
+`nball(center,radius,[dir],[rev])` | N-dimensional ball is a set of nodes and edges within a distance `radius` of a given node `center`.<br/><br/>`dir` = directed edges<br/>`rev` = reverse edge direction | `nball(0,4)`
+`nsphere(center,radius,[dir],[rev])` | N-dimensional sphere is a set of nodes within a distance `radius` of a given node `center`.<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | `nsphere(0,4)`
+`random(n,distance,[dir],[rev])` | Random walk starting from a specific node with some maximum `distance`.<br/><br/>`dir` = use directed edges<br/>`rev` = reverse direction | `random(1,100,dir)`
 `worldline(n)` | Time-like curve of the space-like node.<br/><br/>*Note: Only in `TIME` mode* | `worldline(0)`
 `lightcone(n,length)` | Lightcone centered at node `n` with length `length`.<br/><br/>*Note: Only in `TIME` mode* | `lightcone(200,4)`
 
