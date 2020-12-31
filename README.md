@@ -2,17 +2,18 @@
 
 <img src="https://repository-images.githubusercontent.com/324783458/88643280-493e-11eb-87cb-910353f32066" width="600">
 
-https://met4citizen.github.io/Hypergraph/
+Run it: https://met4citizen.github.io/Hypergraph/
 
-A *hypergraph* is a generalization of a regular graph in which an edge (*hyperedge*)
+A *hypergraph* is a generalization of a regular graph in which an edge (called *hyperedge*)
 can join any number of *nodes*. In a *hypergraph rewriting system* some initial
 state is transformed incrementally by making a series of *updating events* that follow
-some abstract *rewriting rule*. By following the given rule, subhypergraphs with particular
-canonical form are replaced with other subhypergraphs with different canonical form.
+some abstract *rewriting rule*. In other words, by following the given rule, subhypergraphs
+with particular canonical form are replaced with other subhypergraphs with different
+canonical form.
 
 For more information about hypergraph rewriting systems and their potential to
 represent fundamental physics visit [The Wolfram Physics Project](https://www.wolframphysics.org)
-website and read [technical documents](https://www.wolframphysics.org/technical-documents/).
+website and read their [technical documents](https://www.wolframphysics.org/technical-documents/).
 
 The web app uses [3d Force-Directed Graph](https://github.com/vasturiano/3d-force-graph)
 for representing graph structures, [ThreeJS](https://github.com/mrdoob/three.js/)/WebGL
@@ -46,6 +47,7 @@ converted to the default format by clicking `Check`.
 
 Some rules to try out (copy-paste the rule part and change the setting if specified):
 
+- (1,2)(1,3)->(1,2)(1,4)(2,4)(3,4)
 - (1,2,3)(1,4,5)->(3,3,6)(4,5,6)(6,6,5);(1,1,1)(1,1,1)
 - (1,1,2)(3,2,4)->(5,1,4)(3,2,3)(5,5,4);(1,1,1)(1,1,1)
 - (1,2,2)(1,3,4)->(3,2,5)(5,5,2)(4,5,5);(1,1,1)(1,1,1) | Set event ordering: OLD
@@ -84,9 +86,9 @@ Command | Description | Examples
 ## Notes
 
 During the rewriting process there are often several overlapping matches for the left-hand side part
-of the rule. In these case *event ordering* setting is used to decide which of the overlapping matches
-are replaced and which are ignored. In physical reality all such matches would be replaced giving rise
-to quantum mechanics. This also means that the simulator shows only one possible *classical* evolution
+of the rule. In these cases *event ordering* setting is used to decide which of the overlapping matches
+are replaced and which are skipped. In physical reality all such matches would be replaced giving rise
+to quantum mechanics. This means that the simulator shows only one possible *classical* evolution
 of the hypergraph.
 
 
