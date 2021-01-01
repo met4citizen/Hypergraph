@@ -1,21 +1,30 @@
-# Hypergraph Rewriting System 3D
+# Hypergraph Rewriting System
 
-https://met4citizen.github.io/Hypergraph/
+<img src="https://repository-images.githubusercontent.com/324783458/88643280-493e-11eb-87cb-910353f32066" width="600">
 
-The app uses [3d Force-Directed Graph](https://github.com/vasturiano/3d-force-graph),
-[ThreeJS](https://github.com/mrdoob/three.js/)/WebGL for 3D rendering and
-[d3-force-3d](https://github.com/vasturiano/d3-force-3d) for the underlying
+Run it: https://met4citizen.github.io/Hypergraph/
+
+A *hypergraph* is a generalization of a regular graph in which an edge (called *hyperedge*)
+can join any number of *nodes*. In a *hypergraph rewriting system* some initial
+state is transformed incrementally by making a series of *updating events* that follow
+some abstract *rewriting rule*. In other words, by following the given rule, subhypergraphs
+with particular canonical form are replaced with other subhypergraphs with different
+canonical form.
+
+For more information about hypergraph rewriting systems and their potential to
+represent fundamental physics visit [The Wolfram Physics Project](https://www.wolframphysics.org)
+website and read their [technical documents](https://www.wolframphysics.org/technical-documents/).
+
+The web app uses [3d Force-Directed Graph](https://github.com/vasturiano/3d-force-graph)
+for representing graph structures, [ThreeJS](https://github.com/mrdoob/three.js/)/WebGL
+for 3D rendering and [d3-force-3d](https://github.com/vasturiano/d3-force-3d) for the
 physics engine.
-
-For more information on Hypergraph Rewriting Systems and their potential to
-represent fundamental physics see [The Wolfram Physics Project](https://www.wolframphysics.org)
-website and especially their [technical documents](https://www.wolframphysics.org/technical-documents/).
 
 ## Rules
 
-Change the rewriting rule and related settings by clicking `RULE`.
-Settings include different rule and event orderings and maximum
-number of rewriting events (size). Run the rule by clicking `RUN`. 
+Click `RULE` to modify the rewriting rule and change its settings. Settings include
+different options for rule ordering and event orderings and the max number of
+rewriting events. Click `RUN` to start the rewriting process. 
 
 An example of a hypergraph rewriting rule:
 
@@ -24,49 +33,62 @@ An example of a hypergraph rewriting rule:
 (1,1,1)(1,1,1)
 ```
 
-Whenever the left-hand side pattern `(1,1,2)(2,3,4)` is
-found on the hypergraph, it is replaced with the pattern of the
-right-hand side `(1,5,4)(2,5,3)(5,5,4)`. The two sides are
-separated with an arrow `->`.
+Wherever a subhypergraph in the form of the left-hand side pattern `(1,1,2)(2,3,4)`
+is found on the hypergraph, it is replaced with a new subhypergraph in the
+form of the right-hand side pattern `(1,5,4)(2,5,3)(5,5,4)`. The two sides must be
+separated with an arrow `->`. A rule without the right-hand side is used as the initial
+state.
 
-The system supports several rules separated either with a semicolon `;` or
-each rule written on a separate line. A rule without the right-hand side
-is used as the initial state of the spatial hypergraph.
+The system supports several rules separated with a semicolon `;` or written
+on separate lines. Hyperedge patterns can be described by using numbers and/or
+characters. Several types of parentheses are supported. For example, a rule like
+`[{x,y}{x,z}]->[{x,y}{x,w}{y,w}{z,w}]` is considered valid and can be
+converted to the default format by clicking `Check`.
 
-Hyperedge patterns can be described by using numbers and/or characters.
-Several types of parentheses are also supported. That is, a rule like
-`{x,y}{x,z}->{x,y}{x,w}{y,w}{z,w}` is valid and can be converted to
-default format by clicking `Check`.
+Some rules to try out (copy-paste the rule part and change the setting if specified):
+
+- (1,2)(1,3)->(1,2)(1,4)(2,4)(3,4)
+- (1,2,3)(1,4,5)->(3,3,6)(4,5,6)(6,6,5);(1,1,1)(1,1,1)
+- (1,1,2)(3,2,4)->(5,1,4)(3,2,3)(5,5,4);(1,1,1)(1,1,1)
+- (1,2,2)(1,3,4)->(3,2,5)(5,5,2)(4,5,5);(1,1,1)(1,1,1) | Set event ordering: OLD
+- (1,2,2)(1,3,4)->(1,5,2)(2,3,4)(4,5,5);(1,1,1)(1,1,1) | Set event ordering: OLD
 
 ## Simulation
 
-Force-simulation has two modes: `Space` and `Time`.
+Simulation supports two modes: `Space` and `Time`.
 
-In `Space` mode the system simulates the evolution of the spatial hypergraph. The
-spatial hypergraph represents a space-like state of the universe in which nodes
-represent "atoms of space" joined by hyperedges.
+In `Space` mode the system simulates the evolution of the spatial hypergraph.
+According to the Wolfram Model, the spatial hypergraph represents a spacelike
+state of the universe with nodes as "atoms of space".
 
-In `Time` mode the system builds up a causal graph between updating events.
-The nodes are updating events and the directed acyclic edges causal relationships.
-According to the Wolfram Physics Model, the flux of edges in the causal graph
-is related to physical energy and momentum.
+In `Time` mode the system builds up the causal graph. In this view, the nodes are
+updating events and the directed edges their causal relationships. According to the
+Wolfram Model, the flux of causal edges through spacelike and timelike hypersurfaces
+is related to energy and momentum respectively.
 
-Media control buttons let you rewind to the beginning, start/pause animation and
-skip to the end of the animation. `Speed` selects either slow or fast frame rate.
+Media control buttons let you rewind to the beginning, start/pause simulation and
+skip to the end. `Speed` sets the frame rate.
 
-## Highlighting Subgraphs
+## Highlighting
 
-Subgraphs can be highlighted by clicking `RED`/`BLUE` and adding one or more
-commands:
+When the simulation ends, subgraphs can be highlighted by clicking `RED`/`BLUE`
+and using one or more of the following commands:
 
 Command | Description | Examples
 --- | --- | ---
-`geodesic(v1,v2,[dir],[rev],[all])` | Shortest path between two nodes. In general relativity, the paths of particles acted on only by gravity are geodesics in curved space. Optional keywords: `dir` = directed edges, `rev` = reverse edge direction, `all` = show all shortest paths. | `geodesic(0,10,all)`
-`nball(center,radius,[dir],[rev])` | A the set of nodes/edges within a certain graph distance `radius` of a given node `center`. If the graph or hypergraph approximates n-dimensional space, the leading term in the growth rate of geodesic balls with radius is r^n. Optional keywords: `dir` = directed edges, `rev` = reverse edge direction. | `nball(0,4)`
-`nsphere(center,radius,[dir],[rev])` | N-dimensional sphere from vertex `center` with radius `radius`. Optional keywords: `dir` = directed edges, `rev` = reverse direction. | `nsphere(0,4,dir)`
-`random(v,[distance],[dir],[rev])` | Random walk from starting from node `v` . Optional parameter: `distance` max steps, optimal keywords: `dir` = use directed edges, `rev` = reverse direction. | `random(1)`
-`worldline(v)` | Time-like curve of the node `v`. Available only in `TIME` mode. | `worldline(0)`
-`lightcone(v,length)` | Lightcone centered at `v` with length `length`. Available only in `TIME` mode. | `lightcone(200,4)`
+`geodesic(n1,n2,[dir],[rev],[all])` | Shortest path between two nodes.<br/><br/>`dir` = directed edges<br/>`rev` = reverse edge direction<br/>`all` = show all shortest paths | `geodesic(0,10)`<br/>`geodesic(10,200,all)`
+`nball(center,radius,[dir],[rev])` | N-dimensional ball is a set of nodes and edges within a distance `radius` of a given node `center`.<br/><br/>`dir` = directed edges<br/>`rev` = reverse edge direction | `nball(0,4)`
+`nsphere(center,radius,[dir],[rev])` | N-dimensional sphere is a set of nodes within a distance `radius` of a given node `center`.<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | `nsphere(0,4)`
+`random(n,distance,[dir],[rev])` | Random walk starting from a specific node with some maximum `distance`.<br/><br/>`dir` = use directed edges<br/>`rev` = reverse direction | `random(1,100,dir)`
+`worldline(n)` | Time-like curve of the space-like node.<br/><br/>*Note: Only in `TIME` mode* | `worldline(0)`
+`lightcone(n,length)` | Lightcone centered at node `n` with length `length`.<br/><br/>*Note: Only in `TIME` mode* | `lightcone(200,4)`
 
+## Notes
+
+During the rewriting process there are often several overlapping matches for the left-hand side part
+of the rule. In these cases *event ordering* setting is used to decide which of the overlapping matches
+are replaced and which are skipped. In physical reality all such matches would be replaced giving rise
+to quantum mechanics. This means that the simulator shows only one possible *classical* evolution
+of the hypergraph.
 
 
