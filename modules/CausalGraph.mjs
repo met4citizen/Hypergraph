@@ -71,7 +71,7 @@ class CausalGraph extends Hypergraph {
 
 	/**
 	 * Light cones.
-	 * @param {Vertex} moment Single moment in space and time
+	 * @param {Vertex} moment Single point in space and time
 	 * @param {number} length Size of the cones
 	 * @param {boolean} [past=true] Include past light cone
 	 * @param {boolean} [future=true] Include future light cone
@@ -84,10 +84,25 @@ class CausalGraph extends Hypergraph {
 		return [ ...pastcone, ...futurecone ];
 	}
 
-	//
+	/**
+	 * Timelike hypersurface/slice.
+	 * @param {Vertex} moment1 Starting point in space and time
+	 * @param {Vertex} moment2 Ending point in space and time
+	 * @return {Vertex[]} Timelike hypersurface.
+	 */
+	time( moment1, moment2 ) {
+		const vertices = [];
+		this.events.forEach( e => {
+			if ( e.hasOwnProperty("step") && e["step"] >= moment1 && e["step"] <= moment2 ) {
+				vertices.push( e["a"][1] );
+			}
+		});
+		return [ ...new Set( vertices ) ];
+	}
+
 	/**
 	 * Approximate dimension and curvature of a n-dimensional cone.
-	 * @param {Vertex} moment Single moment in space and time
+	 * @param {Vertex} moment Single point in space and time
 	 * @return {Object} Dimension and curvature.
 	 */
 	geom( moment ) {
