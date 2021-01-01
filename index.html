@@ -45,10 +45,8 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
 .linkLabelGraph3d { background-color: darkkhaki; }
 </style>
 
-<script src="https://threejs.org/build/three.min.js"></script>
-<script src="https://threejs.org/examples/js/exporters/GLTFExporter.js"></script>
 <script src="https://unpkg.com/3d-force-graph"></script>
-<script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
 
 <script type="module">
 
@@ -58,7 +56,7 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
   // Note: use CSS to define node/link label styles .nodeLabelGraph3d and .linkLabelGraph3d
   const graph3d = new Hypergraph3D();
   window.hypergraph = graph3d; // TODO: REMOVE THIS AFTER DEBUGGING
-  
+
   const spatialStyles = [
           {  nColor: "black", lColor: "grey", nVal: 6, lWidth: 4, bgColor: "white", nRelSize: 3 }, // 0 defaults
           {  nColor: "purple", lColor: "hotpink", nVal: 10, lWidth: 7, fill: "hotpink", opacity: 0.2 }, // 1 Red
