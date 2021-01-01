@@ -1,4 +1,5 @@
 import { HypergraphRewritingSystem } from "./HypergraphRewritingSystem.mjs";
+import { ConvexBufferGeometry } from 'https://threejs.org/examples/jsm/geometries/ConvexGeometry.js';
 
 class Hypergraph3D {
 
@@ -13,7 +14,8 @@ class Hypergraph3D {
 		this.data = this.hrs.spatial; // Displayed graph
 		this.pos = 0; // Log position
 		this.updatetimer = null;
-		this.stopfn = null;
+		this.stopfn = null; // stop callback function
+		this.hypersurface = [ [], [], [] ]; // meshes, red, blue
 	}
 
 	/**
@@ -187,14 +189,11 @@ class Hypergraph3D {
 			}
 
 			for( let i = 0; i < numParams; i++ ) p.push( params[i] );
+			r.push( ret.length );
 			if ( isVertices ) {
-				r.push( ret.length );
 				v = [ ...new Set( [ ...v, ...ret ] ) ];
 			} else {
 				e = [ ...new Set( [ ...e, ...ret ] ) ];
-				let vertices = new Set( ret.flat() );
-				r.push( vertices.size );
-				v = [ ...new Set( [ ...v, ...vertices ] ) ];
 			}
 
 		});
@@ -246,7 +245,9 @@ class Hypergraph3D {
 			.nodeLabel( d => `<span class="nodeLabelGraph3d">${ d.id }</span>` )
 			.nodeVisibility( 'refs' )
 			.nodeOpacity( 1 )
-			.linkOpacity( 1 );
+			.linkOpacity( 1 )
+			.cooldownTime( 5000 )
+			.onEngineStop( () => { this.hypersurfaceUpdate(); } );
 		this.linkforcestrength = this.graph3d.d3Force("link").strength();
 	}
 
@@ -331,7 +332,7 @@ class Hypergraph3D {
 					geom.setAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
 					geom.computeVertexNormals();
 
-	  			const mat = new THREE.MeshStandardMaterial( { color: this.spatialStyles[4].fill, transparent: true, opacity: this.spatialStyles[4].opacity, side: THREE.DoubleSide } );
+	  			const mat = new THREE.MeshStandardMaterial( { color: this.spatialStyles[4].fill, transparent: true, opacity: this.spatialStyles[4].opacity, side: THREE.DoubleSide, depthTest: false } );
 	  			const mesh = new THREE.Mesh(geom, mat);
 	  			this.graph3d.scene().add(mesh);
 
@@ -390,6 +391,11 @@ class Hypergraph3D {
 		// Stop animation and set position to start
 		this.stop();
 		this.pos = 0;
+
+		// Remove hypersurfaces
+		this.hypersurface[1].length = 0;
+		this.hypersurface[2].length = 0;
+		this.hypersurfaceUpdate();
 
 		// Remove hyperedges; empty nodes and links
 		let { nodes, links } = this.graph3d.graphData();
@@ -530,6 +536,39 @@ class Hypergraph3D {
 	}
 
 	/**
+	 * Update hypersurfaces
+	 */
+	hypersurfaceUpdate() {
+		let { nodes, links } = this.graph3d.graphData();
+		this.hypersurface.forEach( (h,i) => {
+			if ( i === 0 ) {
+				// Remove hypersurces
+				h.forEach( m => {
+					this.graph3d.scene().remove( m );
+					m.geometry.dispose();
+					m.material.dispose();
+				});
+				h.length = 0;
+			} else {
+				h.forEach( vs => {
+					let points = [];
+					vs.forEach( v => {
+						if ( typeof nodes[v] !== 'undefined' ) {
+							points.push( new THREE.Vector3( nodes[v].x, nodes[v].y, nodes[v].z ) );
+						}
+					});
+					const geom = new ConvexBufferGeometry( points );
+					const mat = new THREE.MeshStandardMaterial( { color: this.spatialStyles[i].fill, transparent: true, opacity: this.spatialStyles[i].opacity, side: THREE.DoubleSide, depthTest: false } );
+					const mesh = new THREE.Mesh(geom, mat);
+					this.hypersurface[0].push( mesh );
+					this.graph3d.scene().add( mesh );
+				});
+			}
+		});
+
+	}
+
+	/**
 	 * Highlight nodes/edges.
 	 * @param {Object} subgraph Edges, nodes and points to highlight.
 	 * @param {number} style Style to use in highlighting.
@@ -538,26 +577,37 @@ class Hypergraph3D {
 		let { nodes, links } = this.graph3d.graphData();
 
 		// Big Vertices
-		if ( subgraph.hasOwnProperty("p") ) {
+		if ( subgraph.hasOwnProperty("p") && subgraph['p'].length > 0 ) {
 			subgraph['p'].forEach( n => {
-				if ( typeof nodes[n] !== 'undefined' ) nodes[n].big = true;
+				if ( typeof nodes[n] !== 'undefined' ) {
+					nodes[n].big = true;
+					nodes[n].style = nodes[n].style | style;
+			 	}
 			});
 		}
 
 		// Vertices
-		if ( subgraph.hasOwnProperty("v") ) {
+		if ( subgraph.hasOwnProperty("v") && subgraph['v'].length > 0 ) {
 			subgraph['v'].forEach( n => {
 				if ( typeof nodes[n] !== 'undefined' ) nodes[n].style = nodes[n].style | style;
 			});
+			if ( subgraph['v'].length > 3 ) {
+				this.hypersurface[ style ].push( subgraph['v'] );
+				this.hypersurfaceUpdate();
+			}
 		}
 
 		// Hyperedges
-		if ( subgraph.hasOwnProperty("e") ) {
+		if ( subgraph.hasOwnProperty("e") && subgraph['e'].length > 0 ) {
 			subgraph['e'].forEach(e => {
 				Hypergraph3D.pairs(e).forEach( p => {
 					let idx = links.findIndex(l => l.source.id === p[0] && l.target.id === p[1] && !l.hyperedge );
 					if (idx !== -1) links[ idx ].style = links[ idx ].style | style;
 				});
+			});
+			const vertices = new Set( subgraph['e'].flat() );
+			vertices.forEach( n => {
+				if ( typeof nodes[n] !== 'undefined' ) nodes[n].style = nodes[n].style | style;
 			});
 		}
 
@@ -572,6 +622,8 @@ class Hypergraph3D {
 		let { nodes, links } = this.graph3d.graphData();
 		nodes.forEach( n => n.style = n.style & ~style );
 		links.forEach( l => l.style = l.style & ~style );
+		this.hypersurface[style].length = 0;
+		this.hypersurfaceUpdate();
 		this.graph3d.graphData({ nodes, links });
 	}
 
