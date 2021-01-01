@@ -2,7 +2,7 @@
 
 <img src="https://repository-images.githubusercontent.com/324783458/88643280-493e-11eb-87cb-910353f32066" width="600">
 
-Run it: https://met4citizen.github.io/Hypergraph/
+**Run it: https://met4citizen.github.io/Hypergraph/**
 
 A *hypergraph* is a generalization of a regular graph in which an edge (called *hyperedge*)
 can join any number of *nodes*. In a *hypergraph rewriting system* some initial
