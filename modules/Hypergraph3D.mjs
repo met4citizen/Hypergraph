@@ -1,5 +1,8 @@
 import { HypergraphRewritingSystem } from "./HypergraphRewritingSystem.mjs";
+
+import { BufferGeometry, BufferAttribute, MeshStandardMaterial, Mesh, DoubleSide, Vector3  } from 'https://threejs.org/build/three.module.js'
 import { ConvexBufferGeometry } from 'https://threejs.org/examples/jsm/geometries/ConvexGeometry.js';
+import { GLTFExporter } from 'https://threejs.org/examples/jsm/exporters/GLTFExporter.js';
 
 class Hypergraph3D {
 
@@ -177,12 +180,24 @@ class Hypergraph3D {
 				ret = this.data.random( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
 				break;
 			case "timeline": case "worldline":
-				if ( this.mode !== "causal" ) throw new Error("Timeline only available in causal mode.");
+				if ( this.mode !== "causal" ) throw new Error("Timeline only available in 'Time' mode.");
 				ret = this.data.worldline( parseInt(params[0]) );
 				break;
 			case "lightcone":
-				if ( this.mode !== "causal" ) throw new Error("Lightcones only available in causal mode.");
+				if ( this.mode !== "causal" ) throw new Error("Lightcones only available in 'Time' mode.");
 				ret = this.data.lightcone( parseInt(params[0]), parseInt(params[1]) );
+				break;
+			case "space":
+				if ( this.mode !== "spatial" ) throw new Error("Space only available in 'Space' mode.");
+				ret = this.data.space( parseInt(params[0]), parseInt(params[1]) );
+				isVertices = true;
+				numParams = 0;
+				break;
+			case "time":
+				if ( this.mode !== "causal" ) throw new Error("Time only available in 'Time' mode.");
+				ret = this.data.time( parseInt(params[0]), parseInt(params[1]) );
+				isVertices = true;
+				numParams = 0;
 				break;
 			default:
 				throw new Error( "Unknown command: " + func );
@@ -321,19 +336,19 @@ class Hypergraph3D {
 				} else {
 					// No self-loop
 					// Triangle
-					const geom = new THREE.BufferGeometry();
+					const geom = new BufferGeometry();
 					const positions = new Float32Array([
 						nodes[ edge[edge.length-1] ].x, nodes[ edge[edge.length-1] ].y, nodes[ edge[edge.length-1] ].z,
 						nodes[ edge[1] ].x, nodes[ edge[1] ].y, nodes[ edge[1] ].z,
 						nodes[ edge[0] ].x , nodes[ edge[0] ].y, nodes[ edge[0] ].z
 					]);
 					const normals = new Float32Array(9);
-					geom.setAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
-					geom.setAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
+					geom.setAttribute( 'position', new BufferAttribute( positions, 3 ) );
+					geom.setAttribute( 'normal', new BufferAttribute( normals, 3 ) );
 					geom.computeVertexNormals();
 
-	  			const mat = new THREE.MeshStandardMaterial( { color: this.spatialStyles[4].fill, transparent: true, opacity: this.spatialStyles[4].opacity, side: THREE.DoubleSide, depthTest: false } );
-	  			const mesh = new THREE.Mesh(geom, mat);
+	  			const mat = new MeshStandardMaterial( { color: this.spatialStyles[4].fill, transparent: true, opacity: this.spatialStyles[4].opacity, side: DoubleSide, depthTest: false } );
+	  			const mesh = new Mesh(geom, mat);
 	  			this.graph3d.scene().add(mesh);
 
 		  			// Hyperedge link
@@ -554,12 +569,12 @@ class Hypergraph3D {
 					let points = [];
 					vs.forEach( v => {
 						if ( typeof nodes[v] !== 'undefined' ) {
-							points.push( new THREE.Vector3( nodes[v].x, nodes[v].y, nodes[v].z ) );
+							points.push( new Vector3( nodes[v].x, nodes[v].y, nodes[v].z ) );
 						}
 					});
 					const geom = new ConvexBufferGeometry( points );
-					const mat = new THREE.MeshStandardMaterial( { color: this.spatialStyles[i].fill, transparent: true, opacity: this.spatialStyles[i].opacity, side: THREE.DoubleSide, depthTest: false } );
-					const mesh = new THREE.Mesh(geom, mat);
+					const mat = new MeshStandardMaterial( { color: this.spatialStyles[i].fill, transparent: true, opacity: this.spatialStyles[i].opacity, side: DoubleSide, depthTest: false } );
+					const mesh = new Mesh(geom, mat);
 					this.hypersurface[0].push( mesh );
 					this.graph3d.scene().add( mesh );
 				});
@@ -647,7 +662,7 @@ class Hypergraph3D {
 	 */
 	export( binary = true ) {
 		// Instantiate a exporter
-		const exporter = new THREE.GLTFExporter();
+		const exporter = new GLTFExporter();
 		const options = { onlyVisible: true, binary: binary };
 
 		exporter.parse( this.graph3d.scene(), function (result) {
