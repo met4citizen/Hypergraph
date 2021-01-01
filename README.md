@@ -18,7 +18,7 @@ website and read their [technical documents](https://www.wolframphysics.org/tech
 The web app uses [3d Force-Directed Graph](https://github.com/vasturiano/3d-force-graph)
 for representing graph structures, [ThreeJS](https://github.com/mrdoob/three.js/)/WebGL
 for 3D rendering and [d3-force-3d](https://github.com/vasturiano/d3-force-3d) for the
-physics engine.
+force engine.
 
 ## Rules
 
@@ -80,10 +80,10 @@ Command | Description | Examples
 `nball(center,radius,[dir],[rev])` | N-dimensional ball is a set of nodes and edges within a distance `radius` of a given node `center`.<br/><br/>`dir` = directed edges<br/>`rev` = reverse edge direction | `nball(0,4)`
 `nsphere(center,radius,[dir],[rev])` | N-dimensional sphere is a set of nodes within a distance `radius` of a given node `center`.<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | `nsphere(0,4)`
 `random(n,distance,[dir],[rev])` | Random walk starting from a specific node with some maximum `distance`.<br/><br/>`dir` = use directed edges<br/>`rev` = reverse direction | `random(1,100,dir)`
-`space(n1,n2)` | Space-like hypersurface including a range of nodes.<br/><br/>*Note: Only in `SPACE` mode* | `space(100,150)`
-`time(t1,t2)` | Time-like hypersurface include a range of iterations.<br/><br/>*Note: Only in `TIME` mode* | `time(300,350)`
-`worldline(n)` | Time-like curve of the space-like node.<br/><br/>*Note: Only in `TIME` mode* | `worldline(0)`
-`lightcone(n,length)` | Lightcone centered at node `n` with length `length`.<br/><br/>*Note: Only in `TIME` mode* | `lightcone(200,4)`
+`space(n1,n2)` | Space-like hypersurface based on a range of nodes. *Note: Only in `SPACE` mode* | `space(100,150)`
+`time(t1,t2)` | Time-like hypersurface based on a range of iterations. *Note: Only in `TIME` mode* | `time(300,350)`
+`worldline(n)` | Time-like curve of the space-like node. *Note: Only in `TIME` mode* | `worldline(0)`
+`lightcone(n,length)` | Lightcone centered at node `n` with size `length`. *Note: Only in `TIME` mode* | `lightcone(200,4)`
 
 ## Notes
 
