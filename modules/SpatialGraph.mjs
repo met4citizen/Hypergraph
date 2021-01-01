@@ -112,6 +112,20 @@ class SpatialGraph extends Hypergraph {
 	}
 
 	/**
+	 * Space-like hypersurface/slice.
+	 * @param {Vertex} v1 Starting point in space
+	 * @param {Vertex} v2 Ending point in space
+	 * @return {Vertex[]} Sapcelike hypersurface.
+	 */
+	space( v1, v2 ) {
+		const vertices = [];
+		for( let i = v1; i <= v2; i++ ) {
+			if ( this.V.has(i) ) vertices.push( i );
+		}
+		return vertices;
+	}
+
+	/**
 	 * Approximate dimension and curvature of a n-dimensional ball.
 	 * @param {Vertex} center Center of the n-ball
 	 * @return {Object} Dimension and curvature.
