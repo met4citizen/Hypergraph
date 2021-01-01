@@ -127,7 +127,7 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
     // Run the given rule
     $("#rule-run").on("click", function() {
       try {
-        $("#red, #blue, #reset, #playstop, #final").addClass('button-disabled');
+        $("#red, #blue, #reset, #playstop, #finalreheat").addClass('button-disabled');
 
         graph3d.stop();
         $("#progress-bar-fill").css("width", "0");
@@ -142,7 +142,7 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
           $("#progress-bar-fill").css("width", Math.min(100, Math.round( 100 * e / maxevents))+"%" );
         }, function() {
             $("#progress").hide();
-            $("#reset, #playstop, #final").removeClass('button-disabled').css("background-color","black");
+            $("#reset, #playstop, #finalreheat").removeClass('button-disabled').css("background-color","black");
             $("#rule-text").prop("contenteditable","false");
             $(".settings").hide();
             $("#topleft").css("pointer-events","none");
@@ -216,8 +216,8 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
         $("#red, #blue").addClass("button-disabled");
         $("#red-text, #blue-text").addClass("text-disabled");
         $("#playstop").removeClass("button-disabled").css("background-color","black");
-        $("#play").show();
-        $("#stop").hide();
+        $("#play, #final").show();
+        $("#stop, #reheat").hide();
       }
       catch(e) {
         alert(e);
@@ -244,6 +244,8 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
           graph3d.play( $(".fps-selected").data("value"), function() {
             $("#red, #blue").removeClass("button-disabled");
             $("#playstop").addClass("button-disabled").css("background-color","black");
+            $("#reheat").show();
+            $("#final").hide();
           });
           $("#playstop").css("background-color","darkred");
           $("#play").hide();
@@ -261,14 +263,13 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
     });
 
     // Final state
-    $("#final").on("click", function() {
+    $("#finalreheat").on("click", function() {
       try {
         graph3d.final();
         $("#red, #blue").removeClass("button-disabled");
         $("#playstop").addClass("button-disabled").css("background-color","black");;
-
-        $("#play").show();
-        $("#stop").hide();
+        $("#play, #reheat").show();
+        $("#stop, #final").hide();
       }
       catch(e) {
         alert(e);
@@ -294,55 +295,58 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
 </head>
 <body>
   <div id="topleft" class="controls noselect">
-    <span id ="rule" class="button">RULE</span>
+    <span title="Change rule" id ="rule" class="button">RULE</span>
       <span id="rule-text" class="text" spellcheck="false">(1,1,2)(2,3,4)->(1,5,4)(2,5,3)(5,5,4)<br>(1,1,1)(1,1,1)</span><br/>
     <div id="rule-settings" class="settings">
       <span class="label down">Rule order</span>
-        <span class="option ruleordering ruleordering-selected" data-value="mixed">MIX</span>
-        <span class="option ruleordering" data-value="index">NDX</span>
-        <span class="option ruleordering" data-value="indexrev">REV</span>
+        <span title="Mix rules" class="option ruleordering ruleordering-selected" data-value="mixed">MIX</span>
+        <span title="Index order" class="option ruleordering" data-value="index">NDX</span>
+        <span title="Reverse index" class="option ruleordering" data-value="indexrev">REV</span>
       <span class="label down">Event order</span>
-        <span class="option eventordering eventordering-selected" data-value="random">RND</span>
-        <span class="option eventordering" data-value="old">OLD</span>
-        <span class="option eventordering" data-value="new">NEW</span>
+        <span title="Randomize events" class="option eventordering eventordering-selected" data-value="random">RND</span>
+        <span title="Replace oldest" class="option eventordering" data-value="old">OLD</span>
+        <span title="Replace latest" class="option eventordering" data-value="new">NEW</span>
       <span class="label down">Size</span>
-        <span class="option limit limit-selected" data-value="500">500</span>
-        <span class="option limit" data-value="1000">1K</span>
-        <span class="option limit" data-value="2000">2K</span>
+        <span title="Max 500" class="option limit limit-selected" data-value="500">500</span>
+        <span title="Max 1000" class="option limit" data-value="1000">1K</span>
+        <span title="Max 2000" class="option limit" data-value="2000">2K</span>
       <span class="label down">Rule</span>
-        <span id ="rule-check" class="button">CHECK</span>
-        <span id ="rule-run" class="button">RUN</span>
+        <span title="Format rule" id ="rule-check" class="button">CHECK</span>
+        <span title="Run rule" id ="rule-run" class="button">RUN</span>
     </div>
     <span id="red" class="button button-disabled">RED</span>
       <span id="red-text" class="text text-disabled" spellcheck="false">geodesic(0,10,all)</span><br/>
     <div id="red-settings" class="settings">
       <span class="label down">Highlight</span>
-        <span id="red-show" class="button">SHOW</span>
-        <span id="red-hide" class="button">HIDE</span>
+        <span title="Show red" id="red-show" class="button">SHOW</span>
+        <span title="Hide red" id="red-hide" class="button">HIDE</span>
     </div>
     <span id="blue" class="button button-disabled">BLUE</span>
       <span id="blue-text" class="text text-disabled" spellcheck="false">nball(0,4)</span><br/>
     <div id="blue-settings" class="settings">
       <span class="label down">Highlight</span>
-        <span id ="blue-show" class="button">SHOW</span>
-        <span id ="blue-hide" class="button">HIDE</span>
+        <span title="Show blue" id ="blue-show" class="button">SHOW</span>
+        <span title="Hide blue" id ="blue-hide" class="button">HIDE</span>
     </div>
   </div>
   <div id="topright" class="controls noselect">
     <span class="label down">Mode</span>
-      <span class="option mode mode-selected" data-value="spatial">SPACE</span>
-      <span class="option mode" data-value="causal">TIME</span>
+      <span title="Spatial graph" class="option mode mode-selected" data-value="spatial">SPACE</span>
+      <span title="Causal graph" class="option mode" data-value="causal">TIME</span>
     <span class="label down">Simulation</span>
-      <span id="reset" class="button button-disabled"><svg viewBox="0 0 32 14"><polygon fill="white" points="12,3 14,3 14,11 12,11"/><polygon fill="white" points="14,7 20,3 20,11" /></svg></span>
-      <span id="playstop" class="button button-disabled"><svg id="play" viewBox="0 0 32 16"><polygon fill="white" points="14,3 14,11 20,7"/></svg><svg id="stop" viewBox="0 0 32 14"><polygon fill="white" points="12,3 15,3 15,11 12,11"/><polygon fill="white" points="17,3 20,3 20,11 17,11"/></svg></span>
-      <span id="final" class="button button-disabled"><svg viewBox="0 0 32 14"><polygon fill="white" points="12,3 12,11 18,7"/><polygon fill="white" points="18,3 20,3 20,11 18,11" /></svg></span>
+      <span title="Reset" id="reset" class="button button-disabled"><svg viewBox="0 0 32 14"><polygon fill="white" points="12,3 14,3 14,11 12,11"/><polygon fill="white" points="14,7 20,3 20,11" /></svg></span>
+      <span title="Play/pause" id="playstop" class="button button-disabled"><svg id="play" viewBox="0 0 32 16"><polygon fill="white" points="14,3 14,11 20,7"/></svg><svg id="stop" viewBox="0 0 32 14"><polygon fill="white" points="12,3 15,3 15,11 12,11"/><polygon fill="white" points="17,3 20,3 20,11 17,11"/></svg></span>
+      <span title="End/reheat" id="finalreheat" class="button button-disabled">
+        <svg id="reheat" viewBox="0 0 32 14"><path fill="white" d="M16.1 10.2c-2 0-3-1-3.1-3S14 4 15.7 3.9c1.8-.1 2.1 1.1 2.1 1.1L16.7 6.3h4V2.5l-1.3 1C18.4 2.4 17.5 2 16 2C13 2 11 4 11 7S12.9 11.8 16 12c3.1-.3 4.2-2 4.5-4h-2.1c-.3 1.2-1 2-2.3 2.2z"/></svg>
+        <svg id="final" viewBox="0 0 32 14"><polygon fill="white" points="12,3 12,11 18,7"/><polygon fill="white" points="18,3 20,3 20,11 18,11" /></svg>
+      </span>
     <span class="label down">Speed</span>
-      <span class="option fps" data-value="300">SLOW</span>
-      <span class="option fps fps-selected" data-value="250">FAST</span>
+      <span title="Low fps" class="option fps" data-value="300">SLOW</span>
+      <span title="High fps" class="option fps fps-selected" data-value="250">FAST</span>
   </div>
   <div id="bottomleft" class="controls noselect">
       <span class="label up">Docs</span>
-      <span class="label"><a href="https://github.com/met4citizen/Hypergraph" target="_blank">github</a></span>
+      <span title="Source/docs" class="label"><a href="https://github.com/met4citizen/Hypergraph" target="_blank">github</a></span>
       <span class="label up">Mouse</span>
       <span class="label">left-rotate wheel-zoom right-pan</span>
   </div>
@@ -353,8 +357,8 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
       <span id="blue-result" class="label status"></span>
     <span id="status"></span>
     <span class="label up">Download</span>
-    <span id="glb" class="button">GLB</span>
-    <span id="gltf" class="button">GLTF</span>
+    <span title="Download GLB" id="glb" class="button">GLB</span>
+    <span title="Download glTF" id="gltf" class="button">GLTF</span>
   </div>
   <div id="3d-graph" class="noselect"></div>
   <div id="progress" class="noselect"><span id="progress-label" class="label">Rewriting</span><div id="progress-bar"><span id="progress-bar-fill"></span></div><span id="cancel" class="button">STOP</span></div>
