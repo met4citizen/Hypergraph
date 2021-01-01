@@ -251,7 +251,8 @@ class HypergraphRewritingSystem {
 	 * @return {Object} Status of the spatial graph.
 	 */
 	status() {
-		return { secs: (this.duration / 1000).toLocaleString(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 1 }) };
+		return {};
+		// return { secs: (this.duration / 1000).toLocaleString(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 1 }) };
 	}
 
 }
