@@ -264,6 +264,10 @@ class Hypergraph3D {
 			.cooldownTime( 5000 )
 			.onEngineStop( () => { this.hypersurfaceUpdate(); } );
 		this.linkforcestrength = this.graph3d.d3Force("link").strength();
+		if ( typeof this.hyperedgematerial !== 'undefined' ) {
+			this.hyperedgematerial.dispose();
+		}
+		this.hyperedgematerial = new MeshStandardMaterial( { color: this.spatialStyles[4].fill, transparent: true, opacity: this.spatialStyles[4].opacity, side: DoubleSide, depthTest: false } );
 	}
 
 	/**
@@ -347,8 +351,7 @@ class Hypergraph3D {
 					geom.setAttribute( 'normal', new BufferAttribute( normals, 3 ) );
 					geom.computeVertexNormals();
 
-	  			const mat = new MeshStandardMaterial( { color: this.spatialStyles[4].fill, transparent: true, opacity: this.spatialStyles[4].opacity, side: DoubleSide, depthTest: false } );
-	  			const mesh = new Mesh(geom, mat);
+	  			const mesh = new Mesh(geom, this.hyperedgematerial );
 	  			this.graph3d.scene().add(mesh);
 
 		  			// Hyperedge link
@@ -386,7 +389,6 @@ class Hypergraph3D {
 					// Remove filled hyperedge
 					this.graph3d.scene().remove( links[ idx ].mesh );
 					links[ idx ].mesh.geometry.dispose();
-					links[ idx ].mesh.material.dispose();
 					links[ idx ].mesh = undefined;
 
 					// Remove link
@@ -418,7 +420,6 @@ class Hypergraph3D {
 			if ( l.hyperedge ) {
 				this.graph3d.scene().remove( l.mesh );
 				l.mesh.geometry.dispose();
-				l.mesh.material.dispose();
 				l.mesh = undefined;
 			}
 		});
@@ -566,7 +567,7 @@ class Hypergraph3D {
 				h.length = 0;
 			} else {
 				h.forEach( vs => {
-					let points = [];
+					const points = [];
 					vs.forEach( v => {
 						if ( typeof nodes[v] !== 'undefined' ) {
 							points.push( new Vector3( nodes[v].x, nodes[v].y, nodes[v].z ) );
