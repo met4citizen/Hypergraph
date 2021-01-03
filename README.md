@@ -13,9 +13,9 @@ canonical form.
 
 For more information about hypergraph rewriting systems and their potential to
 represent fundamental physics visit [The Wolfram Physics Project](https://www.wolframphysics.org)
-website. According to [technical documents](https://www.wolframphysics.org/technical-documents/)
-certain models exhibiting the Church-Rosser property (causal invariance) reproduce key features of
-both quantum mechanics and special/general relativity.
+website. According to their [technical documents](https://www.wolframphysics.org/technical-documents/)
+certain models exhibiting the Church-Rosser property (causal invariance) reproduce key
+features of both quantum mechanics and special/general relativity.
 
 The web app uses [3d Force-Directed Graph](https://github.com/vasturiano/3d-force-graph)
 for representing graph structures, [ThreeJS](https://github.com/mrdoob/three.js/)/WebGL
