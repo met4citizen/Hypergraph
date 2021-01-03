@@ -34,7 +34,7 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
 .limit, .ruleordering, .eventordering { width: 20px; }
 .fps-selected, .mode-selected, .ruleordering-selected, .eventordering-selected, .limit-selected { border: 1px solid grey; }
 .label { display: inline-block; line-height: 16px; font-size: 8px; font-weight: bold; text-align:left; text-transform: uppercase; color: grey; margin: 2px; }
-#paused span { color: black; background-color: white; }
+#paused span { background-color: white; }
 .status { min-width: 38px; }
 .up { position: absolute; transform: translateY(-15px); z-index: -1; }
 .down { position: absolute; transform: translateY(15px); z-index: -1; }
@@ -85,13 +85,14 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
 
     // Pause animation
     $("#paused").on("paused:pause", function() {
+      if ( activityTimer ) clearTimeout( activityTimer );
       hypergraph.graph3d.pauseAnimation();
       $("#paused").show();
-      if ( activityTimer ) clearTimeout( activityTimer );
     });
 
     // Resume animation
     $("#paused").on("paused:resume click", function() {
+      if ( activityTimer ) clearTimeout( activityTimer );
       hypergraph.graph3d.resumeAnimation();
       $(".text").prop("contenteditable","false");
       $(".settings").hide();
@@ -99,12 +100,11 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
       $("#paused").hide();
 
       // Pause if camera position hasn't changed for 5 secs
-      if ( activityTimer ) clearTimeout( activityTimer );
       activityTimer = setTimeout( function activityMonitor() {
         const cp = hypergraph.graph3d.cameraPosition();
-        const hash = cp["x"] + cp["y"] + cp["z"];
+        const hash = Math.round( (cp["x"] + cp["y"] + cp["z"]) * 100000 + Number.EPSILON ) / 100000;
+        console.log(hash);
         if ( $("#play").is(":visible") && hash === activityHash ) {
-          activityTimer = 0;
           $("#paused").trigger("paused:pause");
         } else {
           activityHash = hash;
