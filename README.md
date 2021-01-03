@@ -4,10 +4,10 @@
 
 **Run it: https://met4citizen.github.io/Hypergraph/**
 
-A *hypergraph* is a generalization of a regular graph in which an edge (called *hyperedge*)
-can join any number of *nodes*. In a *hypergraph rewriting system* some initial
-state is transformed incrementally by making a series of *updating events* that follow
-some abstract *rewriting rule*. That is, by following a given rule, subhypergraphs
+A hypergraph is a generalization of a regular graph in which an edge (called hyperedge)
+can join any number of nodes. In a hypergraph rewriting system some initial
+state is transformed incrementally by making a series of updating events that follow
+some abstract rewriting rule. That is, by following a given rule, subhypergraphs
 with particular canonical form are replaced with other subhypergraphs with different
 canonical form.
 
@@ -77,20 +77,20 @@ and using one or more of the following commands:
 Command | Description | Examples
 --- | --- | ---
 `geodesic(n1,n2,[dir],[rev],[all])` | Shortest path between two nodes.<br/><br/>`dir` = directed edges<br/>`rev` = reverse edge direction<br/>`all` = show all shortest paths | `geodesic(0,10)`<br/>`geodesic(10,200,all)`
-`nball(center,radius,[dir],[rev])` | N-dimensional ball is a set of nodes and edges within a distance `radius` of a given node `center`.<br/><br/>`dir` = directed edges<br/>`rev` = reverse edge direction | `nball(0,4)`
-`nsphere(center,radius,[dir],[rev])` | N-dimensional sphere is a set of nodes within a distance `radius` of a given node `center`.<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | `nsphere(0,4)`
-`random(n,distance,[dir],[rev])` | Random walk starting from a specific node with some maximum `distance`.<br/><br/>`dir` = use directed edges<br/>`rev` = reverse direction | `random(1,100,dir)`
-`space(n1,n2)` | Space-like hypersurface based on a range of nodes. *Note: Only in `SPACE` mode* | `space(100,150)`
-`time(t1,t2)` | Time-like hypersurface based on a range of iterations. *Note: Only in `TIME` mode* | `time(300,350)`
-`worldline(n)` | Time-like curve of the space-like node. *Note: Only in `TIME` mode* | `worldline(0)`
-`lightcone(n,length)` | Lightcone centered at node `n` with size `length`. *Note: Only in `TIME` mode* | `lightcone(200,4)`
+`nball(center,radius,[dir],[rev])` | N-dimensional ball is a set of nodes and edges within a distance `radius` of a given node `center`. | `nball(0,4)`
+`nsphere(center,radius,[dir],[rev])` | N-dimensional sphere is a set of nodes within a distance `radius` of a given node `center`. | `nsphere(0,4)`
+`random(n,distance,[dir],[rev])` | Random walk starting from a specific node with some maximum `distance`. | `random(1,100,dir)`
+`space(n1,n2)` | Space-like hypersurface based on a range of nodes. *Only in `SPACE` mode* | `space(100,150)`
+`time(t1,t2)` | Time-like hypersurface based on a range of iterations. *Only in `TIME` mode* | `time(300,350)`
+`worldline(n)` | Time-like curve of the space-like node. *Only in `TIME` mode* | `worldline(0)`
+`lightcone(n,length)` | Lightcone centered at node `n` with size `length`. *Only in `TIME` mode* | `lightcone(200,4)`
 
 ## Notes
 
 During the rewriting process there are often several overlapping matches for the left-hand side part
-of the rule. In these cases *event ordering* setting is used to decide which of the overlapping matches
+of the rule. In these cases event ordering setting is used to decide which of the overlapping matches
 are replaced and which are ignored. In physical reality, however, all such matches would be replaced
-giving rise to quantum mechanics. This means that the simulator shows only one possible *classical*
+giving rise to quantum mechanics. This means that the simulator shows only one possible classical
 evolution of the hypergraph.
 
 
