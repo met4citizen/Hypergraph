@@ -103,7 +103,6 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
       activityTimer = setTimeout( function activityMonitor() {
         const cp = hypergraph.graph3d.cameraPosition();
         const hash = Math.round( (cp["x"] + cp["y"] + cp["z"]) * 100000 + Number.EPSILON ) / 100000;
-        console.log(hash);
         if ( $("#play").is(":visible") && hash === activityHash ) {
           $("#paused").trigger("paused:pause");
         } else {
@@ -201,6 +200,7 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
           const result = hypergraph.execute( command );
           hypergraph.setHighlight( result , i+1 );
           $(x+"-result").text( '['+result.r.toString()+']' );
+          $(x+"-text").removeClass("text-disabled");
           $("#paused").trigger("paused:resume");
         }
         catch(e) {
@@ -211,6 +211,7 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
         try {
           hypergraph.clearHighlight( i+1 );
           $(x+"-result").text("");
+          $(x+"-text").addClass("text-disabled");
           $("#paused").trigger("paused:resume");
         }
         catch(e) {
