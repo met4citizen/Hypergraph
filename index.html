@@ -20,13 +20,13 @@ a { cursor: pointer; pointer-events: auto; }
 #bottomright { bottom:0; right:0; text-align: right; }
 #paused { position: fixed; z-index: 2; top:0; left:0; bottom:0; right:0; text-align: center; background-color: transparent; display:none; }
 #logo { margin: 3px; padding: 3px; position: fixed; z-index: 3; opacity: 0.7; bottom: 0; left: 0; width: 32px; height: 32px; }
-.button { display: inline-block; margin: 0; padding: 0; background-color: black; color: white; width: 32px; height: 14px; border: 1px solid black; border-radius: 3px; font-size: 8px; font-weight: bold; line-height:14px; text-align: center; vertical-align: middle; cursor: pointer; pointer-events: auto; }
+.button { display: inline-block; margin: 1px 0 1px 0; padding: 0; background-color: black; color: white; width: 32px; height: 14px; border: 1px solid black; border-radius: 3px; font-size: 8px; font-weight: bold; line-height:14px; text-align: center; vertical-align: middle; cursor: pointer; pointer-events: auto; }
 .button:active { opacity: 0.2; }
 .button-disabled { opacity: 0.2; pointer-events: none; }
 #red { background-color: hotpink; border-color: hotpink; }
 #blue { background-color: deepskyblue; border-color: deepskyblue; }
 #cancel { float: right; margin: 0 0 0 10px; padding: 0;}
-.text { display: inline-block; margin: 1px 0 0 3px; padding: 0 5px; background-color: transparent; color: black; width: auto; line-height: 16px; font-size: 10px; font-weight: bold; text-align:left; text-transform: lowercase; vertical-align: top; }
+.text { display: inline-block; margin: 0 0 0 3px; padding: 0 5px; background-color: transparent; color: black; width: auto; line-height: 16px; font-size: 10px; font-weight: bold; text-align:left; text-transform: lowercase; vertical-align: top; }
 .text-disabled { opacity: 0.2; }
 .text[contenteditable="true"] { min-width: 320px; -webkit-touch-callout: text; -webkit-user-select: text; -khtml-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; opacity: 1; }
 div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
@@ -34,7 +34,7 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
 .limit, .ruleordering, .eventordering { width: 20px; }
 .fps-selected, .mode-selected, .ruleordering-selected, .eventordering-selected, .limit-selected { border: 1px solid grey; }
 .label { display: inline-block; line-height: 16px; font-size: 8px; font-weight: bold; text-align:left; text-transform: uppercase; color: grey; margin: 2px; }
-#paused span { background-color: white; }
+#paused span { background-color: white; padding: 0 10px; }
 .status { min-width: 38px; }
 .up { position: absolute; transform: translateY(-15px); z-index: -1; }
 .down { position: absolute; transform: translateY(15px); z-index: -1; }
