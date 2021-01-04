@@ -57,7 +57,7 @@ Some rules to try out (copy-paste the rule part and change the setting if specif
 
 ## Simulation
 
-Simulation supports two modes: `Space` and `Time`.
+Simulation currently supports two modes: `Space` and `Time`.
 
 In `Space` mode the system simulates the evolution of the spatial hypergraph.
 According to the Wolfram Model, the spatial hypergraph represents a spacelike
@@ -69,7 +69,7 @@ Wolfram Model, the flux of causal edges through spacelike and timelike hypersurf
 is related to energy and momentum respectively.
 
 Media control buttons let you rewind to the beginning, start/pause simulation and
-skip to the end. `Speed` sets the frame rate.
+skip to the end / reheat. `Speed` sets the frame rate.
 
 ## Highlighting
 
@@ -80,12 +80,12 @@ Command | Description | Examples
 --- | --- | ---
 `geodesic(n1,n2,[dir],[rev],[all])` | Shortest path between two nodes.<br/><br/>`dir` = directed edges<br/>`rev` = reverse edge direction<br/>`all` = show all shortest paths | `geodesic(0,10)`<br/>`geodesic(10,200,all)`
 `nball(center,radius,[dir],[rev])` | N-dimensional ball is a set of nodes and edges within a distance `radius` of a given node `center`. | `nball(0,4)`
-`nsphere(center,radius,[dir],[rev])` | N-dimensional sphere is a set of nodes within a distance `radius` of a given node `center`. | `nsphere(0,4)`
+`nsphere(center,radius,[dir],[rev])` | N-dimensional sphere/hypersurface is a set of nodes within a distance `radius` of a given node `center`. | `nsphere(0,4)`
 `random(n,distance,[dir],[rev])` | Random walk starting from a specific node with some maximum `distance`. | `random(1,100,dir)`
-`space(n1,n2)` | Space-like hypersurface based on a range of nodes. *Only in `SPACE` mode* | `space(100,150)`
-`time(t1,t2)` | Time-like hypersurface based on a range of iterations. *Only in `TIME` mode* | `time(300,350)`
-`worldline(n)` | Time-like curve of the space-like node. *Only in `TIME` mode* | `worldline(0)`
-`lightcone(n,length)` | Lightcone centered at node `n` with size `length`. *Only in `TIME` mode* | `lightcone(200,4)`
+`space(n1,n2)` | Space-like hypersurface based on a range of nodes. `SPACE` mode only. | `space(100,150)`
+`time(t1,t2)` | Time-like hypersurface based on a range of iterations. `TIME` mode only. | `time(300,350)`
+`worldline(n)` | Time-like curve of the space-like node. `TIME` mode only. | `worldline(0)`
+`lightcone(n,length)` | Lightcone centered at node `n` with size `length`. `TIME` mode only. | `lightcone(200,4)`
 
 ## Notes
 
