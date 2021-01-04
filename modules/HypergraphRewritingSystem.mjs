@@ -55,7 +55,7 @@ class HypergraphRewritingSystem {
 		if ( this.rules.length == 0 ) throw new Error("No rules.");
 
 		// Check each edge for hit
-		this.matches = [];
+		this.matches.length = 0;
 		for( let e of graph.E.values() ) {
 			let edge = e.edge;
 
@@ -181,9 +181,13 @@ class HypergraphRewritingSystem {
 
 		// Break when there were no more matches or the limit was reached
 		if ( this.matches.length === 0 || this.eventcnt >= this.maxevents ) {
+			this.matches.length = 0;
 			if ( this.finishedfn ) this.finishedfn();
 			return;
 		}
+
+		// Empty matches
+		this.matches.length = 0;
 
 		// Continue to run after a short delay
 		setTimeout( this.rewrite, this.rewritedelay );
@@ -216,7 +220,7 @@ class HypergraphRewritingSystem {
 		// Initialize system
 		this.spatial.clear();
 		this.causal.clear();
-		this.matches = [];
+		this.matches.length = 0;
 		this.duration = 0;
 		this.eventcnt = 0;
 		this.step = 0;
