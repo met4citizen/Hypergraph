@@ -145,7 +145,12 @@ class Hypergraph {
 			const m = gen.next( a );
 			if ( m.done ) break;
 			const b = m.value[ Math.floor( Math.random() * m.value.length ) ];
-			path.push( [ a[0], b ] );
+			if ( dir || this.V.get( a[0] ).out.includes( b) ) {
+				path.push( [ a[0], b ] );
+			} else {
+				path.push( [ b, a[0] ] );
+			}
+
 			a = [ b ];
 		}
 		return path;
