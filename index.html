@@ -81,6 +81,7 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
 
     // Activity monitoring
     let activityTimer = 0;
+    const activityTimeoutMillis = 5000;
     let activityHash = 0;
 
     // Pause animation
@@ -99,7 +100,7 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
       $("#topleft").css("pointer-events","none");
       $("#paused").hide();
 
-      // Pause if camera position hasn't changed for 5 secs
+      // Pause if camera position hasn't changed
       activityTimer = setTimeout( function activityMonitor() {
         const cp = hypergraph.graph3d.cameraPosition();
         const hash = Math.round( (cp["x"] + cp["y"] + cp["z"]) * 100000 + Number.EPSILON ) / 100000;
@@ -107,9 +108,9 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
           $("#paused").trigger("paused:pause");
         } else {
           activityHash = hash;
-          activityTimer = setTimeout( activityMonitor, 5000 );
+          activityTimer = setTimeout( activityMonitor, activityTimeoutMillis );
         }
-      }, 5000);
+      }, activityTimeoutMillis );
     });
 
     // Window resize event, update graph dimensions
@@ -358,7 +359,7 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
         <span title="Hide red" id="red-hide" class="button">HIDE</span>
     </div>
     <span id="blue" class="button button-disabled">BLUE</span>
-      <span id="blue-text" class="text text-disabled" spellcheck="false">nball(0,4)</span><br/>
+      <span id="blue-text" class="text text-disabled" spellcheck="false">nsphere(0,3)</span><br/>
     <div id="blue-settings" class="settings">
       <span class="label down">Highlight</span>
         <span title="Show blue" id ="blue-show" class="button">SHOW</span>
