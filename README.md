@@ -1,6 +1,6 @@
 # Hypergraph Rewriting System
 
-<img src="screenshot.jpg" width="600">
+<img src="screenshot.jpg" width="512">
 
 **Run it: https://met4citizen.github.io/Hypergraph/**
 
