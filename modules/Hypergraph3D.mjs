@@ -206,7 +206,7 @@ class Hypergraph3D {
 			for( let i = 0; i < numParams; i++ ) p.push( params[i] );
 			r.push( ret.length );
 			if ( isVertices ) {
-				v = [ ...new Set( [ ...v, ...ret ] ) ];
+				v.push( ret );
 			} else {
 				e = [ ...new Set( [ ...e, ...ret ] ) ];
 			}
@@ -593,39 +593,35 @@ class Hypergraph3D {
 		let { nodes, links } = this.graph3d.graphData();
 
 		// Big Vertices
-		if ( subgraph.hasOwnProperty("p") && subgraph['p'].length > 0 ) {
-			subgraph['p'].forEach( n => {
-				if ( typeof nodes[n] !== 'undefined' ) {
-					nodes[n].big = true;
-					nodes[n].style = nodes[n].style | style;
-			 	}
-			});
-		}
+		subgraph['p'].forEach( n => {
+			if ( typeof nodes[n] !== 'undefined' ) {
+				nodes[n].big = true;
+				nodes[n].style = nodes[n].style | style;
+		 	}
+		});
 
 		// Vertices
-		if ( subgraph.hasOwnProperty("v") && subgraph['v'].length > 0 ) {
-			subgraph['v'].forEach( n => {
+		subgraph['v'].forEach( v => {
+			v.forEach( n => {
 				if ( typeof nodes[n] !== 'undefined' ) nodes[n].style = nodes[n].style | style;
 			});
-			if ( subgraph['v'].length > 3 ) {
-				this.hypersurface[ style ].push( subgraph['v'] );
+			if ( v.length > 3 ) {
+				this.hypersurface[ style ].push( v );
 				this.hypersurfaceUpdate();
 			}
-		}
+		});
 
 		// Hyperedges
-		if ( subgraph.hasOwnProperty("e") && subgraph['e'].length > 0 ) {
-			subgraph['e'].forEach(e => {
-				Hypergraph3D.pairs(e).forEach( p => {
-					let idx = links.findIndex(l => l.source.id === p[0] && l.target.id === p[1] && !l.hyperedge );
-					if (idx !== -1) links[ idx ].style = links[ idx ].style | style;
-				});
+		subgraph['e'].forEach(e => {
+			Hypergraph3D.pairs(e).forEach( p => {
+				let idx = links.findIndex(l => l.source.id === p[0] && l.target.id === p[1] && !l.hyperedge );
+				if (idx !== -1) links[ idx ].style = links[ idx ].style | style;
 			});
-			const vertices = new Set( subgraph['e'].flat() );
-			vertices.forEach( n => {
-				if ( typeof nodes[n] !== 'undefined' ) nodes[n].style = nodes[n].style | style;
-			});
-		}
+		});
+		const vertices = [ ...new Set( subgraph['e'].flat() ) ];
+		vertices.forEach( n => {
+			if ( typeof nodes[n] !== 'undefined' ) nodes[n].style = nodes[n].style | style;
+		});
 
 		this.graph3d.graphData({ nodes, links });
 	}
