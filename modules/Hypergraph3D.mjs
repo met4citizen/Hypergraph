@@ -7,9 +7,9 @@ import { GLTFExporter } from 'https://threejs.org/examples/jsm/exporters/GLTFExp
 class Hypergraph3D {
 
 	/**
-	 * Creates an instance of Hypergraph3D.
-	 * @constructor
-	 */
+	* Creates an instance of Hypergraph3D.
+	* @constructor
+	*/
 	constructor() {
 		this.hrs = new HypergraphRewritingSystem();
 		this.graph3d = ForceGraph3D({ rendererConfig: { antialias: true, precision: "lowp" }});
@@ -22,11 +22,11 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Make pairs of an array, used to break hyperedges into pairs of two.
-	 * @static
-	 * @param {number[]} arr Array of numbers
-	 * @return {number[][]} Array of pairs of numbers.
-	 */
+	* Make pairs of an array, used to break hyperedges into pairs of two.
+	* @static
+	* @param {number[]} arr Array of numbers
+	* @return {number[][]} Array of pairs of numbers.
+	*/
 	static pairs( arr ) {
 		const result = [];
 		for ( let i = 0; i < (arr.length - 1); i++ ) result.push( [ arr[i], arr[i+1] ] );
@@ -34,35 +34,35 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 * @static
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
-	 */
+	* Test whether array of numbers has duplicate values.
+	* @static
+	* @param {numbers[]} edge Array of vertices
+	* @return {boolean} True if array has duplicates.
+	*/
 	static hasDuplicates( arr ) {
 		return ( arr.length !== new Set( arr ).size );
 	}
 
 	/**
-	 * Parse string based rules to array structure.
-	 * @param {string} r Rule string
-	 * @return {Rules} Rules.
-	 */
+	* Parse string based rules to array structure.
+	* @param {string} r Rule string
+	* @return {Rules} Rules.
+	*/
 	static parseRules( r ) {
 		// Change parenthesis types and remove extra ones
 		r = r.toLowerCase()
-			.replace( /\{|\[/g , "(" ).replace( /}|]/g , ")" )
-			.replace( /(\()+/g , "(" ).replace( /(\))+/g , ")" );
+		.replace( /\{|\[/g , "(" ).replace( /}|]/g , ")" )
+		.replace( /(\()+/g , "(" ).replace( /(\))+/g , ")" );
 
 		// Discard all unsupported characters
 		r = r.replace( /[^()a-z0-9,;>]+/g , "" );
 
 		// To json format, '>' is the separator between lhr/rhs
 		r = r.replace( /\),\(/g , ")(" )
-			.replace( /^\(/g , "[{\"lhs\": [[\"" ).replace( /,/g , "\",\"" )
-			.replace( /\);\(/g , "\"]]},{\"lhs\": [[\"" )
-			.replace( /\)>\(/g , "\"]],\"rhs\": [[\"" )
-			.replace( /\)\(/g , "\"],[\"" ).replace( /\)$/g , "\"]]}]" );
+		.replace( /^\(/g , "[{\"lhs\": [[\"" ).replace( /,/g , "\",\"" )
+		.replace( /\);\(/g , "\"]]},{\"lhs\": [[\"" )
+		.replace( /\)>\(/g , "\"]],\"rhs\": [[\"" )
+		.replace( /\)\(/g , "\"],[\"" ).replace( /\)$/g , "\"]]}]" );
 
 		// Nulls
 		r = r.replace( /\[\[\"\"\]\]/g , "[]" );
@@ -92,25 +92,25 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Callback for rewriting progress update.
-	 * @callback progressfn
-	 * @param {numeric} eventcnt Number of events processed.
-	 */
-
-	 /**
-	 * Callback for rewriting process finished.
-	 * @callback finishedfn
-	 */
+	* Callback for rewriting progress update.
+	* @callback progressfn
+	* @param {numeric} eventcnt Number of events processed.
+	*/
 
 	/**
-	 * Run abstract rewriting rules.
-	 * @param {string} rulestring Rule string
-	 * @param {string} [ruleOrdering="mixed"] Rewriting rules
-	 * @param {string} [eventOrdering="random"] Rewriting rules
-	 * @param {number} [maxevents=500] Rewriting rules
-	 * @param {progressfn} progressfn Progress update callback function
-	 * @param {finishedfn} finishedfn Rewriting finished callback function
-	 */
+	* Callback for rewriting process finished.
+	* @callback finishedfn
+	*/
+
+	/**
+	* Run abstract rewriting rules.
+	* @param {string} rulestring Rule string
+	* @param {string} [ruleOrdering="mixed"] Rewriting rules
+	* @param {string} [eventOrdering="random"] Rewriting rules
+	* @param {number} [maxevents=500] Rewriting rules
+	* @param {progressfn} progressfn Progress update callback function
+	* @param {finishedfn} finishedfn Rewriting finished callback function
+	*/
 	run( rulestring, ruleOrdering = "mixed", eventOrdering = "random", maxevents = 500, progressfn = null, finishedfn = null ) {
 
 		let rules, initial;
@@ -134,22 +134,22 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Cancel rewrite process.
-	 */
+	* Cancel rewrite process.
+	*/
 	cancel() {
 		this.hrs.cancel();
 	}
 
 	/**
-	 * Run commands given in string format.
-	 * @param {string} str Commands in string format
-	 * @return {Object} Edges, vertices, points and results.
-	 */
+	* Run commands given in string format.
+	* @param {string} str Commands in string format
+	* @return {Object} Edges, vertices, points and results.
+	*/
 	execute( str ) {
 		// Change parenthesis types and remove extra ones
 		str = str.toLowerCase()
-			.replace( /\{|\[/g , "(" ).replace( /}|]/g , ")" )
-			.replace( /(\()+/g , "(" ).replace( /(\))+/g , ")" );
+		.replace( /\{|\[/g , "(" ).replace( /}|]/g , ")" )
+		.replace( /(\()+/g , "(" ).replace( /(\))+/g , ")" );
 
 		// Discard all unsupported characters
 		str = str.replace( /[^()a-z0-9,.-;]+/g , "" );
@@ -165,41 +165,41 @@ class Hypergraph3D {
 			numParams = 1;
 
 			switch( func ) {
-			case "path": case "line": case "geodesic":
+				case "path": case "line": case "geodesic":
 				ret = this.data.geodesic( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev"), params.includes("all") ).flat();
 				numParams = 2;
 				break;
-			case "nsphere": case "sphere":
+				case "nsphere": case "sphere":
 				ret = this.data.nsphere( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
 				isVertices = true;
 				break;
-			case "nball": case "ball": case "tree":
+				case "nball": case "ball": case "tree":
 				ret = this.data.nball( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
 				break;
-			case "random": case "walk":
+				case "random": case "walk":
 				ret = this.data.random( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
 				break;
-			case "timeline": case "worldline":
+				case "timeline": case "worldline":
 				if ( this.mode !== "causal" ) throw new Error("Timeline only available in 'Time' mode.");
 				ret = this.data.worldline( parseInt(params[0]) );
 				break;
-			case "lightcone":
+				case "lightcone":
 				if ( this.mode !== "causal" ) throw new Error("Lightcones only available in 'Time' mode.");
 				ret = this.data.lightcone( parseInt(params[0]), parseInt(params[1]) );
 				break;
-			case "space":
+				case "space":
 				if ( this.mode !== "spatial" ) throw new Error("Space only available in 'Space' mode.");
 				ret = this.data.space( parseInt(params[0]), parseInt(params[1]) );
 				isVertices = true;
 				numParams = 0;
 				break;
-			case "time":
+				case "time":
 				if ( this.mode !== "causal" ) throw new Error("Time only available in 'Time' mode.");
 				ret = this.data.time( parseInt(params[0]), parseInt(params[1]) );
 				isVertices = true;
 				numParams = 0;
 				break;
-			default:
+				default:
 				throw new Error( "Unknown command: " + func );
 			}
 
@@ -218,12 +218,12 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Update hyperedges.
-	 * @param {Object} linkObject Link
-	 * @param {Object} coordinates Start and end
-	 * @param {Object} link Link
-	 * @return {boolean} False.
-	 */
+	* Update hyperedges.
+	* @param {Object} linkObject Link
+	* @param {Object} coordinates Start and end
+	* @param {Object} link Link
+	* @return {boolean} False.
+	*/
 	static linkPositionUpdate( linkObject, coordinates, link ) {
 		if ( link.hyperedge ) {
 			// This is hyperedge, update triangle coordinates
@@ -243,26 +243,26 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Setup 3d force directed graph.
-	 * @param {Object} element DOM element of the canvas
-	 * @param {Object} spatialStyles Styles for spatial graph
-	 * @param {Object} causalStyles Styles for causal graph
-	 */
+	* Setup 3d force directed graph.
+	* @param {Object} element DOM element of the canvas
+	* @param {Object} spatialStyles Styles for spatial graph
+	* @param {Object} causalStyles Styles for causal graph
+	*/
 	setup( element, spatialStyles, causalStyles ) {
 		this.spatialStyles = spatialStyles;
 		this.causalStyles = causalStyles;
 		this.graph3d( element )
-		  .forceEngine('d3')
-			.numDimensions( 3 )
-			.showNavInfo( false )
-			.enablePointerInteraction( true )
-			.backgroundColor( this.spatialStyles[0]["bgColor"] )
-			.nodeLabel( d => `<span class="nodeLabelGraph3d">${ d.id }</span>` )
-			.nodeVisibility( 'refs' )
-			.nodeOpacity( 1 )
-			.linkOpacity( 1 )
-			.cooldownTime( 5000 )
-			.onEngineStop( () => { this.hypersurfaceUpdate(); } );
+		.forceEngine('d3')
+		.numDimensions( 3 )
+		.showNavInfo( false )
+		.enablePointerInteraction( true )
+		.backgroundColor( this.spatialStyles[0]["bgColor"] )
+		.nodeLabel( d => `<span class="nodeLabelGraph3d">${ d.id }</span>` )
+		.nodeVisibility( 'refs' )
+		.nodeOpacity( 1 )
+		.linkOpacity( 1 )
+		.cooldownTime( 5000 )
+		.onEngineStop( () => { this.hypersurfaceUpdate(); } );
 		this.linkforcestrength = this.graph3d.d3Force("link").strength();
 		if ( typeof this.hyperedgematerial !== 'undefined' ) {
 			this.hyperedgematerial.dispose();
@@ -271,21 +271,21 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Update 3d force directed graph size.
-	 * @param {number} width New window width
-	 * @param {number} height New window height
-	 */
+	* Update 3d force directed graph size.
+	* @param {number} width New window width
+	* @param {number} height New window height
+	*/
 	size( width, height ) {
 		this.graph3d.width( width );
 		this.graph3d.height( height );
 	}
 
 	/**
-	 * Add a hyperedge.
-	 * @param {Object} event Event with edges to add
-	 * @param {Object} nodes Nodes
-	 * @param {Object} links Links
-	 */
+	* Add a hyperedge.
+	* @param {Object} event Event with edges to add
+	* @param {Object} nodes Nodes
+	* @param {Object} links Links
+	*/
 	add( event, nodes, links ) {
 		let k = { x: Math.random() - 0.5, y: Math.random() - 0.5, z: Math.random() - 0.5 };
 		const { ["a"]: edge, ...props } = event;
@@ -351,10 +351,10 @@ class Hypergraph3D {
 					geom.setAttribute( 'normal', new BufferAttribute( normals, 3 ) );
 					geom.computeVertexNormals();
 
-	  			const mesh = new Mesh(geom, this.hyperedgematerial );
-	  			this.graph3d.scene().add(mesh);
+					const mesh = new Mesh(geom, this.hyperedgematerial );
+					this.graph3d.scene().add(mesh);
 
-		  			// Hyperedge link
+					// Hyperedge link
 					links.push({source: nodes[edge[edge.length-1]], target: nodes[edge[0]], middle: nodes[edge[1]], hyperedge: true, selfloop: false, mesh: mesh, style: 4, curvature: 0, rotation: 0 });
 				}
 			}
@@ -362,11 +362,11 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Remove a hyperedge.
-	 * @param {Object} event Event with edges to remove
-	 * @param {Object} nodes Nodes
-	 * @param {Object} links Links
-	 */
+	* Remove a hyperedge.
+	* @param {Object} event Event with edges to remove
+	* @param {Object} nodes Nodes
+	* @param {Object} links Links
+	*/
 	remove( event, nodes, links ) {
 		// Remove by decreasing the reference number; nodes with ref 0 get hidden
 		const { ["x"]: edge, ...props } = event;
@@ -399,11 +399,11 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Test whether array of numbers has duplicate values.
-	 *
-	 * @param {numbers[]} edge Array of vertices
-	 * @return {boolean} True if array has duplicates.
-	 */
+	* Test whether array of numbers has duplicate values.
+	*
+	* @param {numbers[]} edge Array of vertices
+	* @return {boolean} True if array has duplicates.
+	*/
 	reset( mode = "spatial" ) {
 		// Stop animation and set position to start
 		this.stop();
@@ -432,18 +432,18 @@ class Hypergraph3D {
 			this.mode = "spatial";
 			this.data = this.hrs.spatial;
 			this.graph3d
-				.dagMode( null )
-				.backgroundColor( this.spatialStyles[0]["bgColor"] )
-				.nodeRelSize( this.spatialStyles[0]["nRelSize"] )
-				.nodeVal( d => (d.big ? 14 : 1) * this.spatialStyles[d.style]["nVal"] )
-				.nodeColor( d => this.spatialStyles[d.style]["nColor"] )
-				.linkLabel( null )
-				.linkWidth( d => this.spatialStyles[d.style]["lWidth"] )
-				.linkColor( d => this.spatialStyles[d.style]["lColor"] )
-				.linkPositionUpdate( Hypergraph3D.linkPositionUpdate )
-				.linkCurvature( 'curvature' )
-				.linkCurveRotation( 'rotation' )
-				.linkDirectionalArrowLength(0);
+			.dagMode( null )
+			.backgroundColor( this.spatialStyles[0]["bgColor"] )
+			.nodeRelSize( this.spatialStyles[0]["nRelSize"] )
+			.nodeVal( d => (d.big ? 14 : 1) * this.spatialStyles[d.style]["nVal"] )
+			.nodeColor( d => this.spatialStyles[d.style]["nColor"] )
+			.linkLabel( null )
+			.linkWidth( d => this.spatialStyles[d.style]["lWidth"] )
+			.linkColor( d => this.spatialStyles[d.style]["lColor"] )
+			.linkPositionUpdate( Hypergraph3D.linkPositionUpdate )
+			.linkCurvature( 'curvature' )
+			.linkCurveRotation( 'rotation' )
+			.linkDirectionalArrowLength(0);
 			this.graph3d.d3Force("center").strength( 1 );
 			this.graph3d.d3Force("link").strength( this.linkforcestrength );
 			// First additions
@@ -452,29 +452,29 @@ class Hypergraph3D {
 			this.mode = "causal";
 			this.data = this.hrs.causal;
 			this.graph3d
-				.dagMode( "zout" )
-				.backgroundColor( this.causalStyles[0]["bgColor"] )
-				.nodeRelSize( this.causalStyles[0]["nRelSize"] )
-				.nodeVal( d => (d.big ? 14 : 1) * this.causalStyles[d.style]["nVal"] )
-				.nodeColor( d => this.causalStyles[d.style]["nColor"] )
-				.linkLabel( d => `<span class="linkLabelGraph3d">${ "[" + d.step.toString()+ "] " + d.mod }</span>` )
-				.linkWidth( d => this.causalStyles[d.style]["lWidth"] )
-				.linkColor( d => this.causalStyles[d.style]["lColor"] )
-				.linkPositionUpdate( null )
-				.linkCurvature( null )
-				.linkCurveRotation( null )
-				.linkDirectionalArrowLength(15)
-				.linkDirectionalArrowRelPos(1);
+			.dagMode( "zout" )
+			.backgroundColor( this.causalStyles[0]["bgColor"] )
+			.nodeRelSize( this.causalStyles[0]["nRelSize"] )
+			.nodeVal( d => (d.big ? 14 : 1) * this.causalStyles[d.style]["nVal"] )
+			.nodeColor( d => this.causalStyles[d.style]["nColor"] )
+			.linkLabel( d => `<span class="linkLabelGraph3d">${ "[" + d.step.toString()+ "] " + d.mod }</span>` )
+			.linkWidth( d => this.causalStyles[d.style]["lWidth"] )
+			.linkColor( d => this.causalStyles[d.style]["lColor"] )
+			.linkPositionUpdate( null )
+			.linkCurvature( null )
+			.linkCurveRotation( null )
+			.linkDirectionalArrowLength(15)
+			.linkDirectionalArrowRelPos(1);
 			this.graph3d.d3Force("center").strength( 0.2 );
 			this.graph3d.d3Force("link").strength( 0.8 );
 		}
 	}
 
 	/**
-	 * Process events.
-	 * @param {number} [steps=1] Number of steps to process
-	 * @return {boolean} True there are more events to process.
-	 */
+	* Process events.
+	* @param {number} [steps=1] Number of steps to process
+	* @return {boolean} True there are more events to process.
+	*/
 	tick( steps = 1 ) {
 		let { nodes, links } = this.graph3d.graphData();
 		for( let i = steps; i > 0; i-- ) {
@@ -494,8 +494,8 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Timed update process.
-	 */
+	* Timed update process.
+	*/
 	update = () => {
 		const steps = Math.min( 50, Math.ceil( ( this.pos + 1 ) / 10) );
 		if ( !this.tick( steps ) ) {
@@ -510,10 +510,10 @@ class Hypergraph3D {
 	*/
 
 	/**
-	 * Play animation.
-	 * @param {number} msec Timed interval in msecs
-	 * @param {stopcallbackfn} stopcallbackfn Animation stopped callback function
-	 */
+	* Play animation.
+	* @param {number} msec Timed interval in msecs
+	* @param {stopcallbackfn} stopcallbackfn Animation stopped callback function
+	*/
 	play( msec, stopcallbackfn = null ) {
 		this.graph3d.enablePointerInteraction( false );
 		if ( this.updatetimer ) clearInterval( this.updatetimer );
@@ -522,9 +522,9 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Set/change animation speed.
-	 * @param {number} msec Timed interval in msecs
-	 */
+	* Set/change animation speed.
+	* @param {number} msec Timed interval in msecs
+	*/
 	speed( msec ) {
 		if ( this.updatetimer ) {
 			clearInterval( this.updatetimer );
@@ -533,8 +533,8 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Stop animation.
-	 */
+	* Stop animation.
+	*/
 	stop() {
 		if ( this.updatetimer ) {
 			clearInterval( this.updatetimer );
@@ -544,16 +544,16 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Skip to the end of the animation.
-	 */
+	* Skip to the end of the animation.
+	*/
 	final() {
 		this.stop();
 		this.tick( this.data.events.length );
 	}
 
 	/**
-	 * Update hypersurfaces
-	 */
+	* Update hypersurfaces
+	*/
 	hypersurfaceUpdate() {
 		let { nodes, links } = this.graph3d.graphData();
 		this.hypersurface.forEach( (h,i) => {
@@ -585,10 +585,10 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Highlight nodes/edges.
-	 * @param {Object} subgraph Edges, nodes and points to highlight.
-	 * @param {number} style Style to use in highlighting.
-	 */
+	* Highlight nodes/edges.
+	* @param {Object} subgraph Edges, nodes and points to highlight.
+	* @param {number} style Style to use in highlighting.
+	*/
 	setHighlight( subgraph, style ) {
 		let { nodes, links } = this.graph3d.graphData();
 
@@ -597,7 +597,7 @@ class Hypergraph3D {
 			if ( typeof nodes[n] !== 'undefined' ) {
 				nodes[n].big = true;
 				nodes[n].style = nodes[n].style | style;
-		 	}
+			}
 		});
 
 		// Vertices
@@ -627,9 +627,9 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Clear highlight style.
-	 * @param {number} style Style to be removed.
-	 */
+	* Clear highlight style.
+	* @param {number} style Style to be removed.
+	*/
 	clearHighlight( style ) {
 		let { nodes, links } = this.graph3d.graphData();
 		nodes.forEach( n => n.style = n.style & ~style );
@@ -640,11 +640,11 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Start downloading a file.
-	 * @param {Object} content Content
-	 * @param {string} fileName Filename
-	 * @param {string} contentType Content type
-	 */
+	* Start downloading a file.
+	* @param {Object} content Content
+	* @param {string} fileName Filename
+	* @param {string} contentType Content type
+	*/
 	static download(content, fileName, contentType) {
 		const a = document.createElement("a");
 		const file = new Blob([content], { type: contentType });
@@ -654,9 +654,9 @@ class Hypergraph3D {
 	}
 
 	/**
-	 * Export 3D model in GLB/GLTF format.
-	 * @param {boolean} binary If TRUE use BLB format, otherwise use GLTF.
-	 */
+	* Export 3D model in GLB/GLTF format.
+	* @param {boolean} binary If TRUE use BLB format, otherwise use GLTF.
+	*/
 	export( binary = true ) {
 		// Instantiate a exporter
 		const exporter = new GLTFExporter();
@@ -670,13 +670,13 @@ class Hypergraph3D {
 				Hypergraph3D.download( output, 'hypergraph.gltf', 'application/json');
 			}
 		}, options);
-
+		
 	}
 
 	/**
-	 * Report status.
-	 * @return {Object} Status of the Hypergraph3D.
-	 */
+	* Report status.
+	* @return {Object} Status of the Hypergraph3D.
+	*/
 	status() {
 		return { ...this.data.status(), ...this.hrs.status() };
 	}

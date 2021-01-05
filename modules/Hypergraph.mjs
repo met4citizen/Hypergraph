@@ -1,24 +1,24 @@
 
 /**
- * @class Hypergraph representing a hypergraph.
- * @author Mika Suominen
- */
+* @class Hypergraph representing a hypergraph.
+* @author Mika Suominen
+*/
 class Hypergraph {
 
 	/**
-	 * Vertex.
-	 * @typedef {number} Vertex
-	 */
+	* Vertex.
+	* @typedef {number} Vertex
+	*/
 
 	/**
-	 * Hyperedge.
-	 * @typedef {Vertex[]} Hyperedge
-	 */
+	* Hyperedge.
+	* @typedef {Vertex[]} Hyperedge
+	*/
 
 	/**
-	 * Creates an instance of Hypergraph.
-	 * @constructor
-	 */
+	* Creates an instance of Hypergraph.
+	* @constructor
+	*/
 	constructor() {
 		this.V = new Map(); // Vertices
 		this.E = new Map(); // Hyperedges
@@ -27,8 +27,8 @@ class Hypergraph {
 	}
 
 	/**
-   * Clear the hypergraph for reuse.
-   */
+	* Clear the hypergraph for reuse.
+	*/
 	clear() {
 		this.V.clear();
 		this.E.clear();
@@ -37,21 +37,21 @@ class Hypergraph {
 	}
 
 	/**
-   * Calculate the mean of array elements.
-   * @static
-   * @param {number[]} arr Array of numbers
-   * @return {number} The mean.
-   */
+	* Calculate the mean of array elements.
+	* @static
+	* @param {number[]} arr Array of numbers
+	* @return {number} The mean.
+	*/
 	static mean( arr ) {
 		return arr.reduce( (a,b) => a + b, 0 ) / arr.length;
 	}
 
 	/**
-	 * Calculate the median of array numbers.
-	 * @static
-	 * @param {number[]} arr Array of numbers
-	 * @return {number} The median.
-	 */
+	* Calculate the median of array numbers.
+	* @static
+	* @param {number[]} arr Array of numbers
+	* @return {number} The median.
+	*/
 	static median( arr ) {
 		const mid = Math.floor( arr.length / 2 );
 		const nums = [ ...arr ].sort( (a, b) => a - b );
@@ -59,10 +59,10 @@ class Hypergraph {
 	}
 
 	/**
-	 * Add a new edge.
-	 * @param {Hyperedge} edge Hyperedge to be added
-	 * @param {Object} [event={}] Properties to be added to the event log
-	 */
+	* Add a new edge.
+	* @param {Hyperedge} edge Hyperedge to be added
+	* @param {Object} [event={}] Properties to be added to the event log
+	*/
 	add( edge, event = {} ) {
 		// Add vertices to adjacency arrays
 		for( let i = edge.length - 1; i >= 0; i-- ) {
@@ -84,10 +84,10 @@ class Hypergraph {
 	}
 
 	/**
-	 *  Delete edge.
-	 * @param {Hyperedge} edge Hyperedge to be deleted
-	 * @param {Object} [event={}] Properties to be added to the event log
-	 */
+	*  Delete edge.
+	* @param {Hyperedge} edge Hyperedge to be deleted
+	* @param {Object} [event={}] Properties to be added to the event log
+	*/
 	delete( edge, event = {} ) {
 		// Delete vertices
 		for( let i = edge.length - 1; i >= 0; i-- ) {
@@ -105,13 +105,13 @@ class Hypergraph {
 	}
 
 	/**
-	 * BFS generator function.
-	 * @generator
-	 * @param {Vertex} v Root vertex of the bfs
-	 * @param {boolean} [dir=false] Use directed edges
-	 * @param {boolean} [rev=false] Reverse the order of directed edges
-	 * @yields {Vertex[]} The next leafs.
-	 */
+	* BFS generator function.
+	* @generator
+	* @param {Vertex} v Root vertex of the bfs
+	* @param {boolean} [dir=false] Use directed edges
+	* @param {boolean} [rev=false] Reverse the order of directed edges
+	* @yields {Vertex[]} The next leafs.
+	*/
 	*bfs( v, dir = false, rev = false ) {
 		if ( !this.V.has( v ) ) throw new Error("Given vertex not found.");
 		let searching = [ v ], visited = [];
@@ -131,13 +131,13 @@ class Hypergraph {
 	}
 
 	/**
-	 * Random walk never visiting any vertex twice.
-	 * @param {Vertex} v Root vertex of the walk
-	 * @param {number} [distance=Infinity] Maximum distance
-	 * @param {boolean} [dir=false] Use directed edges
-	 * @param {boolean} [rev=false] Reverse the order of directed edges
-	 * @return {Hyperedge[]} True if array has duplicates.
-	 */
+	* Random walk never visiting any vertex twice.
+	* @param {Vertex} v Root vertex of the walk
+	* @param {number} [distance=Infinity] Maximum distance
+	* @param {boolean} [dir=false] Use directed edges
+	* @param {boolean} [rev=false] Reverse the order of directed edges
+	* @return {Hyperedge[]} True if array has duplicates.
+	*/
 	random( v, distance = Infinity, dir = false, rev = false ) {
 		const path = [], gen = this.bfs( v, dir, rev );
 		let d = 0, a = gen.next().value;
@@ -157,14 +157,14 @@ class Hypergraph {
 	}
 
 	/**
-	 * Tree.
-	 * @param {Vertex} root Root of the tree
-	 * @param {boolean} [dir=false] Use directed edges
-	 * @param {boolean} [rev=false] Reverse the order of directed edges
-	 * @param {Vertex[]} breaks Array of vertices on which to stop
-	 * @param {distance} distance Maximum length of the tree
-	 * @return {Vertex[][]} Array of vertex layers of the tree
-	 */
+	* Tree.
+	* @param {Vertex} root Root of the tree
+	* @param {boolean} [dir=false] Use directed edges
+	* @param {boolean} [rev=false] Reverse the order of directed edges
+	* @param {Vertex[]} breaks Array of vertices on which to stop
+	* @param {distance} distance Maximum length of the tree
+	* @return {Vertex[][]} Array of vertex layers of the tree
+	*/
 	tree( root, dir = false, rev = false, breaks = [], distance = Infinity ) {
 		const tree = [];
 		let d = 0;
@@ -176,14 +176,14 @@ class Hypergraph {
 	}
 
 	/**
-	 * Shortest path from vertex 'a' to vertex 'b' using BFS.
-	 * @param {Vertex} v1 First vertex
-	 * @param {Vertex} v2 Second vertex
-	 * @param {boolean} [dir=false] Use directed edges
-	 * @param {boolean} [rev=false] Reverse the order of directed edges
-	 * @param {boolean} [all=false] Return all shortest paths
-	 * @return {Hyperedge[]} Shortest path(s) as an array of hyperedges
-	 */
+	* Shortest path from vertex 'a' to vertex 'b' using BFS.
+	* @param {Vertex} v1 First vertex
+	* @param {Vertex} v2 Second vertex
+	* @param {boolean} [dir=false] Use directed edges
+	* @param {boolean} [rev=false] Reverse the order of directed edges
+	* @param {boolean} [all=false] Return all shortest paths
+	* @return {Hyperedge[]} Shortest path(s) as an array of hyperedges
+	*/
 	geodesic( v1, v2, dir = false, rev = false, all = false ) {
 		const genA = this.bfs( v1, dir, rev ), treeA = [];
 		const genB = this.bfs( v2, dir, !rev ), treeB = [];
@@ -248,13 +248,13 @@ class Hypergraph {
 	}
 
 	/**
-	 * N-dimensional ball.
-	 * @param {Vertex} center Center vertex of the n-ball
-	 * @param {Vertex} radius Radius of the n-ball
-	 * @param {boolean} [dir=false] Use directed edges
-	 * @param {boolean} [rev=false] Reverse the order of directed edges
-	 * @return {Hyperedge[]} Array of edges inside the n-ball
-	 */
+	* N-dimensional ball.
+	* @param {Vertex} center Center vertex of the n-ball
+	* @param {Vertex} radius Radius of the n-ball
+	* @param {boolean} [dir=false] Use directed edges
+	* @param {boolean} [rev=false] Reverse the order of directed edges
+	* @return {Hyperedge[]} Array of edges inside the n-ball
+	*/
 	nball( center, radius, dir = false, rev = false ) {
 		// Start from the root and get the distance tree up to the distance 'radius'
 		const vs = this.tree( center, dir, rev, [], Math.abs(radius) ).flat();
@@ -270,13 +270,13 @@ class Hypergraph {
 	}
 
 	/**
-	 * N-sphere.
-	 * @param {Vertex} center Center vertex of the n-sphere
-	 * @param {Vertex} radius Radius of the n-sphere
-	 * @param {boolean} [dir=false] Use directed edges
-	 * @param {boolean} [rev=false] Reverse the order of directed edges
-	 * @return {Vertex[]} Array of vertexes on the n-sphere
-	 */
+	* N-sphere.
+	* @param {Vertex} center Center vertex of the n-sphere
+	* @param {Vertex} radius Radius of the n-sphere
+	* @param {boolean} [dir=false] Use directed edges
+	* @param {boolean} [rev=false] Reverse the order of directed edges
+	* @return {Vertex[]} Array of vertexes on the n-sphere
+	*/
 	nsphere( center, radius, dir = false, rev = false ) {
 		// Start from the root and get the distance tree up to the distance 'radius'
 		const tree = this.tree( center, dir, rev, [], Math.abs(radius) );
@@ -286,13 +286,13 @@ class Hypergraph {
 	}
 
 	/**
-	 * Minimum distance between two vertices.
-	 * @param {Vertex} v1 First vertex
-	 * @param {Vertex} v2 Second vertex
-	 * @param {boolean} [dir=false] Use directed edges
-	 * @param {boolean} [rev=false] Reverse the order of directed edges
-	 * @return {number} Number of step from 'a' to 'b', -1 if not connected
-	 */
+	* Minimum distance between two vertices.
+	* @param {Vertex} v1 First vertex
+	* @param {Vertex} v2 Second vertex
+	* @param {boolean} [dir=false] Use directed edges
+	* @param {boolean} [rev=false] Reverse the order of directed edges
+	* @return {number} Number of step from 'a' to 'b', -1 if not connected
+	*/
 	dist( v1, v2, dir = false, rev = false ) {
 		const genA = this.bfs( v1, dir, rev );
 		const genB = this.bfs( v2, dir, !rev );
@@ -311,73 +311,73 @@ class Hypergraph {
 	}
 
 	/**
-	 * Computes the optimal transport matrix and returns sinkhorn distance
-	 * (i.e. optimal transport) using the Sinkhorn-Knopp algorithm
-	 * @param {numbers[][]} dm Cost/distance matrix
-	 * @param {numbers[]} [a=null] Marginal A, unif distibution by default
-	 * @param {numbers[]} [b=null] Marginal B, unif distibution by default
-	 * @param {number} [lam=10] Strength of the entropic regularization
-	 * @param {number} [epsilon=1e-8] Convergence parameter
-	 * @return {Object} Optimal transport matrix and sinkhorn distance.
-	 */
-  sinkhorn = function( dm, a = null, b = null, lam = 10, epsilon = 1e-8 ) {
-    const m = dm.length;
-    const n = dm[0].length;
-    if ( !a ) a = new Array( m ).fill( 1/m );
-    if ( !b ) b = new Array( n ).fill( 1/n );
+	* Computes the optimal transport matrix and returns sinkhorn distance
+	* (i.e. optimal transport) using the Sinkhorn-Knopp algorithm
+	* @param {numbers[][]} dm Cost/distance matrix
+	* @param {numbers[]} [a=null] Marginal A, unif distibution by default
+	* @param {numbers[]} [b=null] Marginal B, unif distibution by default
+	* @param {number} [lam=10] Strength of the entropic regularization
+	* @param {number} [epsilon=1e-8] Convergence parameter
+	* @return {Object} Optimal transport matrix and sinkhorn distance.
+	*/
+	sinkhorn = function( dm, a = null, b = null, lam = 10, epsilon = 1e-8 ) {
+		const m = dm.length;
+		const n = dm[0].length;
+		if ( !a ) a = new Array( m ).fill( 1/m );
+		if ( !b ) b = new Array( n ).fill( 1/n );
 		if ( a.length !== m || b.length !== n ) throw new Error("Dimensions don't match.");
-    const P = new Array( m ).fill().map( x => new Array( n ).fill( 0 ) );
-    let Psum = 0;
-    for( let i = m-1; i >= 0; i-- )
-      for( let j = n-1; j >= 0; j-- ) {
-        P[i][j] = Math.exp( -lam * dm[i][j] );
-        Psum += P[i][j];
-      }
-    let u = new Array( n ).fill(0); // row sums
-    for( let i = m-1; i >= 0; i-- )
-      for( let j = n-1; j >= 0; j-- ) {
-        P[i][j] /= Psum;
-        u[j] += P[i][j];
-      }
-    let du = new Array( n ); // row sums diff between iterations
-    let v = new Array( m ); // column sums
+		const P = new Array( m ).fill().map( x => new Array( n ).fill( 0 ) );
+		let Psum = 0;
+		for( let i = m-1; i >= 0; i-- )
+		for( let j = n-1; j >= 0; j-- ) {
+			P[i][j] = Math.exp( -lam * dm[i][j] );
+			Psum += P[i][j];
+		}
+		let u = new Array( n ).fill(0); // row sums
+		for( let i = m-1; i >= 0; i-- )
+		for( let j = n-1; j >= 0; j-- ) {
+			P[i][j] /= Psum;
+			u[j] += P[i][j];
+		}
+		let du = new Array( n ); // row sums diff between iterations
+		let v = new Array( m ); // column sums
 
-    // Normalize matrix by scaling rows/columns until no significant change
-    do {
-      du.fill(0);
-      v.fill(0);
-      for( let i = m-1; i >= 0; i-- )
-        for( let j = n-1; j >= 0; j-- ) {
-          du[j] += P[i][j];
-          P[i][j] *= b[j] / u[j]; // scale the rows
-          v[i] += P[i][j]
-        }
-      u.fill(0);
-      for( let i = m-1; i >= 0; i-- )
-        for( let j = n-1; j >= 0; j-- ) {
-          P[i][j] *= a[i] / v[i]; // scale the columns
-          u[j] += P[i][j];
-					du[j] -= P[i][j];
-        }
-    }
-    while ( Math.max.apply( null, du.map( Math.abs ) ) > epsilon );
+		// Normalize matrix by scaling rows/columns until no significant change
+		do {
+			du.fill(0);
+			v.fill(0);
+			for( let i = m-1; i >= 0; i-- )
+			for( let j = n-1; j >= 0; j-- ) {
+				du[j] += P[i][j];
+				P[i][j] *= b[j] / u[j]; // scale the rows
+				v[i] += P[i][j]
+			}
+			u.fill(0);
+			for( let i = m-1; i >= 0; i-- )
+			for( let j = n-1; j >= 0; j-- ) {
+				P[i][j] *= a[i] / v[i]; // scale the columns
+				u[j] += P[i][j];
+				du[j] -= P[i][j];
+			}
+		}
+		while ( Math.max.apply( null, du.map( Math.abs ) ) > epsilon );
 
-    // Calculate sinkhorn distance
+		// Calculate sinkhorn distance
 		let dist = 0;
 		for( let i = m-1; i >= 0; i-- )
-			for( let j = n-1; j >= 0; j-- )
-				dist += P[i][j] * dm[i][j];
-    return { ot: P, dist: dist };
-  }
+		for( let j = n-1; j >= 0; j-- )
+		dist += P[i][j] * dm[i][j];
+		return { ot: P, dist: dist };
+	}
 
 	/**
-	 * Curvature based on Ollivier-Ricci (1-Wasserstein) distance.
-	 * @param {Vertex} v1 First vertex
-	 * @param {Vertex} v2 Second vertex
-	 * @param {number} [radius=1] Radius
-	 * @param {boolean} [dir=false] Use directed edges
-	 * @return {number} Ollivier-Ricci distance.
-	 */
+	* Curvature based on Ollivier-Ricci (1-Wasserstein) distance.
+	* @param {Vertex} v1 First vertex
+	* @param {Vertex} v2 Second vertex
+	* @param {number} [radius=1] Radius
+	* @param {boolean} [dir=false] Use directed edges
+	* @return {number} Ollivier-Ricci distance.
+	*/
 	orc( v1, v2, radius = 1, dir = false ) {
 		let ns1, ns2;
 		try {
@@ -391,17 +391,17 @@ class Hypergraph {
 		// Construct distance matrix
 		const dm = new Array( ns1.length ).fill().map( x => new Array( ns2.length ) );
 		for( let i = ns1.length - 1; i >= 0; i-- )
-			for( let j = ns2.length - 1; j >= 0; j-- )
-				dm[i][j] = this.dist( ns1[i], ns2[j], dir );
+		for( let j = ns2.length - 1; j >= 0; j-- )
+		dm[i][j] = this.dist( ns1[i], ns2[j], dir );
 
 		// Calculate Wasserstein-1 distance using sinkhorn-knopp algorithm
 		return ( 1 - this.sinkhorn( dm )[ "dist" ] / this.dist( v1, v2, dir ) );
 	}
 
 	/**
-	 * Status.
-	 * @return {Object} Status of the hypergraph.
-	 */
+	* Status.
+	* @return {Object} Status of the hypergraph.
+	*/
 	status() {
 		let edges = 0;
 		for( const e of this.E.values() ) edges += e.cnt;

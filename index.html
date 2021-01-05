@@ -16,42 +16,42 @@
   <meta name="twitter:image" content="https://met4citizen.github.io/Hypergraph/screenshot.jpg">
   <meta name="twitter:card" content="summary_large_image">
 
-<style>
-html{ width:100%; height:100%; font-size: 10px; font-family: Verdana, Geneva, sans-serif; letter-spacing: -0.3px; }
-body{ width: 100%; height: 100%; margin: 0; padding: 0; background-color: white; color: black; line-height:1.5rem;  overflow: hidden; cursor: crosshair; text-align: left; }
-div.controls { margin: 2px; padding: 2px; position: fixed; z-index: 3; opacity: 0.7; cursor: default; pointer-events: none; }
-a { cursor: pointer; pointer-events: auto; }
-#topleft { top:0; left:0; }
-#topright { top:0; right:0; text-align: right; }
-#bottomleft { bottom:0; left:0; margin-left: 42px; }
-#bottomright { bottom:0; right:0; text-align: right; }
-#paused { position: fixed; z-index: 2; top:0; left:0; bottom:0; right:0; text-align: center; background-color: transparent; display:none; }
-#logo { margin: 3px; padding: 3px; position: fixed; z-index: 3; opacity: 0.7; bottom: 0; left: 0; width: 32px; height: 32px; }
-.button { display: inline-block; margin: 1px 0 1px 0; padding: 0; background-color: black; color: white; width: 32px; height: 14px; border: 1px solid black; border-radius: 3px; font-size: 8px; font-weight: bold; line-height:14px; text-align: center; vertical-align: middle; cursor: pointer; pointer-events: auto; }
-.button:active { opacity: 0.2; }
-.button-disabled { opacity: 0.2; pointer-events: none; }
-#red { background-color: hotpink; border-color: hotpink; }
-#blue { background-color: deepskyblue; border-color: deepskyblue; }
-#cancel { float: right; margin: 0 0 0 10px; padding: 0;}
-.text { display: inline-block; margin: 0 0 0 3px; padding: 0 5px; background-color: transparent; color: black; width: auto; line-height: 16px; font-size: 10px; font-weight: bold; text-align:left; text-transform: lowercase; vertical-align: top; }
-.text-disabled { opacity: 0.2; }
-.text[contenteditable="true"] { min-width: 320px; -webkit-touch-callout: text; -webkit-user-select: text; -khtml-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; opacity: 1; }
-div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
-.option { display: inline-block; margin: 0; padding: 0; width: 32px; height:14px; background-color: transparent; color: black;  border: 1px solid white; border-radius: 3px; font-size: 8px; font-weight: bold; line-height: 14px; text-align: center; vertical-align: middle; cursor: pointer; pointer-events: auto; }
-.limit, .ruleordering, .eventordering { width: 20px; }
-.fps-selected, .mode-selected, .ruleordering-selected, .eventordering-selected, .limit-selected { border: 1px solid grey; }
-.label { display: inline-block; line-height: 16px; font-size: 8px; font-weight: bold; text-align:left; text-transform: uppercase; color: grey; margin: 2px; }
-#paused span { background-color: white; padding: 0 10px; }
-.status { min-width: 38px; }
-.up { position: absolute; transform: translateY(-15px); z-index: -1; }
-.down { position: absolute; transform: translateY(15px); z-index: -1; }
-.up:before, .down:before { content: "|"; }
-#progress { position:absolute; width: 300px; height: 16px; z-index: 15; top: 45%; left: 50%; margin: 0 0 0 -150px; display: none;}
-#progress-bar { display: inline-block; width: 250px; background-color: #e0e0e0; margin: 0; padding: 0; line-height: 16px; height: 16px; border-radius: 3px; }
-#progress-bar-fill { display: inline-block; height: 16px; background-color: #659cef; border-radius: 3px; transition: width 100ms ease-in-out; }
-.noselect { -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
-.nodeLabelGraph3d, .linkLabelGraph3d { display: inline-block; background-color: olive; color: white; font-size: 14px; font-weight: bold; line-height: 20px; padding: 0 4px; height: 20px; min-width: 14px; border-radius: 10px; text-align: center; vertical-align: middle; }
-.linkLabelGraph3d { background-color: darkkhaki; }
+  <style>
+  html{ width:100%; height:100%; font-size: 10px; font-family: Verdana, Geneva, sans-serif; letter-spacing: -0.3px; }
+  body{ width: 100%; height: 100%; margin: 0; padding: 0; background-color: white; color: black; line-height:1.5rem;  overflow: hidden; cursor: crosshair; text-align: left; }
+  div.controls { margin: 2px; padding: 2px; position: fixed; z-index: 3; opacity: 0.7; cursor: default; pointer-events: none; }
+  a { cursor: pointer; pointer-events: auto; }
+  #topleft { top:0; left:0; }
+  #topright { top:0; right:0; text-align: right; }
+  #bottomleft { bottom:0; left:0; margin-left: 42px; }
+  #bottomright { bottom:0; right:0; text-align: right; }
+  #paused { position: fixed; z-index: 2; top:0; left:0; bottom:0; right:0; text-align: center; background-color: transparent; display:none; }
+  #logo { margin: 3px; padding: 3px; position: fixed; z-index: 3; opacity: 0.7; bottom: 0; left: 0; width: 32px; height: 32px; }
+  .button { display: inline-block; margin: 1px 0 1px 0; padding: 0; background-color: black; color: white; width: 32px; height: 14px; border: 1px solid black; border-radius: 3px; font-size: 8px; font-weight: bold; line-height:14px; text-align: center; vertical-align: middle; cursor: pointer; pointer-events: auto; }
+  .button:active { opacity: 0.2; }
+  .button-disabled { opacity: 0.2; pointer-events: none; }
+  #red { background-color: hotpink; border-color: hotpink; }
+  #blue { background-color: deepskyblue; border-color: deepskyblue; }
+  #cancel { float: right; margin: 0 0 0 10px; padding: 0;}
+  .text { display: inline-block; margin: 0 0 0 3px; padding: 0 5px; background-color: transparent; color: black; width: auto; line-height: 16px; font-size: 10px; font-weight: bold; text-align:left; text-transform: lowercase; vertical-align: top; }
+  .text-disabled { opacity: 0.2; }
+  .text[contenteditable="true"] { min-width: 320px; -webkit-touch-callout: text; -webkit-user-select: text; -khtml-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; opacity: 1; }
+  div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
+  .option { display: inline-block; margin: 0; padding: 0; width: 32px; height:14px; background-color: transparent; color: black;  border: 1px solid white; border-radius: 3px; font-size: 8px; font-weight: bold; line-height: 14px; text-align: center; vertical-align: middle; cursor: pointer; pointer-events: auto; }
+  .limit, .ruleordering, .eventordering { width: 20px; }
+  .fps-selected, .mode-selected, .ruleordering-selected, .eventordering-selected, .limit-selected { border: 1px solid grey; }
+  .label { display: inline-block; line-height: 16px; font-size: 8px; font-weight: bold; text-align:left; text-transform: uppercase; color: grey; margin: 2px; }
+  #paused span { background-color: white; padding: 0 10px; }
+  .status { min-width: 38px; }
+  .up { position: absolute; transform: translateY(-15px); z-index: -1; }
+  .down { position: absolute; transform: translateY(15px); z-index: -1; }
+  .up:before, .down:before { content: "|"; }
+  #progress { position:absolute; width: 300px; height: 16px; z-index: 15; top: 45%; left: 50%; margin: 0 0 0 -150px; display: none;}
+  #progress-bar { display: inline-block; width: 250px; background-color: #e0e0e0; margin: 0; padding: 0; line-height: 16px; height: 16px; border-radius: 3px; }
+  #progress-bar-fill { display: inline-block; height: 16px; background-color: #659cef; border-radius: 3px; transition: width 100ms ease-in-out; }
+  .noselect { -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+  .nodeLabelGraph3d, .linkLabelGraph3d { display: inline-block; background-color: olive; color: white; font-size: 14px; font-weight: bold; line-height: 20px; padding: 0 4px; height: 20px; min-width: 14px; border-radius: 10px; text-align: center; vertical-align: middle; }
+  .linkLabelGraph3d { background-color: darkkhaki; }
 </style>
 
 <script src="https://unpkg.com/3d-force-graph"></script>
@@ -59,346 +59,346 @@ div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
 
 <script type="module">
 
-  import {Hypergraph3D} from "./modules/Hypergraph3D.mjs";
+import {Hypergraph3D} from "./modules/Hypergraph3D.mjs";
 
-  // Hypergraph object and define colors, sizes and widths for different graph styles
-  // Note: use CSS to define node/link label styles .nodeLabelGraph3d and .linkLabelGraph3d
-  const hypergraph = new Hypergraph3D();
-  window.hypergraph = hypergraph; // TODO: REMOVE THIS AFTER DEBUGGING
+// Hypergraph object and define colors, sizes and widths for different graph styles
+// Note: use CSS to define node/link label styles .nodeLabelGraph3d and .linkLabelGraph3d
+const hypergraph = new Hypergraph3D();
+window.hypergraph = hypergraph; // TODO: REMOVE THIS AFTER DEBUGGING
 
-  const spatialStyles = [
-          {  nColor: "black", lColor: "grey", nVal: 6, lWidth: 4, bgColor: "white", nRelSize: 3 }, // 0 defaults
-          {  nColor: "purple", lColor: "hotpink", nVal: 10, lWidth: 7, fill: "hotpink", opacity: 0.2 }, // 1 Red
-          {  nColor: "blue", lColor: "deepskyblue", nVal: 10, lWidth: 7, fill: "deepskyblue", opacity: 0.2 }, // 2 Blue
-          {  nColor: "darkblue", lColor: "darkblue", nVal: 10, lWidth: 7 }, // 3 Red + Blue
-          {  nColor: "lightgrey", lColor: "lightgrey", fill: "#B0E0E6", opacity: 0.2, nVal: 6, lWidth: 2 } // 4 Multiedge
-        ];
-  const causalStyles = [
-          {  nColor: "black", lColor: "grey", nVal: 6, lWidth: 3, bgColor: "white", nRelSize: 2 }, // 0 defaults
-          {  nColor: "purple", lColor: "hotpink", nVal: 10, lWidth: 6, fill: "hotpink", opacity: 0.2 }, // 1 Red
-          {  nColor: "blue", lColor: "deepskyblue", nVal: 10, lWidth: 6, fill: "deepskyblue", opacity: 0.2 }, // 2 Blue
-          {  nColor: "darkblue", lColor: "darkblue", nVal: 10, lWidth: 6 } // 3 Red + Blue
-        ];
+const spatialStyles = [
+  {  nColor: "black", lColor: "grey", nVal: 6, lWidth: 4, bgColor: "white", nRelSize: 3 }, // 0 defaults
+  {  nColor: "purple", lColor: "hotpink", nVal: 10, lWidth: 7, fill: "hotpink", opacity: 0.2 }, // 1 Red
+  {  nColor: "blue", lColor: "deepskyblue", nVal: 10, lWidth: 7, fill: "deepskyblue", opacity: 0.2 }, // 2 Blue
+  {  nColor: "darkblue", lColor: "darkblue", nVal: 10, lWidth: 7 }, // 3 Red + Blue
+  {  nColor: "lightgrey", lColor: "lightgrey", fill: "#B0E0E6", opacity: 0.2, nVal: 6, lWidth: 2 } // 4 Multiedge
+];
+const causalStyles = [
+  {  nColor: "black", lColor: "grey", nVal: 6, lWidth: 3, bgColor: "white", nRelSize: 2 }, // 0 defaults
+  {  nColor: "purple", lColor: "hotpink", nVal: 10, lWidth: 6, fill: "hotpink", opacity: 0.2 }, // 1 Red
+  {  nColor: "blue", lColor: "deepskyblue", nVal: 10, lWidth: 6, fill: "deepskyblue", opacity: 0.2 }, // 2 Blue
+  {  nColor: "darkblue", lColor: "darkblue", nVal: 10, lWidth: 6 } // 3 Red + Blue
+];
 
-  $(document).ready(function() {
+$(document).ready(function() {
 
-    // Setup graph element
-    const element = document.getElementById("3d-graph");
-    hypergraph.setup( element, spatialStyles, causalStyles );
+  // Setup graph element
+  const element = document.getElementById("3d-graph");
+  hypergraph.setup( element, spatialStyles, causalStyles );
 
-    // Activity monitoring
-    let activityTimer = 0;
-    const activityTimeoutMillis = 5000;
-    let activityHash = 0;
+  // Activity monitoring
+  let activityTimer = 0;
+  const activityTimeoutMillis = 5000;
+  let activityHash = 0;
 
-    // Pause animation
-    $("#paused").on("paused:pause", function() {
-      if ( activityTimer ) clearTimeout( activityTimer );
-      hypergraph.graph3d.pauseAnimation();
-      $("#paused").show();
-    });
+  // Pause animation
+  $("#paused").on("paused:pause", function() {
+    if ( activityTimer ) clearTimeout( activityTimer );
+    hypergraph.graph3d.pauseAnimation();
+    $("#paused").show();
+  });
 
-    // Resume animation
-    $("#paused").on("paused:resume click", function() {
-      if ( activityTimer ) clearTimeout( activityTimer );
-      hypergraph.graph3d.resumeAnimation();
-      $(".text").prop("contenteditable","false");
-      $(".settings").hide();
-      $("#topleft").css("pointer-events","none");
-      $("#paused").hide();
+  // Resume animation
+  $("#paused").on("paused:resume click", function() {
+    if ( activityTimer ) clearTimeout( activityTimer );
+    hypergraph.graph3d.resumeAnimation();
+    $(".text").prop("contenteditable","false");
+    $(".settings").hide();
+    $("#topleft").css("pointer-events","none");
+    $("#paused").hide();
 
-      // Pause if camera position hasn't changed
-      activityTimer = setTimeout( function activityMonitor() {
-        const cp = hypergraph.graph3d.cameraPosition();
-        const hash = Math.round( (cp["x"] + cp["y"] + cp["z"]) * 100000 + Number.EPSILON ) / 100000;
-        if ( $("#play").is(":visible") && hash === activityHash ) {
-          $("#paused").trigger("paused:pause");
-        } else {
-          activityHash = hash;
-          activityTimer = setTimeout( activityMonitor, activityTimeoutMillis );
-        }
-      }, activityTimeoutMillis );
-    });
-
-    // Window resize event, update graph dimensions
-    $(window).on('resize', function(){
-      $("#paused").trigger("paused:resume");
-      hypergraph.size( $(this).width(), $(this).height() );
-    });
-
-    // Paste as plain text (work-a-round)
-    document.querySelector('.text').addEventListener('paste', function (event) {
-      event.preventDefault();
-      document.execCommand('inserttext', false, event.clipboardData.getData('text/plain'));
-    });
-
-    // Open settings dialogs
-    [ "#rule", "#red", "#blue" ].forEach( x => {
-      $(x).on("click", function() {
-        if ( $(x+"-settings").is(":visible") ) {
-          $("#paused").trigger("paused:resume");
-        } else {
-          $("#paused").trigger("paused:pause");
-          $(x+"-text").prop("contenteditable","true").focus();
-          $(x+"-settings").show();
-          $("#topleft").css("pointer-events","auto");
-        }
-      });
-    });
-
-    // Check the rule
-    $("#rule-check").on("click", function() {
-      try {
-        var rulestxt = $("#rule-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
-        var rules = Hypergraph3D.parseRules( rulestxt );
-        var rulesnew = "";
-        rules.forEach( r => {
-          if ( rulesnew !== "" ) rulesnew = rulesnew + "<br>";
-          r.lhs.forEach( e => { rulesnew = rulesnew + "(" + e.map( v => v + 1 ).join(",") + ")"; });
-          if ( typeof r.rhs !== 'undefined' ) {
-            rulesnew = rulesnew + "->";
-            r.rhs.forEach( e => { rulesnew = rulesnew + "(" + e.map( v => v + 1 ).join(",") + ")"; });
-          }
-        });
-        $("#rule-text").html( rulesnew );
+    // Pause if camera position hasn't changed
+    activityTimer = setTimeout( function activityMonitor() {
+      const cp = hypergraph.graph3d.cameraPosition();
+      const hash = Math.round( (cp["x"] + cp["y"] + cp["z"]) * 100000 + Number.EPSILON ) / 100000;
+      if ( $("#play").is(":visible") && hash === activityHash ) {
+        $("#paused").trigger("paused:pause");
+      } else {
+        activityHash = hash;
+        activityTimer = setTimeout( activityMonitor, activityTimeoutMillis );
       }
-      catch (e) {
-        alert(e);
-      }
-    });
+    }, activityTimeoutMillis );
+  });
 
-    // Run the given rule
-    $("#rule-run").on("click", function() {
-      try {
-        $("#red, #blue, #reset, #playstop, #finalreheat").addClass('button-disabled');
+  // Window resize event, update graph dimensions
+  $(window).on('resize', function(){
+    $("#paused").trigger("paused:resume");
+    hypergraph.size( $(this).width(), $(this).height() );
+  });
 
-        hypergraph.stop();
-        $("#progress-bar-fill").css("width", "0");
-        $("#progress").show();
+  // Paste as plain text (work-a-round)
+  document.querySelector('.text').addEventListener('paste', function (event) {
+    event.preventDefault();
+    document.execCommand('inserttext', false, event.clipboardData.getData('text/plain'));
+  });
 
-        // Run rules
-        var rules = $("#rule-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
-        var ruleordering = $(".ruleordering-selected").data("value");
-        var eventordering = $(".eventordering-selected").data("value");
-        var maxevents = parseInt( $(".limit-selected").data("value") );
-        hypergraph.run( rules, ruleordering, eventordering, maxevents, function(e) {
-          $("#progress-bar-fill").css("width", Math.min(100, Math.round( 100 * e / maxevents))+"%" );
-        }, function() {
-            $("#progress").hide();
-            $("#reset, #playstop, #finalreheat").removeClass('button-disabled').css("background-color","black");
-            $("#reset").click();
-        });
-      }
-      catch (e) {
-        $("#progress").hide();
-        alert(e);
-      }
-    });
-
-    // Cancel running the rule
-    $("#cancel").on("click", function() {
-        hypergraph.cancel();
-    });
-
-    // Show/hide red/blue subgraph
-    [ "#red", "#blue" ].forEach( (x,i) => {
-      $(x+"-show").on("click", function() {
-        try {
-          const command = $(x+"-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
-          const result = hypergraph.execute( command );
-          hypergraph.setHighlight( result , i+1 );
-          $(x+"-result").text( '['+result.r.toString()+']' );
-          $(x+"-text").removeClass("text-disabled");
-          $("#paused").trigger("paused:resume");
-        }
-        catch(e) {
-          alert(e);
-        }
-      });
-      $(x+"-hide").on("click", function() {
-        try {
-          hypergraph.clearHighlight( i+1 );
-          $(x+"-result").text("");
-          $(x+"-text").addClass("text-disabled");
-          $("#paused").trigger("paused:resume");
-        }
-        catch(e) {
-          alert(e);
-        }
-      });
-    });
-
-    // Rule settings
-    [ "ruleordering", "eventordering", "limit" ].forEach( x => {
-      $("."+x).on("click", function(e) {
-        $("."+x).removeClass(x+"-selected");
-        $(this).addClass(x+"-selected");
-      });
-    });
-
-    // Mode setting for animation
-    $("#reset").on("click", function(e) {
-      try {
+  // Open settings dialogs
+  [ "#rule", "#red", "#blue" ].forEach( x => {
+    $(x).on("click", function() {
+      if ( $(x+"-settings").is(":visible") ) {
         $("#paused").trigger("paused:resume");
-        var mode = $(".mode-selected").data("value");
-        hypergraph.reset( mode );
+      } else {
+        $("#paused").trigger("paused:pause");
+        $(x+"-text").prop("contenteditable","true").focus();
+        $(x+"-settings").show();
+        $("#topleft").css("pointer-events","auto");
+      }
+    });
+  });
 
-        // Get status
-        var s = hypergraph.status();
-        var str = "";
-        Object.keys(s).forEach( k => {
-          str = str + '<span class="label up">'+k+'</span><span class="label status">'+s[k]+'</span>';
-        });
-        $("#status").html( str );
-        $("#red-result, #blue-result").text("");
+  // Check the rule
+  $("#rule-check").on("click", function() {
+    try {
+      var rulestxt = $("#rule-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
+      var rules = Hypergraph3D.parseRules( rulestxt );
+      var rulesnew = "";
+      rules.forEach( r => {
+        if ( rulesnew !== "" ) rulesnew = rulesnew + "<br>";
+        r.lhs.forEach( e => { rulesnew = rulesnew + "(" + e.map( v => v + 1 ).join(",") + ")"; });
+        if ( typeof r.rhs !== 'undefined' ) {
+          rulesnew = rulesnew + "->";
+          r.rhs.forEach( e => { rulesnew = rulesnew + "(" + e.map( v => v + 1 ).join(",") + ")"; });
+        }
+      });
+      $("#rule-text").html( rulesnew );
+    }
+    catch (e) {
+      alert(e);
+    }
+  });
 
-        $("#red, #blue").addClass("button-disabled");
-        $("#red-text, #blue-text").addClass("text-disabled");
-        $("#playstop").removeClass("button-disabled").css("background-color","black");
-        $("#play, #final").show();
-        $("#stop, #reheat").hide();
+  // Run the given rule
+  $("#rule-run").on("click", function() {
+    try {
+      $("#red, #blue, #reset, #playstop, #finalreheat").addClass('button-disabled');
+
+      hypergraph.stop();
+      $("#progress-bar-fill").css("width", "0");
+      $("#progress").show();
+
+      // Run rules
+      var rules = $("#rule-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
+      var ruleordering = $(".ruleordering-selected").data("value");
+      var eventordering = $(".eventordering-selected").data("value");
+      var maxevents = parseInt( $(".limit-selected").data("value") );
+      hypergraph.run( rules, ruleordering, eventordering, maxevents, function(e) {
+        $("#progress-bar-fill").css("width", Math.min(100, Math.round( 100 * e / maxevents))+"%" );
+      }, function() {
+        $("#progress").hide();
+        $("#reset, #playstop, #finalreheat").removeClass('button-disabled').css("background-color","black");
+        $("#reset").click();
+      });
+    }
+    catch (e) {
+      $("#progress").hide();
+      alert(e);
+    }
+  });
+
+  // Cancel running the rule
+  $("#cancel").on("click", function() {
+    hypergraph.cancel();
+  });
+
+  // Show/hide red/blue subgraph
+  [ "#red", "#blue" ].forEach( (x,i) => {
+    $(x+"-show").on("click", function() {
+      try {
+        const command = $(x+"-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
+        const result = hypergraph.execute( command );
+        hypergraph.setHighlight( result , i+1 );
+        $(x+"-result").text( '['+result.r.toString()+']' );
+        $(x+"-text").removeClass("text-disabled");
+        $("#paused").trigger("paused:resume");
       }
       catch(e) {
         alert(e);
       }
     });
-
-    $(".mode").on("click", function(e) {
-      $(".mode").removeClass("mode-selected");
-      $(this).addClass("mode-selected");
-      $("#reset").click();
-    });
-
-    // Speed setting for animation
-    $(".fps").on("click", function(e) {
-      $("#paused").trigger("paused:resume");
-      $(".fps").removeClass("fps-selected");
-      $(this).addClass("fps-selected");
-      hypergraph.speed( $(this).data("value") );
-    });
-
-    // Play / stop animation
-    $("#playstop").on("click", function() {
+    $(x+"-hide").on("click", function() {
       try {
+        hypergraph.clearHighlight( i+1 );
+        $(x+"-result").text("");
+        $(x+"-text").addClass("text-disabled");
         $("#paused").trigger("paused:resume");
-        if ( $("#play").is(":visible") ) {
-          hypergraph.play( $(".fps-selected").data("value"), function() {
-            $("#play").show();
-            $("#stop").hide();
-            $("#red, #blue").removeClass("button-disabled");
-            $("#playstop").addClass("button-disabled").css("background-color","black");
-            $("#reheat").show();
-            $("#final").hide();
-          });
-          $("#playstop").css("background-color","darkred");
-          $("#play").hide();
-          $("#stop").show();
-        } else {
-          hypergraph.stop();
-          $("#playstop").css("background-color","black");
+      }
+      catch(e) {
+        alert(e);
+      }
+    });
+  });
+
+  // Rule settings
+  [ "ruleordering", "eventordering", "limit" ].forEach( x => {
+    $("."+x).on("click", function(e) {
+      $("."+x).removeClass(x+"-selected");
+      $(this).addClass(x+"-selected");
+    });
+  });
+
+  // Mode setting for animation
+  $("#reset").on("click", function(e) {
+    try {
+      $("#paused").trigger("paused:resume");
+      var mode = $(".mode-selected").data("value");
+      hypergraph.reset( mode );
+
+      // Get status
+      var s = hypergraph.status();
+      var str = "";
+      Object.keys(s).forEach( k => {
+        str = str + '<span class="label up">'+k+'</span><span class="label status">'+s[k]+'</span>';
+      });
+      $("#status").html( str );
+      $("#red-result, #blue-result").text("");
+
+      $("#red, #blue").addClass("button-disabled");
+      $("#red-text, #blue-text").addClass("text-disabled");
+      $("#playstop").removeClass("button-disabled").css("background-color","black");
+      $("#play, #final").show();
+      $("#stop, #reheat").hide();
+    }
+    catch(e) {
+      alert(e);
+    }
+  });
+
+  $(".mode").on("click", function(e) {
+    $(".mode").removeClass("mode-selected");
+    $(this).addClass("mode-selected");
+    $("#reset").click();
+  });
+
+  // Speed setting for animation
+  $(".fps").on("click", function(e) {
+    $("#paused").trigger("paused:resume");
+    $(".fps").removeClass("fps-selected");
+    $(this).addClass("fps-selected");
+    hypergraph.speed( $(this).data("value") );
+  });
+
+  // Play / stop animation
+  $("#playstop").on("click", function() {
+    try {
+      $("#paused").trigger("paused:resume");
+      if ( $("#play").is(":visible") ) {
+        hypergraph.play( $(".fps-selected").data("value"), function() {
           $("#play").show();
           $("#stop").hide();
-        }
+          $("#red, #blue").removeClass("button-disabled");
+          $("#playstop").addClass("button-disabled").css("background-color","black");
+          $("#reheat").show();
+          $("#final").hide();
+        });
+        $("#playstop").css("background-color","darkred");
+        $("#play").hide();
+        $("#stop").show();
+      } else {
+        hypergraph.stop();
+        $("#playstop").css("background-color","black");
+        $("#play").show();
+        $("#stop").hide();
       }
-      catch(e) {
-        alert(e);
-      }
-    });
-
-    // Final state
-    $("#finalreheat").on("click", function() {
-      try {
-        $("#paused").trigger("paused:resume");
-        hypergraph.final();
-        $("#red, #blue").removeClass("button-disabled");
-        $("#playstop").addClass("button-disabled").css("background-color","black");;
-        $("#play, #reheat").show();
-        $("#stop, #final").hide();
-      }
-      catch(e) {
-        alert(e);
-      }
-    });
-
-    // Export to GLB
-    $("#glb").on("click", function() {
-      hypergraph.export( true );
-    });
-
-    // Export to glTF
-    $("#gltf").on("click", function() {
-      hypergraph.export( false );
-    });
-
-    // Run default rule
-    $("#rule-run").click();
-
+    }
+    catch(e) {
+      alert(e);
+    }
   });
+
+  // Final state
+  $("#finalreheat").on("click", function() {
+    try {
+      $("#paused").trigger("paused:resume");
+      hypergraph.final();
+      $("#red, #blue").removeClass("button-disabled");
+      $("#playstop").addClass("button-disabled").css("background-color","black");;
+      $("#play, #reheat").show();
+      $("#stop, #final").hide();
+    }
+    catch(e) {
+      alert(e);
+    }
+  });
+
+  // Export to GLB
+  $("#glb").on("click", function() {
+    hypergraph.export( true );
+  });
+
+  // Export to glTF
+  $("#gltf").on("click", function() {
+    hypergraph.export( false );
+  });
+
+  // Run default rule
+  $("#rule-run").click();
+
+});
 
 </script>
 </head>
 <body>
   <div id="topleft" class="controls noselect">
     <span title="Change rule" id ="rule" class="button">RULE</span>
-      <span id="rule-text" class="text" spellcheck="false">(1,1,2)(2,3,4)->(1,5,4)(2,5,3)(5,5,4)<br>(1,1,1)(1,1,1)</span><br/>
+    <span id="rule-text" class="text" spellcheck="false">(1,1,2)(2,3,4)->(1,5,4)(2,5,3)(5,5,4)<br>(1,1,1)(1,1,1)</span><br/>
     <div id="rule-settings" class="settings">
       <span class="label down">Rule order</span>
-        <span title="Mix rules" class="option ruleordering ruleordering-selected" data-value="mixed">MIX</span>
-        <span title="Index order" class="option ruleordering" data-value="index">NDX</span>
-        <span title="Reverse index" class="option ruleordering" data-value="indexrev">REV</span>
+      <span title="Mix rules" class="option ruleordering ruleordering-selected" data-value="mixed">MIX</span>
+      <span title="Index order" class="option ruleordering" data-value="index">NDX</span>
+      <span title="Reverse index" class="option ruleordering" data-value="indexrev">REV</span>
       <span class="label down">Event order</span>
-        <span title="Randomize events" class="option eventordering eventordering-selected" data-value="random">RND</span>
-        <span title="Replace oldest" class="option eventordering" data-value="old">OLD</span>
-        <span title="Replace latest" class="option eventordering" data-value="new">NEW</span>
+      <span title="Randomize events" class="option eventordering eventordering-selected" data-value="random">RND</span>
+      <span title="Replace oldest" class="option eventordering" data-value="old">OLD</span>
+      <span title="Replace latest" class="option eventordering" data-value="new">NEW</span>
       <span class="label down">Size</span>
-        <span title="Max 500" class="option limit limit-selected" data-value="500">500</span>
-        <span title="Max 1000" class="option limit" data-value="1000">1K</span>
-        <span title="Max 2000" class="option limit" data-value="2000">2K</span>
+      <span title="Max 500" class="option limit limit-selected" data-value="500">500</span>
+      <span title="Max 1000" class="option limit" data-value="1000">1K</span>
+      <span title="Max 2000" class="option limit" data-value="2000">2K</span>
       <span class="label down">Rule</span>
-        <span title="Format rule" id ="rule-check" class="button">CHECK</span>
-        <span title="Run rule" id ="rule-run" class="button">RUN</span>
+      <span title="Format rule" id ="rule-check" class="button">CHECK</span>
+      <span title="Run rule" id ="rule-run" class="button">RUN</span>
     </div>
     <span id="red" class="button button-disabled">RED</span>
-      <span id="red-text" class="text text-disabled" spellcheck="false">geodesic(0,10,all)</span><br/>
+    <span id="red-text" class="text text-disabled" spellcheck="false">geodesic(0,10,all)</span><br/>
     <div id="red-settings" class="settings">
       <span class="label down">Highlight</span>
-        <span title="Show red" id="red-show" class="button">SHOW</span>
-        <span title="Hide red" id="red-hide" class="button">HIDE</span>
+      <span title="Show red" id="red-show" class="button">SHOW</span>
+      <span title="Hide red" id="red-hide" class="button">HIDE</span>
     </div>
     <span id="blue" class="button button-disabled">BLUE</span>
-      <span id="blue-text" class="text text-disabled" spellcheck="false">nsphere(0,3)</span><br/>
+    <span id="blue-text" class="text text-disabled" spellcheck="false">nsphere(0,3)</span><br/>
     <div id="blue-settings" class="settings">
       <span class="label down">Highlight</span>
-        <span title="Show blue" id ="blue-show" class="button">SHOW</span>
-        <span title="Hide blue" id ="blue-hide" class="button">HIDE</span>
+      <span title="Show blue" id ="blue-show" class="button">SHOW</span>
+      <span title="Hide blue" id ="blue-hide" class="button">HIDE</span>
     </div>
   </div>
   <div id="topright" class="controls noselect">
     <span class="label down">Mode</span>
-      <span title="Spatial graph" class="option mode mode-selected" data-value="spatial">SPACE</span>
-      <span title="Causal graph" class="option mode" data-value="causal">TIME</span>
+    <span title="Spatial graph" class="option mode mode-selected" data-value="spatial">SPACE</span>
+    <span title="Causal graph" class="option mode" data-value="causal">TIME</span>
     <span class="label down">Simulation</span>
-      <span title="Reset" id="reset" class="button button-disabled"><svg viewBox="0 0 32 14"><polygon fill="white" points="12,3 14,3 14,11 12,11"/><polygon fill="white" points="14,7 20,3 20,11" /></svg></span>
-      <span title="Play/pause" id="playstop" class="button button-disabled"><svg id="play" viewBox="0 0 32 16"><polygon fill="white" points="14,3 14,11 20,7"/></svg><svg id="stop" viewBox="0 0 32 14"><polygon fill="white" points="12,3 15,3 15,11 12,11"/><polygon fill="white" points="17,3 20,3 20,11 17,11"/></svg></span>
-      <span title="End/reheat" id="finalreheat" class="button button-disabled">
-        <svg id="reheat" viewBox="0 0 32 14"><path fill="white" d="M16.1 10.2c-2 0-3-1-3.1-3S14 4 15.7 3.9c1.8-.1 2.1 1.1 2.1 1.1L16.7 6.3h4V2.5l-1.3 1C18.4 2.4 17.5 2 16 2C13 2 11 4 11 7S12.9 11.8 16 12c3.1-.3 4.2-2 4.5-4h-2.1c-.3 1.2-1 2-2.3 2.2z"/></svg>
-        <svg id="final" viewBox="0 0 32 14"><polygon fill="white" points="12,3 12,11 18,7"/><polygon fill="white" points="18,3 20,3 20,11 18,11" /></svg>
-      </span>
+    <span title="Reset" id="reset" class="button button-disabled"><svg viewBox="0 0 32 14"><polygon fill="white" points="12,3 14,3 14,11 12,11"/><polygon fill="white" points="14,7 20,3 20,11" /></svg></span>
+    <span title="Play/pause" id="playstop" class="button button-disabled"><svg id="play" viewBox="0 0 32 16"><polygon fill="white" points="14,3 14,11 20,7"/></svg><svg id="stop" viewBox="0 0 32 14"><polygon fill="white" points="12,3 15,3 15,11 12,11"/><polygon fill="white" points="17,3 20,3 20,11 17,11"/></svg></span>
+    <span title="End/reheat" id="finalreheat" class="button button-disabled">
+      <svg id="reheat" viewBox="0 0 32 14"><path fill="white" d="M16.1 10.2c-2 0-3-1-3.1-3S14 4 15.7 3.9c1.8-.1 2.1 1.1 2.1 1.1L16.7 6.3h4V2.5l-1.3 1C18.4 2.4 17.5 2 16 2C13 2 11 4 11 7S12.9 11.8 16 12c3.1-.3 4.2-2 4.5-4h-2.1c-.3 1.2-1 2-2.3 2.2z"/></svg>
+      <svg id="final" viewBox="0 0 32 14"><polygon fill="white" points="12,3 12,11 18,7"/><polygon fill="white" points="18,3 20,3 20,11 18,11" /></svg>
+    </span>
     <span class="label down">Speed</span>
-      <span title="Low fps" class="option fps" data-value="300">SLOW</span>
-      <span title="High fps" class="option fps fps-selected" data-value="250">FAST</span>
+    <span title="Low fps" class="option fps" data-value="300">SLOW</span>
+    <span title="High fps" class="option fps fps-selected" data-value="250">FAST</span>
   </div>
   <div id="bottomleft" class="controls noselect">
-      <span class="label up">Docs</span>
-      <span title="Source/docs" class="label"><a href="https://github.com/met4citizen/Hypergraph" target="_blank">github</a></span>
-      <span class="label up">Mouse</span>
-      <span class="label">left-rotate wheel-zoom right-pan</span>
+    <span class="label up">Docs</span>
+    <span title="Source/docs" class="label"><a href="https://github.com/met4citizen/Hypergraph" target="_blank">github</a></span>
+    <span class="label up">Mouse</span>
+    <span class="label">left-rotate wheel-zoom right-pan</span>
   </div>
   <div id="bottomright" class="controls noselect">
     <span id="red-result-label" class="label up">Red</span>
-      <span id="red-result" class="label status"></span>
+    <span id="red-result" class="label status"></span>
     <span id="blue-result-label" class="label up">Blue</span>
-      <span id="blue-result" class="label status"></span>
+    <span id="blue-result" class="label status"></span>
     <span id="status"></span>
     <span class="label up">Download</span>
     <span title="Download GLB" id="glb" class="button">GLB</span>

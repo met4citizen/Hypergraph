@@ -1,34 +1,34 @@
 import { Hypergraph } from "./Hypergraph.mjs";
 
 /**
- * @class SpatialGraph representing hypergraph.
- * @author Mika Suominen
- */
+* @class SpatialGraph representing hypergraph.
+* @author Mika Suominen
+*/
 class SpatialGraph extends Hypergraph {
-
+	
 	/**
-	 * Creates an instance of SpatialGraph.
-	 * @constructor
-	 */
+	* Creates an instance of SpatialGraph.
+	* @constructor
+	*/
 	constructor() {
 		super();
 		this.P = new Map(); // Search patterns for edges
 	}
 
 	/**
-   * Clear the SpatialGraph for reuse.
-   */
+	* Clear the SpatialGraph for reuse.
+	*/
 	clear() {
 		super.clear();
 		this.P.clear();
 	}
 
 	/**
-	 * Delete/add hyperedges.
-	 * @param {Hyperedge[]} del Hyperedges to delete
-	 * @param {Hyperedge[]} add Hyperedges to add
-	 * @param {Object} [event={}] Optional event properties
-	 */
+	* Delete/add hyperedges.
+	* @param {Hyperedge[]} del Hyperedges to delete
+	* @param {Hyperedge[]} add Hyperedges to add
+	* @param {Object} [event={}] Optional event properties
+	*/
 	rewrite( del, add, event = {} ) {
 		// Process all edges to delete
 		for( let i=0; i < del.length; i++ ) {
@@ -57,10 +57,10 @@ class SpatialGraph extends Hypergraph {
 	}
 
 	/**
-	 * Count # of possible instances of the given a list of hyperedges.
-	 * @param {Hyperedge[]} edge Array of hyperedges
-	 * @return {number} Number of possible instances.
-	 */
+	* Count # of possible instances of the given a list of hyperedges.
+	* @param {Hyperedge[]} edge Array of hyperedges
+	* @return {number} Number of possible instances.
+	*/
 	count( edges ) {
 		// Go through all edges
 		const cnts = {};
@@ -75,10 +75,10 @@ class SpatialGraph extends Hypergraph {
 	}
 
 	/**
-	 * Find edges that match to the given pattern.
-	 * @param {Hyperedge} pattern Hyperedge search pattern, wild card -1
-	 * @return {Hyperedge[]} Matching hyperedges.
-	 */
+	* Find edges that match to the given pattern.
+	* @param {Hyperedge} pattern Hyperedge search pattern, wild card -1
+	* @return {Hyperedge[]} Matching hyperedges.
+	*/
 	find( pattern ) {
 		// Pattern has no wild cards, so we look for an exact match
 		if ( pattern.every( x => x !== -1 ) ) {
@@ -97,11 +97,11 @@ class SpatialGraph extends Hypergraph {
 		// Extract individual keys and test that they exist
 		const keys = [];
 		for( let i = pattern.length-1; i >=0; i-- )
-			if ( pattern[i] !== -1 ) {
-				let key = pattern.map( (x,j) => ( j === i ? x : "*" )).join(",");
-				if ( !this.P.has( key) ) return [];
-				keys.push( key );
-			}
+		if ( pattern[i] !== -1 ) {
+			let key = pattern.map( (x,j) => ( j === i ? x : "*" )).join(",");
+			if ( !this.P.has( key) ) return [];
+			keys.push( key );
+		}
 
 		// Find edges based on keys; if several, get the intersection
 		let found = [ ...this.P.get( keys[0] ) ];
@@ -112,11 +112,11 @@ class SpatialGraph extends Hypergraph {
 	}
 
 	/**
-	 * Space-like hypersurface/slice.
-	 * @param {Vertex} v1 Starting point in space
-	 * @param {Vertex} v2 Ending point in space
-	 * @return {Vertex[]} Sapcelike hypersurface.
-	 */
+	* Space-like hypersurface/slice.
+	* @param {Vertex} v1 Starting point in space
+	* @param {Vertex} v2 Ending point in space
+	* @return {Vertex[]} Sapcelike hypersurface.
+	*/
 	space( v1, v2 ) {
 		const vertices = [];
 		for( let i = v1; i <= v2; i++ ) {
@@ -126,10 +126,10 @@ class SpatialGraph extends Hypergraph {
 	}
 
 	/**
-	 * Approximate dimension and curvature of a n-dimensional ball.
-	 * @param {Vertex} center Center of the n-ball
-	 * @return {Object} Dimension and curvature.
-	 */
+	* Approximate dimension and curvature of a n-dimensional ball.
+	* @param {Vertex} center Center of the n-ball
+	* @return {Object} Dimension and curvature.
+	*/
 	geom( center ) {
 		const tree = this.tree( center );
 		const radius = Math.round( tree.length / 2 );
@@ -144,9 +144,9 @@ class SpatialGraph extends Hypergraph {
 	}
 
 	/**
-	 * Report status.
-	 * @return {Object} Status of the spatial graph.
-	 */
+	* Report status.
+	* @return {Object} Status of the spatial graph.
+	*/
 	status() {
 		const stat = super.status();
 		if ( this.V.size >= 200 ) {

@@ -2,20 +2,20 @@ import { SpatialGraph } from "./SpatialGraph.mjs";
 import { CausalGraph } from "./CausalGraph.mjs";
 
 /**
- * @class Graph representing a regular graph with adjacency lists and methods.
- * @author Mika Suominen
- */
+* @class Graph representing a regular graph with adjacency lists and methods.
+* @author Mika Suominen
+*/
 class HypergraphRewritingSystem {
 
 	/**
-	 * Rewriting rule.
-	 * @typedef {Hyperedge[]} RulePattern
-	 */
+	* Rewriting rule.
+	* @typedef {Hyperedge[]} RulePattern
+	*/
 
 	/**
-	 * Creates an instance of SpatialGraph.
-	 * @constructor
-	 */
+	* Creates an instance of SpatialGraph.
+	* @constructor
+	*/
 	constructor() {
 		this.spatial = new SpatialGraph(); // Spatial hypergraph
 		this.causal = new CausalGraph(); // Causal graph
@@ -37,20 +37,20 @@ class HypergraphRewritingSystem {
 	}
 
 	/**
-	 * Map subgraph pattern to real subgraph using 'map'.
-	 * @param {Hypergraph} graph Hypergraph
-	 * @param {RulePattern} rulepatterns Patterns to map
-	 * @param {number[]} map Map from pattern to real vertices
-	 * @return {RulePattern} Real subgraph.
-	 */
+	* Map subgraph pattern to real subgraph using 'map'.
+	* @param {Hypergraph} graph Hypergraph
+	* @param {RulePattern} rulepatterns Patterns to map
+	* @param {number[]} map Map from pattern to real vertices
+	* @return {RulePattern} Real subgraph.
+	*/
 	mapper( graph, patterns, map ) {
 		return patterns.map( p => p.map( v => ( v < map.length ? map[v] : graph.maxv + ( v - map.length ) + 1 ) ) );
 	}
 
 	/**
-	 * Find possible mappings between rule pattern 'lhs' and the hypergraph.
-	 * @param {Hypergraph} graph Hypergraph
-	 */
+	* Find possible mappings between rule pattern 'lhs' and the hypergraph.
+	* @param {Hypergraph} graph Hypergraph
+	*/
 	findMatches( graph ) {
 		if ( this.rules.length == 0 ) throw new Error("No rules.");
 
@@ -98,11 +98,11 @@ class HypergraphRewritingSystem {
 	}
 
 	/**
-	 * Process the given rewriting rule 'lhs' 'rhs' using the given
-	 * array of mappings 'maps'.
-	 * @param {Hypergraph} spatial Spatial hypergraph
-	 * @param {Hypergraph} causal Causal hypergraph
-	 */
+	* Process the given rewriting rule 'lhs' 'rhs' using the given
+	* array of mappings 'maps'.
+	* @param {Hypergraph} spatial Spatial hypergraph
+	* @param {Hypergraph} causal Causal hypergraph
+	*/
 	processMatches( spatial, causal ) {
 		// Remove overlapping parts from the rules
 		let rulesNol = [];
@@ -137,8 +137,8 @@ class HypergraphRewritingSystem {
 	}
 
 	/**
-	 * Timed rewriting process.
-	 */
+	* Timed rewriting process.
+	*/
 	rewrite = () => {
 		let start = performance.now();
 
@@ -153,9 +153,9 @@ class HypergraphRewritingSystem {
 			// Shuffle matches and then order events & rules
 			if ( this.eventordering === 'random' ) {
 				for (let i = this.matches.length - 1; i > 0; i--) {
-		    	const j = Math.floor(Math.random() * (i + 1));
-		    	[this.matches[i], this.matches[j]] = [this.matches[j], this.matches[i]];
-		  	}
+					const j = Math.floor(Math.random() * (i + 1));
+					[this.matches[i], this.matches[j]] = [this.matches[j], this.matches[i]];
+				}
 			} else if ( this.eventordering === 'old' ) {
 				this.matches.sort( (a,b) => Math.max( ...a.m ) - Math.max( ...b.m ) );
 			} else if ( this.eventordering === 'new' ) {
@@ -195,26 +195,26 @@ class HypergraphRewritingSystem {
 	}
 
 	/**
-	 * Callback for rewriting progress update.
-	 * @callback progressfn
-	 * @param {numeric} eventcnt Number of events processed.
-	 */
-
-	 /**
-	 * Callback for rewriting process finished.
-	 * @callback finishedfn
-	 */
+	* Callback for rewriting progress update.
+	* @callback progressfn
+	* @param {numeric} eventcnt Number of events processed.
+	*/
 
 	/**
-	 * Run abstract rewriting rules.
-	 * @param {Rules} rules Rewriting rules
-	 * @param {Rules} initial Rewriting rules
-	 * @param {string} [ruleOrdering="mixed"] Rewriting rules
-	 * @param {string} [eventOrdering="random"] Rewriting rules
-	 * @param {number} [maxevents=500] Rewriting rules
-	 * @param {progressfn} progressfn Progress update callback function
-	 * @param {finishedfn} finishedfn Rewriting finished callback function
-	 */
+	* Callback for rewriting process finished.
+	* @callback finishedfn
+	*/
+
+	/**
+	* Run abstract rewriting rules.
+	* @param {Rules} rules Rewriting rules
+	* @param {Rules} initial Rewriting rules
+	* @param {string} [ruleOrdering="mixed"] Rewriting rules
+	* @param {string} [eventOrdering="random"] Rewriting rules
+	* @param {number} [maxevents=500] Rewriting rules
+	* @param {progressfn} progressfn Progress update callback function
+	* @param {finishedfn} finishedfn Rewriting finished callback function
+	*/
 	run( rules, initial, ruleOrdering = "mixed", eventOrdering = "random", maxevents = 500, progressfn = null, finishedfn = null ) {
 
 		// Initialize system
@@ -244,16 +244,16 @@ class HypergraphRewritingSystem {
 	}
 
 	/**
-	 * Cancel rewriting process.
-	 */
+	* Cancel rewriting process.
+	*/
 	cancel() {
 		this.maxevents = 0;
 	}
 
 	/**
-	 * Report status.
-	 * @return {Object} Status of the spatial graph.
-	 */
+	* Report status.
+	* @return {Object} Status of the spatial graph.
+	*/
 	status() {
 		return {};
 		// return { secs: (this.duration / 1000).toLocaleString(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 1 }) };
