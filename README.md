@@ -95,4 +95,15 @@ are replaced and which are ignored. In physical reality, however, all such match
 giving rise to quantum mechanics. This means that the simulator shows only one possible classical
 evolution of the hypergraph.
 
+Conceptually Wolfram Model comes out of the old Greek tradition of atomism started by Leucippus
+(5thC BCE) and his pupil Democritus (ca. 460–370 BCE). In the Hellenistic period the idea was revived
+by Epicurus (341–270 BCE) and described by a Roman poet and philosopher Lucretius (ca. 99–55 BCE).
+Unfortunately, starting from the Early Middle Ages, atomism was mostly forgotten in the Western
+world until Lucretius' *De rerum natura* (On the Nature of Things) and other atomist teachings were
+rediscovered in the 14th century. It should be noted that Wolfram's "atoms of space" is much closer
+to the ancient Greek idea of *atomos* ("uncuttable") than what chemists would now call atoms.
+
+> “The atoms come together in different order and position, like letters, which, though they
+> are few, yet, by being placed together in different ways, produce innumerable words.”
+> -- Epicurus (341–270 BCE) (according to one of his later critics Lactantius)
 
