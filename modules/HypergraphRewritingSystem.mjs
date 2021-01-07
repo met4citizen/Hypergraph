@@ -151,20 +151,21 @@ class HypergraphRewritingSystem {
 			if ( this.matches.length === 0 ) break;
 
 			// Shuffle matches and then order events & rules
-			if ( this.eventordering === 'random' ) {
-				for (let i = this.matches.length - 1; i > 0; i--) {
-					const j = Math.floor(Math.random() * (i + 1));
-					[this.matches[i], this.matches[j]] = [this.matches[j], this.matches[i]];
-				}
-			} else if ( this.eventordering === 'old' ) {
+			for (let i = this.matches.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1));
+				[this.matches[i], this.matches[j]] = [this.matches[j], this.matches[i]];
+			}
+			if ( this.eventordering === 'old' ) {
 				this.matches.sort( (a,b) => Math.max( ...a.m ) - Math.max( ...b.m ) );
 			} else if ( this.eventordering === 'new' ) {
 				this.matches.sort( (a,b) => Math.max( ...b.m ) - Math.max( ...a.m ) );
 			}
-			if ( this.ruleordering === 'index' ) {
-				this.matches.sort( (a,b) => a.r - b.r );
-			} else if ( this.ruleordering === 'indexrev' ) {
-				this.matches.sort( (a,b) => b.r - a.r );
+			if ( this.rules.length > 1 ) {
+				if ( this.ruleordering === 'index' ) {
+					this.matches.sort( (a,b) => a.r - b.r );
+				} else if ( this.ruleordering === 'indexrev' ) {
+					this.matches.sort( (a,b) => b.r - a.r );
+				}
 			}
 
 			// Process matches by running events, break if 'maxevents' is reached
