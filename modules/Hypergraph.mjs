@@ -329,16 +329,16 @@ class Hypergraph {
 		const P = new Array( m ).fill().map( x => new Array( n ).fill( 0 ) );
 		let Psum = 0;
 		for( let i = m-1; i >= 0; i-- )
-		for( let j = n-1; j >= 0; j-- ) {
-			P[i][j] = Math.exp( -lam * dm[i][j] );
-			Psum += P[i][j];
-		}
+			for( let j = n-1; j >= 0; j-- ) {
+				P[i][j] = Math.exp( -lam * dm[i][j] );
+				Psum += P[i][j];
+			}
 		let u = new Array( n ).fill(0); // row sums
 		for( let i = m-1; i >= 0; i-- )
-		for( let j = n-1; j >= 0; j-- ) {
-			P[i][j] /= Psum;
-			u[j] += P[i][j];
-		}
+			for( let j = n-1; j >= 0; j-- ) {
+				P[i][j] /= Psum;
+				u[j] += P[i][j];
+			}
 		let du = new Array( n ); // row sums diff between iterations
 		let v = new Array( m ); // column sums
 
@@ -347,26 +347,26 @@ class Hypergraph {
 			du.fill(0);
 			v.fill(0);
 			for( let i = m-1; i >= 0; i-- )
-			for( let j = n-1; j >= 0; j-- ) {
-				du[j] += P[i][j];
-				P[i][j] *= b[j] / u[j]; // scale the rows
-				v[i] += P[i][j]
-			}
+				for( let j = n-1; j >= 0; j-- ) {
+					du[j] += P[i][j];
+					P[i][j] *= b[j] / u[j]; // scale the rows
+					v[i] += P[i][j]
+				}
 			u.fill(0);
 			for( let i = m-1; i >= 0; i-- )
-			for( let j = n-1; j >= 0; j-- ) {
-				P[i][j] *= a[i] / v[i]; // scale the columns
-				u[j] += P[i][j];
-				du[j] -= P[i][j];
-			}
+				for( let j = n-1; j >= 0; j-- ) {
+					P[i][j] *= a[i] / v[i]; // scale the columns
+					u[j] += P[i][j];
+					du[j] -= P[i][j];
+				}
 		}
 		while ( Math.max.apply( null, du.map( Math.abs ) ) > epsilon );
 
 		// Calculate sinkhorn distance
 		let dist = 0;
 		for( let i = m-1; i >= 0; i-- )
-		for( let j = n-1; j >= 0; j-- )
-		dist += P[i][j] * dm[i][j];
+			for( let j = n-1; j >= 0; j-- )
+				dist += P[i][j] * dm[i][j];
 		return { ot: P, dist: dist };
 	}
 
@@ -391,8 +391,8 @@ class Hypergraph {
 		// Construct distance matrix
 		const dm = new Array( ns1.length ).fill().map( x => new Array( ns2.length ) );
 		for( let i = ns1.length - 1; i >= 0; i-- )
-		for( let j = ns2.length - 1; j >= 0; j-- )
-		dm[i][j] = this.dist( ns1[i], ns2[j], dir );
+			for( let j = ns2.length - 1; j >= 0; j-- )
+				dm[i][j] = this.dist( ns1[i], ns2[j], dir );
 
 		// Calculate Wasserstein-1 distance using sinkhorn-knopp algorithm
 		return ( 1 - this.sinkhorn( dm )[ "dist" ] / this.dist( v1, v2, dir ) );
