@@ -164,35 +164,35 @@ class Hypergraph3D {
 
 			switch( func ) {
 			case "geodesic": case "line": case "path":
-				p.push( params[0], params[1] );
+				p.push( parseInt(params[0]), parseInt(params[1]) );
 				ret = this.data.geodesic( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev"), params.includes("all") ).flat();
 				r.push( ret.length );
 				e.push( ret );
 				break;
 
 			case "nsphere": case "sphere":
-				p.push( params[0] );
+				p.push( parseInt(params[0]) );
 				ret = this.data.nsphere( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
 				r.push( ret.length );
 				v.push( ret );
 				break;
 
 			case "nball": case "ball": case "tree":
-				p.push( params[0] );
+				p.push( parseInt(params[0]) );
 				ret = this.data.nball( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
 				r.push( ret.length );
 				e.push( ret );
 				break;
 
 			case "random": case "walk":
-				p.push( params[0] );
+				p.push( parseInt(params[0]) );
 				ret = this.data.random( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
 				r.push( ret.length );
 				e.push( ret );
 				break;
 
 			case "worldline": case "timeline":
-				p.push( params[0] );
+				p.push( parseInt(params[0]) );
 				if ( this.mode !== "causal" ) throw new Error("Timeline only available in 'Time' mode.");
 				ret = this.data.worldline( parseInt(params[0]) );
 				r.push( ret.length );
@@ -200,7 +200,7 @@ class Hypergraph3D {
 				break;
 
 			case "lightcone":
-				p.push( params[0] );
+				p.push( parseInt(params[0]) );
 				if ( this.mode !== "causal" ) throw new Error("Lightcones only available in 'Time' mode.");
 				ret = this.data.lightcone( parseInt(params[0]), parseInt(params[1]) );
 				r.push( ret["past"].length + ret["future"].length );
