@@ -150,16 +150,54 @@ class HypergraphRewritingSystem {
 			this.findMatches( this.spatial );
 			if ( this.matches.length === 0 ) break;
 
-			// Shuffle matches and then order events & rules
+			// Shuffle matches
 			for (let i = this.matches.length - 1; i > 0; i--) {
 				const j = Math.floor(Math.random() * (i + 1));
 				[this.matches[i], this.matches[j]] = [this.matches[j], this.matches[i]];
 			}
+			// Event ordering; using causal graph to decide event ordering
 			if ( this.eventordering === 'old' ) {
-				this.matches.sort( (a,b) => Math.max( ...a.m ) - Math.max( ...b.m ) );
+				this.matches.sort( (a,b) => {
+					let A = a.m.map( v => this.causal.L.get( v )[0] ).sort((a, b) => a - b);
+					let B = b.m.map( v => this.causal.L.get( v )[0] ).sort((a, b) => a - b);
+					for(let i = 0; i < Math.min( A.length, B.length ); i++ ) {
+						if ( A[i] === B[i] ) continue;
+						return A[i] - B[i];
+					}
+					return A.length - B.length;
+				});
+			} else if ( this.eventordering === 'oldr' ) {
+				this.matches.sort( (a,b) => {
+					let A = a.m.map( v => this.causal.L.get( v )[0] ).sort((a, b) => a - b);
+					let B = b.m.map( v => this.causal.L.get( v )[0] ).sort((a, b) => a - b);
+					for(let i = 0; i < Math.min( A.length, B.length ); i++ ) {
+						if ( A[i] === B[i] ) continue;
+						return B[i] - A[i];
+					}
+					return B.length - A.length;
+				});
 			} else if ( this.eventordering === 'new' ) {
-				this.matches.sort( (a,b) => Math.max( ...b.m ) - Math.max( ...a.m ) );
+				this.matches.sort( (a,b) => {
+					let A = a.m.map( v => this.causal.L.get( v ).slice(-1)[0] ).sort((a, b) => b - a);;
+					let B = b.m.map( v => this.causal.L.get( v ).slice(-1)[0] ).sort((a, b) => b - a);;
+					for(let i = 0; i < Math.min( A.length, B.length ); i++ ) {
+						if ( A[i] === B[i] ) continue;
+						return B[i] - A[i];
+					}
+					return B.length - A.length;
+				});
+			} else if ( this.eventordering === 'newr' ) {
+				this.matches.sort( (a,b) => {
+					let A = a.m.map( v => this.causal.L.get( v ).slice(-1)[0] ).sort((a, b) => b - a);;
+					let B = b.m.map( v => this.causal.L.get( v ).slice(-1)[0] ).sort((a, b) => b - a);;
+					for(let i = 0; i < Math.min( A.length, B.length ); i++ ) {
+						if ( A[i] === B[i] ) continue;
+						return A[i] - B[i];
+					}
+					return A.length - B.length;
+				});
 			}
+			// Rule ordering
 			if ( this.rules.length > 1 ) {
 				if ( this.ruleordering === 'index' ) {
 					this.matches.sort( (a,b) => a.r - b.r );
