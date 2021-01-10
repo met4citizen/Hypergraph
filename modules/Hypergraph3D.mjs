@@ -154,61 +154,77 @@ class Hypergraph3D {
 		// Discard all unsupported characters
 		str = str.replace( /[^()a-z0-9,.-;]+/g , "" );
 
-		let cmds = str.split(";").map( c => [ ...c.split("(").map( p => [ ...p.replace( /[^a-z0-9,.-]+/g, "" ).split(",") ] ) ] );
+		const cmds = str.split(";").map( c => [ ...c.split("(").map( p => [ ...p.replace( /[^a-z0-9,.-]+/g, "" ).split(",") ] ) ] );
 
-		let v = [], e = [], p = [], r = [];
-		let func, params, ret, isVertices, numParams = 1;
+		const v = [], e = [], p = [], r = [];
 		cmds.forEach( c => {
-			func = c[0][0];
-			params = c[1];
-			isVertices = false;
-			numParams = 1;
+			const func = c[0][0];
+			const params = c[1];
+			let ret;
 
 			switch( func ) {
-				case "path": case "line": case "geodesic":
+			case "geodesic": case "line": case "path":
+				p.push( params[0], params[1] );
 				ret = this.data.geodesic( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev"), params.includes("all") ).flat();
-				numParams = 2;
+				r.push( ret.length );
+				e.push( ret );
 				break;
-				case "nsphere": case "sphere":
+
+			case "nsphere": case "sphere":
+				p.push( params[0] );
 				ret = this.data.nsphere( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
-				isVertices = true;
+				r.push( ret.length );
+				v.push( ret );
 				break;
-				case "nball": case "ball": case "tree":
+
+			case "nball": case "ball": case "tree":
+				p.push( params[0] );
 				ret = this.data.nball( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
+				r.push( ret.length );
+				e.push( ret );
 				break;
-				case "random": case "walk":
+
+			case "random": case "walk":
+				p.push( params[0] );
 				ret = this.data.random( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
+				r.push( ret.length );
+				e.push( ret );
 				break;
-				case "timeline": case "worldline":
+
+			case "worldline": case "timeline":
+				p.push( params[0] );
 				if ( this.mode !== "causal" ) throw new Error("Timeline only available in 'Time' mode.");
 				ret = this.data.worldline( parseInt(params[0]) );
+				r.push( ret.length );
+				e.push( ret );
 				break;
-				case "lightcone":
+
+			case "lightcone":
+				p.push( params[0] );
 				if ( this.mode !== "causal" ) throw new Error("Lightcones only available in 'Time' mode.");
 				ret = this.data.lightcone( parseInt(params[0]), parseInt(params[1]) );
+				r.push( ret["past"].length + ret["future"].length );
+				e.push( [ ...ret["past"], ...ret["future"] ] );
+				v.push( [ ...new Set( ret["past"].flat() ) ] );
+				v.push( [ ...new Set( ret["future"].flat() ) ] );
 				break;
-				case "space":
+
+			case "space":
 				if ( this.mode !== "spatial" ) throw new Error("Space only available in 'Space' mode.");
 				ret = this.data.space( parseInt(params[0]), parseInt(params[1]) );
-				isVertices = true;
-				numParams = 0;
+				r.push( ret.length );
+				v.push( ret );
 				break;
-				case "time":
+
+			case "time":
 				if ( this.mode !== "causal" ) throw new Error("Time only available in 'Time' mode.");
 				ret = this.data.time( parseInt(params[0]), parseInt(params[1]) );
-				isVertices = true;
-				numParams = 0;
-				break;
-				default:
-				throw new Error( "Unknown command: " + func );
-			}
-
-			for( let i = 0; i < numParams; i++ ) p.push( params[i] );
-			r.push( ret.length );
-			if ( isVertices ) {
+				r.push( ret.length );
 				v.push( ret );
-			} else {
-				e = [ ...new Set( [ ...e, ...ret ] ) ];
+				break;
+
+			default:
+				throw new Error( "Unknown command: " + func );
 			}
 
 		});
@@ -612,15 +628,17 @@ class Hypergraph3D {
 		});
 
 		// Hyperedges
-		subgraph['e'].forEach(e => {
-			Hypergraph3D.pairs(e).forEach( p => {
-				let idx = links.findIndex(l => l.source.id === p[0] && l.target.id === p[1] && !l.hyperedge );
-				if (idx !== -1) links[ idx ].style = links[ idx ].style | style;
+		subgraph['e'].forEach(es => {
+			es.forEach( e => {
+				Hypergraph3D.pairs(e).forEach( p => {
+					let idx = links.findIndex(l => l.source.id === p[0] && l.target.id === p[1] && !l.hyperedge );
+					if (idx !== -1) links[ idx ].style = links[ idx ].style | style;
+				});
 			});
-		});
-		const vertices = [ ...new Set( subgraph['e'].flat() ) ];
-		vertices.forEach( n => {
-			if ( typeof nodes[n] !== 'undefined' ) nodes[n].style = nodes[n].style | style;
+			const vertices = [ ...new Set( es.flat() ) ];
+			vertices.forEach( n => {
+				if ( typeof nodes[n] !== 'undefined' ) nodes[n].style = nodes[n].style | style;
+			});
 		});
 
 		this.graph3d.graphData({ nodes, links });
@@ -670,7 +688,7 @@ class Hypergraph3D {
 				Hypergraph3D.download( output, 'hypergraph.gltf', 'application/json');
 			}
 		}, options);
-		
+
 	}
 
 	/**
