@@ -5,7 +5,7 @@ import { Hypergraph } from "./Hypergraph.mjs";
 * @author Mika Suominen
 */
 class CausalGraph extends Hypergraph {
-	
+
 	/**
 	* Creates an instance of CausalGraph.
 	* @constructor
@@ -79,9 +79,19 @@ class CausalGraph extends Hypergraph {
 	*/
 	lightcone( moment, length, past = true, future = true ) {
 		let pastcone = [], futurecone = [];
-		if ( past ) pastcone =  this.nball( moment, length, true, false );
-		if ( future ) futurecone =  this.nball( moment, length, true, true );
-		return [ ...pastcone, ...futurecone ];
+		if ( past ) {
+			let s =  this.nsphere( moment, length, true, true );
+			s.forEach( v => {
+				pastcone.push( ...this.geodesic( v, moment, true, false, true ).flat() );
+			});
+		}
+		if ( future ) {
+			let s =  this.nsphere( moment, length, true, false );
+			s.forEach( v => {
+				futurecone.push( ...this.geodesic( v, moment, true, true, true ).flat() );
+			});
+		}
+		return { past: [ ...new Set( pastcone ) ], future: [ ...new Set( futurecone ) ] };
 	}
 
 	/**
