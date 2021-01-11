@@ -145,7 +145,7 @@ class Hypergraph3D {
 	* @param {string} str Commands in string format
 	* @return {Object} Edges, vertices, points and results.
 	*/
-	execute( str ) {
+	execute( str, surface = true ) {
 		// Change parenthesis types and remove extra ones
 		str = str.toLowerCase()
 		.replace( /\{|\[/g , "(" ).replace( /}|]/g , ")" )
@@ -174,7 +174,7 @@ class Hypergraph3D {
 				p.push( parseInt(params[0]) );
 				ret = this.data.nsphere( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
 				r.push( ret.length );
-				v.push( ret );
+				if ( surface ) v.push( ret );
 				break;
 
 			case "nball": case "ball": case "tree":
@@ -182,6 +182,10 @@ class Hypergraph3D {
 				ret = this.data.nball( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
 				r.push( ret.length );
 				e.push( ret );
+				if ( surface ) {
+					ret = this.data.nsphere( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
+					v.push( ret );
+				}
 				break;
 
 			case "random": case "walk":
@@ -205,8 +209,10 @@ class Hypergraph3D {
 				ret = this.data.lightcone( parseInt(params[0]), parseInt(params[1]) );
 				r.push( ret["past"].length + ret["future"].length );
 				e.push( [ ...ret["past"], ...ret["future"] ] );
-				v.push( [ ...new Set( ret["past"].flat() ) ] );
-				v.push( [ ...new Set( ret["future"].flat() ) ] );
+				if ( surface ) {
+					v.push( [ ...new Set( ret["past"].flat() ) ] );
+					v.push( [ ...new Set( ret["future"].flat() ) ] );
+				}
 				break;
 
 			case "space":
