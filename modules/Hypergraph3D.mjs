@@ -34,6 +34,18 @@ class Hypergraph3D {
 	}
 
 	/**
+	* Make ternaries of an array, used for triangulation. First point fixed.
+	* @static
+	* @param {number[]} arr Array of numbers
+	* @return {number[][]} Array of ternaries of numbers.
+	*/
+	static triangulate( arr ) {
+		const result = [];
+		for ( let i = 0; i < (arr.length - 2); i++ ) result.push( [ arr[0], arr[i+1], arr[i+2] ] );
+		return result;
+	}
+
+	/**
 	* Test whether array of numbers has duplicate values.
 	* @static
 	* @param {numbers[]} edge Array of vertices
@@ -105,13 +117,13 @@ class Hypergraph3D {
 	/**
 	* Run abstract rewriting rules.
 	* @param {string} rulestring Rule string
-	* @param {string} [ruleOrdering="mixed"] Rewriting rules
+	* @param {string} [ruleOrdering="none"] Rewriting rules
 	* @param {string} [eventOrdering="random"] Rewriting rules
 	* @param {number} [maxevents=500] Rewriting rules
 	* @param {progressfn} progressfn Progress update callback function
 	* @param {finishedfn} finishedfn Rewriting finished callback function
 	*/
-	run( rulestring, ruleOrdering = "mixed", eventOrdering = "random", maxevents = 500, progressfn = null, finishedfn = null ) {
+	run( rulestring, ruleOrdering = "none", eventOrdering = "random", maxevents = 500, progressfn = null, finishedfn = null ) {
 
 		let rules, initial;
 
@@ -247,19 +259,27 @@ class Hypergraph3D {
 	* @return {boolean} False.
 	*/
 	static linkPositionUpdate( linkObject, coordinates, link ) {
-		if ( link.hyperedge ) {
-			// This is hyperedge, update triangle coordinates
-			const pos = link.mesh.geometry.attributes.position;
-			pos.array[0] = link.source.x;
-			pos.array[1] = link.source.y;
-			pos.array[2] = link.source.z;
-			pos.array[3] = link.middle.x;
-			pos.array[4] = link.middle.y;
-			pos.array[5] = link.middle.z;
-			pos.array[6] = link.target.x;
-			pos.array[7] = link.target.y;
-			pos.array[8] = link.target.z;
-			pos.needsUpdate = true;
+		if ( link.hasOwnProperty("hyperedge") ) {
+			let m = 0;
+			Hypergraph3D.triangulate( link.hyperedge ).forEach( t => {
+				if ( Hypergraph3D.hasDuplicates( t ) ) {
+					// TODO: self-loop (a circle?)
+				} else {
+					// This is hyperedge, update triangle coordinates
+					const pos = link.mesh[m].geometry.attributes.position;
+					pos.array[0] = t[0].x;
+				  pos.array[1] = t[0].y;
+					pos.array[2] = t[0].z;
+					pos.array[3] = t[1].x;
+					pos.array[4] = t[1].y;
+					pos.array[5] = t[1].z;
+					pos.array[6] = t[2].x;
+					pos.array[7] = t[2].y;
+					pos.array[8] = t[2].z;
+					pos.needsUpdate = true;
+					m++;
+				}
+			});
 		}
 		return false;
 	}
@@ -323,7 +343,7 @@ class Hypergraph3D {
 				}
 			});
 			// Add link
-			links.push({source: nodes[edge[0]], target: nodes[edge[1]], hyperedge: false, style: 0, ...props });
+			links.push({source: nodes[edge[0]], target: nodes[edge[1]], style: 0, ...props });
 		} else {
 			edge.forEach( (n,i) => {
 				if (typeof nodes[n] === 'undefined') {
@@ -335,8 +355,8 @@ class Hypergraph3D {
 			Hypergraph3D.pairs(edge).forEach( p => {
 				let curv = 0.5;
 				if (p[0] !== p[1]) {
-					let idx = links.findIndex(l => l.source.id === p[0] && l.target.id === p[1] && !l.hyperedge);
-					if (idx == -1) {
+					let idx = links.findIndex(l => l.source.id === p[0] && l.target.id === p[1] && !l.hasOwnProperty("hyperedge") );
+					if (idx === -1) {
 						// first link, keep straight
 						curv = 0;
 					} else {
@@ -351,34 +371,50 @@ class Hypergraph3D {
 				}
 
 				// Add link
-				links.push({source: nodes[p[0]], target: nodes[p[1]], hyperedge: false, style: 0, curvature: curv, rotation: (curv == 0 ? 0 : 2 * Math.PI * Math.random()), ...event });
+				links.push({source: nodes[p[0]], target: nodes[p[1]], style: 0, curvature: curv, rotation: (curv == 0 ? 0 : 2 * Math.PI * Math.random()), ...props });
 			});
 
 			// If hyperedge, fill with triangles and connect the two ends for force effect
 			if ( edge.length > 2 ) {
-				if ( Hypergraph3D.hasDuplicates( edge ) ) {
-					// This has a self-loop
-					// TODO: circle ?
-				} else {
-					// No self-loop
-					// Triangle
-					const geom = new BufferGeometry();
-					const positions = new Float32Array([
-						nodes[ edge[edge.length-1] ].x, nodes[ edge[edge.length-1] ].y, nodes[ edge[edge.length-1] ].z,
-						nodes[ edge[1] ].x, nodes[ edge[1] ].y, nodes[ edge[1] ].z,
-						nodes[ edge[0] ].x , nodes[ edge[0] ].y, nodes[ edge[0] ].z
-					]);
-					const normals = new Float32Array(9);
-					geom.setAttribute( 'position', new BufferAttribute( positions, 3 ) );
-					geom.setAttribute( 'normal', new BufferAttribute( normals, 3 ) );
-					geom.computeVertexNormals();
+				// Hyperlink
+				const hyperlink = {
+					source: nodes[ edge[edge.length-1] ],
+					target: nodes[ edge[0] ],
+					hyperedge: [],
+					mesh: [],
+					style: 4,
+					curvature: 0,
+					rotation: 0 };
 
-					const mesh = new Mesh(geom, this.hyperedgematerial );
-					this.graph3d.scene().add(mesh);
+				// Set nodes of the hyperlink
+				edge.forEach( e => hyperlink.hyperedge.push( nodes[ e ] ) );
 
-					// Hyperedge link
-					links.push({source: nodes[edge[edge.length-1]], target: nodes[edge[0]], middle: nodes[edge[1]], hyperedge: true, selfloop: false, mesh: mesh, style: 4, curvature: 0, rotation: 0 });
-				}
+				// Triangulate
+				Hypergraph3D.triangulate( hyperlink["hyperedge"] ).forEach( t => {
+					if ( Hypergraph3D.hasDuplicates( t ) ) {
+						// TODO: self-loop -> a circle?
+					} else {
+						// Triangle
+						const geom = new BufferGeometry();
+						const positions = new Float32Array([
+							t[0].x, t[0].y, t[0].z,
+							t[1].x, t[1].y, t[1].z,
+							t[2].x , t[2].y, t[2].z
+						]);
+						const normals = new Float32Array(9);
+						geom.setAttribute( 'position', new BufferAttribute( positions, 3 ) );
+						geom.setAttribute( 'normal', new BufferAttribute( normals, 3 ) );
+						geom.computeVertexNormals();
+
+						const mesh = new Mesh(geom, this.hyperedgematerial );
+						this.graph3d.scene().add(mesh);
+
+						hyperlink.mesh.push( mesh );
+					}
+				});
+				// Hyperedge link
+				links.push( hyperlink );
+
 			}
 		}
 	}
@@ -397,27 +433,23 @@ class Hypergraph3D {
 
 		// Remove the first link
 		Hypergraph3D.pairs( edge ).forEach( p => {
-			let idx = links.findIndex(l => l.source.id === p[0] && l.target.id === p[1] && !l.hyperedge);
+			let idx = links.findIndex(l => l.source.id === p[0] && l.target.id === p[1] && !l.hasOwnProperty("hyperedge"));
 			if ( idx !== -1 ) links.splice( idx, 1 );
 		});
 
-		// Remove the hyperedge, if this a hyperedge
-		if ( edge.length > 2 ) {
-			if ( Hypergraph3D.hasDuplicates( edge ) ) {
-				// This has a self-loop
-			} else {
-				let idx = links.findIndex( l => l.hyperedge && l.source.id === edge[edge.length-1] && l.target.id === edge[0] && l.middle.id === edge[1] );
-				if ( idx !== -1 ) {
-					// Remove filled hyperedge
-					this.graph3d.scene().remove( links[ idx ].mesh );
-					links[ idx ].mesh.geometry.dispose();
-					links[ idx ].mesh = undefined;
-
-					// Remove link
-					links.splice( idx, 1 );
-				}
-			}
+		// Remove hyperedge
+		let idx = links.findIndex( l => l.hasOwnProperty("hyperedge") && l.hyperedge.length === edge.length && l.hyperedge.every( (x,i) => x.id === edge[i] ) );
+		if ( idx !== -1 ) {
+			// Remove filled hyperedges
+			links[ idx ].mesh.forEach( m => {
+				this.graph3d.scene().remove( m );
+				m.geometry.dispose();
+				m = undefined;
+			});
+			// Remove link
+			links.splice( idx, 1 );
 		}
+
 	}
 
 	/**
@@ -439,17 +471,21 @@ class Hypergraph3D {
 		// Remove hyperedges; empty nodes and links
 		let { nodes, links } = this.graph3d.graphData();
 		links.forEach( l => {
-			if ( l.hyperedge ) {
-				this.graph3d.scene().remove( l.mesh );
-				l.mesh.geometry.dispose();
-				l.mesh = undefined;
+			if ( l.hasOwnProperty("hyperedge") ) {
+				l.mesh.forEach( m => {
+					this.graph3d.scene().remove( m );
+					m.geometry.dispose();
+					m = undefined;
+				});
 			}
 		});
+
+		// Reset graph
 		nodes = [ { id: 0, refs: 0, style: 0, x: Math.random() - 0.5, y: Math.random() - 0.5, z: Math.random() - 0.5 } ];
 		links = [];
 		this.graph3d.graphData({ nodes, links });
 
-		// Initialize
+		// Initialize the correct graph type
 		if ( mode === "spatial" ) {
 			this.mode = "spatial";
 			this.data = this.hrs.spatial;
@@ -637,7 +673,7 @@ class Hypergraph3D {
 		subgraph['e'].forEach(es => {
 			es.forEach( e => {
 				Hypergraph3D.pairs(e).forEach( p => {
-					let idx = links.findIndex(l => l.source.id === p[0] && l.target.id === p[1] && !l.hyperedge );
+					let idx = links.findIndex(l => l.source.id === p[0] && l.target.id === p[1] && !l.hasOwnProperty("hyperedge") );
 					if (idx !== -1) links[ idx ].style = links[ idx ].style | style;
 				});
 			});
