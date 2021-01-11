@@ -30,15 +30,15 @@ rewriting events. Click `RUN` to start the rewriting process.
 
 Rule order | Description
 --- | ---
-NON<br/>None | Allow updates of different rules mix. That is, follow event ordering without sorting based on rules.
-NDX<br/>Index order | Regardless of event ordering, always try to apply the updates in the order in which rules are specified.
-REV<br/>Reverse index order | Regardless of event ordering, always try to apply the updates in the reverse order in which rules are specified.
+`NON`<br/>None | Allow updates of different rules mix. That is, follow event ordering without sorting based on rules.
+`NDX`<br/>Index order | Regardless of event ordering, always try to apply the updates in the order in which rules are specified.
+`REV`<br/>Reverse index order | Regardless of event ordering, always try to apply the updates in the reverse order in which rules are specified.
 
 Event order | Description
 --- | ---
-RND<br/>Random order | Shuffle all possible update events.
-ASC<br/>Ascending time order |  Sort update events so that the least recent match based on the past events is applied first.
-DEC<br/>Descending time order | Sort update event so that the most recent math based on the the past events is applied first.
+`RND`<br/>Random order | Shuffle all possible update events.
+`ASC`<br/>Ascending time order |  Sort update events so that the least recent match based on the past events is applied first.
+`DEC`<br/>Descending time order | Sort update event so that the most recent math based on the the past events is applied first.
 
 An example of a hypergraph rewriting rule:
 
