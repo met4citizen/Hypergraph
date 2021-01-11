@@ -28,18 +28,6 @@ Click `RULE` to modify the rewriting rule and change its settings. Settings incl
 different options for rule ordering and event orderings and the max number of
 rewriting events. Click `RUN` to start the rewriting process.
 
-Rule order | Description
---- | ---
-`NON`<br/>None | Allow updates of different rules mix. That is, follow event ordering without sorting based on rules.
-`NDX`<br/>Index order | Regardless of event ordering, always try to apply the updates in the order in which rules are specified.
-`REV`<br/>Reverse index order | Regardless of event ordering, always try to apply the updates in the reverse order in which rules are specified.
-
-Event order | Description
---- | ---
-`RND`<br/>Random order | Shuffle all possible update events.
-`ASC`<br/>Ascending time order |  Sort update events so that the least recent match based on the past events is applied first.
-`DEC`<br/>Descending time order | Sort update event so that the most recent math based on the the past events is applied first.
-
 An example of a hypergraph rewriting rule:
 
 ```
@@ -66,6 +54,22 @@ Some rules to try out (copy-paste the rule part and change the setting if specif
 - (1,1,2)(3,2,4)->(5,1,4)(3,2,3)(5,5,4);(1,1,1)(1,1,1)
 - (1,2,2)(1,3,4)->(3,2,5)(5,5,2)(4,5,5);(1,1,1)(1,1,1) | Set event ordering: DEC
 - (1,2,2)(1,3,4)->(1,5,2)(2,3,4)(4,5,5);(1,1,1)(1,1,1) | Set event ordering: DEC
+
+Rule ordering:
+
+Rule order | Description
+--- | ---
+`NON`<br/>None | Follow event ordering without sorting based on rules. In other words, allow mixing of the rules.
+`NDX`<br/>Index order | Regardless of event ordering, always try to apply the event updates in the order in which rules are specified.
+`REV`<br/>Reverse index order | Regardless of event ordering, always try to apply the event updates in the *reverse* order in which rules are specified.
+
+Event ordering:
+
+Event order | Description
+--- | ---
+`RND`<br/>Random order | Shuffle all possible update events (matches).
+`ASC`<br/>Ascending time order |  Sort update events so that the least recent match based on the past events is applied first.
+`DEC`<br/>Descending time order | Sort update event so that the most recent match based on the the past events is applied first.
 
 ## Simulation
 
