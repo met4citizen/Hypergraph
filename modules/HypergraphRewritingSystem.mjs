@@ -155,47 +155,27 @@ class HypergraphRewritingSystem {
 				const j = Math.floor(Math.random() * (i + 1));
 				[this.matches[i], this.matches[j]] = [this.matches[j], this.matches[i]];
 			}
-			// Event ordering; using causal graph to decide event ordering
-			if ( this.eventordering === 'old' ) {
-				this.matches.sort( (a,b) => {
-					let A = a.m.map( v => this.causal.L.get( v )[0] ).sort((a, b) => a - b);
-					let B = b.m.map( v => this.causal.L.get( v )[0] ).sort((a, b) => a - b);
-					for(let i = 0; i < Math.min( A.length, B.length ); i++ ) {
-						if ( A[i] === B[i] ) continue;
-						return A[i] - B[i];
-					}
-					return A.length - B.length;
+			if ( this.eventordering !== 'random' ) {
+				this.matches.forEach( match => {
+					match.order = match.m.map( v => this.causal.L.get( v )[0] ).sort( (a,b) => b - a);
 				});
-			} else if ( this.eventordering === 'oldr' ) {
-				this.matches.sort( (a,b) => {
-					let A = a.m.map( v => this.causal.L.get( v )[0] ).sort((a, b) => a - b);
-					let B = b.m.map( v => this.causal.L.get( v )[0] ).sort((a, b) => a - b);
-					for(let i = 0; i < Math.min( A.length, B.length ); i++ ) {
-						if ( A[i] === B[i] ) continue;
-						return B[i] - A[i];
-					}
-					return B.length - A.length;
-				});
-			} else if ( this.eventordering === 'new' ) {
-				this.matches.sort( (a,b) => {
-					let A = a.m.map( v => this.causal.L.get( v ).slice(-1)[0] ).sort((a, b) => b - a);;
-					let B = b.m.map( v => this.causal.L.get( v ).slice(-1)[0] ).sort((a, b) => b - a);;
-					for(let i = 0; i < Math.min( A.length, B.length ); i++ ) {
-						if ( A[i] === B[i] ) continue;
-						return B[i] - A[i];
-					}
-					return B.length - A.length;
-				});
-			} else if ( this.eventordering === 'newr' ) {
-				this.matches.sort( (a,b) => {
-					let A = a.m.map( v => this.causal.L.get( v ).slice(-1)[0] ).sort((a, b) => b - a);;
-					let B = b.m.map( v => this.causal.L.get( v ).slice(-1)[0] ).sort((a, b) => b - a);;
-					for(let i = 0; i < Math.min( A.length, B.length ); i++ ) {
-						if ( A[i] === B[i] ) continue;
-						return A[i] - B[i];
-					}
-					return A.length - B.length;
-				});
+				if ( this.eventordering === 'ascending' ) {
+					this.matches.sort( (a,b) => {
+						const minlen = a.order.length < b.order.length ? a.order.length : b.order.length;
+						for(let i = 0; i < minlen; i++ ) {
+							if ( a.order[i] !== b.order[i] ) return b.order[i] - a.order[i];
+						}
+						return b.order.length - a.order.length;
+					});
+				} else if ( this.eventordering === 'descending' ) {
+					this.matches.sort( (a,b) => {
+						const minlen = a.order.length < b.order.length ? a.order.length : b.order.length;
+						for(let i = 0; i < minlen; i++ ) {
+							if ( a.order[i] !== b.order[i] ) return a.order[i] - b.order[i];
+						}
+						return a.order.length - b.order.length;
+					});
+				}
 			}
 			// Rule ordering
 			if ( this.rules.length > 1 ) {
