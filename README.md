@@ -4,7 +4,7 @@
 
 **Run it: https://met4citizen.github.io/Hypergraph/**
 
-A hypergraph is a generalization of a regular graph in which an edge (called hyperedge)
+A hypergraph is a generalization of a regular graph in which an edge (hyperedge)
 can join any number of nodes. In a hypergraph rewriting system some initial
 state is transformed incrementally by making a series of updating events that follow
 some abstract rewriting rule. That is, by following a given rule, subhypergraphs
@@ -15,7 +15,7 @@ For more information about hypergraph rewriting systems and their potential to
 represent fundamental physics visit [The Wolfram Physics Project](https://www.wolframphysics.org)
 website. According to their [technical documents](https://www.wolframphysics.org/technical-documents/)
 certain models exhibiting the Church-Rosser property (causal invariance) reproduce key
-features of both quantum mechanics and special/general relativity.
+features of both quantum mechanics and special and general relativity.
 
 The web app uses [3d Force-Directed Graph](https://github.com/vasturiano/3d-force-graph)
 for representing graph structures, [ThreeJS](https://github.com/mrdoob/three.js/)/WebGL
@@ -35,9 +35,9 @@ An example of a hypergraph rewriting rule:
 (1,1,1)(1,1,1)
 ```
 
-Wherever a subhypergraph in the form of the left-hand side pattern `(1,1,2)(2,3,4)`
+In this case, wherever a subhypergraph in the form of the left-hand side pattern `(1,1,2)(2,3,4)`
 is found on the hypergraph, it is replaced with a new subhypergraph in the
-form of the right-hand side pattern `(1,5,4)(2,5,3)(5,5,4)`. The two sides must be
+form of the right-hand side pattern `(1,5,4)(2,5,3)(5,5,4)`. The two sides of the rule must be
 separated with an arrow `->`. A rule without the right-hand side is used as the initial
 state.
 
@@ -94,14 +94,14 @@ and using one or more of the following commands:
 
 Command | Description | Examples
 --- | --- | ---
-`geodesic(n1,n2,[dir],[rev],[all])` | Shortest path between two nodes.<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction<br/>`all` = all shortest paths | `geodesic(0,10)`<br/>`geodesic(10,200,all)`
-`nball(center,radius,[dir],[rev])` | N-dimensional ball is a set of nodes and edges within a distance `radius` of a given node `center`. | `nball(0,4)`
-`nsphere(center,radius,[dir],[rev])` | N-dimensional sphere/hypersurface is a set of nodes within a distance `radius` of a given node `center`. | `nsphere(0,4)`
-`random(n,distance,[dir],[rev])` | Random walk starting from a specific node with some maximum `distance`. | `random(1,100,dir)`
-`space(n1,n2)` | Space-like hypersurface based on a range of nodes. `SPACE` mode only. | `space(100,150)`
-`time(t1,t2)` | Time-like hypersurface based on a range of iterations. `TIME` mode only. | `time(300,350)`
-`worldline(n)` | Time-like curve of the space-like node. `TIME` mode only. | `worldline(0)`
-`lightcone(n,length)` | Lightcone centered at node `n` with size `length`. `TIME` mode only. | `lightcone(200,4)`
+`geodesic(n1,n2,[dir],[rev],[all])`<br/><br/>Return:<br/>Distance as the number of edges. | Shortest path between two nodes.<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction<br/>`all` = all shortest paths | `geodesic(0,10)`<br/>`geodesic(10,200,all)`
+`nball(center,radius,[dir],[rev])`<br/><br/>Return:<br/>N-dimensional volume as the number of edges. | N-dimensional ball is a set of nodes and edges within a distance `radius` of a given node `center`. | `nball(0,4)`
+`nsphere(center,radius,[dir],[rev])`<br/><br/>Return:<br/>N-dimensional area as the number of nodes. | N-dimensional sphere/hypersurface is a set of nodes within a distance `radius` of a given node `center`. | `nsphere(0,4)`
+`random(n,distance,[dir],[rev])`<br/><br/>Return:<br/>Distance as the number of edges. | Random walk starting from a specific node with some maximum `distance`. | `random(1,100,dir)`
+`space(n1,n2)`<br/><br/>Return:<br/>N-dimensional volume as the number of nodes. | Space-like hypersurface based on a range of nodes. `SPACE` mode only. | `space(100,150)`
+`time(t1,t2)`<br/><br/>Return:<br/>N-dimensional volume as the number of nodes. | Time-like hypersurface based on a range of iterations. `TIME` mode only. | `time(300,350)`
+`worldline(n)`<br/><br/>Return:<br/>Distance as the number of nodes. | Time-like curve of the space-like node. `TIME` mode only. | `worldline(0)`
+`lightcone(n,length)`<br/><br/>Return:<br/>Size of the past and future lightlike cones as the number of edges. | Lightcone centered at node `n` with size `length`. `TIME` mode only. | `lightcone(200,4)`
 
 ## Notes
 
@@ -122,4 +122,3 @@ to the ancient Greek idea of *atomos* ("uncuttable") than what chemists would no
 > “The atoms come together in different order and position, like letters, which, though they
 > are few, yet, by being placed together in different ways, produce innumerable words.”
 > -- Epicurus (341–270 BCE) (according to one of his later critics Lactantius)
-
