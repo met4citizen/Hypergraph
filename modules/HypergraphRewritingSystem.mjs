@@ -52,10 +52,12 @@ class HypergraphRewritingSystem {
 	* @param {Hypergraph} graph Hypergraph
 	*/
 	findMatches( graph ) {
-		if ( this.rules.length == 0 ) throw new Error("No rules.");
+		this.matches.length = 0;
+
+		// No rules, no matches
+		if ( this.rules.length == 0 ) return;
 
 		// Check each edge for hit
-		this.matches.length = 0;
 		for( let e of graph.E.values() ) {
 			let edge = e.edge;
 
