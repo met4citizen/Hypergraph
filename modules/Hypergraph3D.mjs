@@ -295,11 +295,13 @@ class Hypergraph3D {
 			color: this.spatialStyles[4].fill,
 			transparent: true,
 			opacity: this.spatialStyles[4].opacity,
-			shininess: 0,
 			side: DoubleSide,
 			depthTest: false,
 		 	depthWrite: false,
 		 	flatShading: true } );
+
+		// highlighting
+
 	}
 
 	/**
