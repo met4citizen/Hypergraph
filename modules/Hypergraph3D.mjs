@@ -1,6 +1,6 @@
 import { HypergraphRewritingSystem } from "./HypergraphRewritingSystem.mjs";
 
-import { BufferGeometry, BufferAttribute, MeshStandardMaterial, Mesh, DoubleSide, Vector3  } from 'https://threejs.org/build/three.module.js'
+import { BufferGeometry, BufferAttribute, MeshBasicMaterial, Mesh, DoubleSide, Vector3  } from 'https://threejs.org/build/three.module.js'
 import { ConvexBufferGeometry } from 'https://threejs.org/examples/jsm/geometries/ConvexGeometry.js';
 import { GLTFExporter } from 'https://threejs.org/examples/jsm/exporters/GLTFExporter.js';
 
@@ -43,16 +43,6 @@ class Hypergraph3D {
 		const result = [];
 		for ( let i = 0; i < (arr.length - 2); i++ ) result.push( [ arr[0], arr[i+1], arr[i+2] ] );
 		return result;
-	}
-
-	/**
-	* Test whether array of numbers has duplicate values.
-	* @static
-	* @param {numbers[]} edge Array of vertices
-	* @return {boolean} True if array has duplicates.
-	*/
-	static hasDuplicates( arr ) {
-		return ( arr.length !== new Set( arr ).size );
 	}
 
 	/**
@@ -259,27 +249,19 @@ class Hypergraph3D {
 	* @return {boolean} False.
 	*/
 	static linkPositionUpdate( linkObject, coordinates, link ) {
-		if ( link.hasOwnProperty("hyperedge") ) {
-			let m = 0;
+		if ( link.hasOwnProperty("hyperedge") && link.mesh.length > 0 ) {
+			const pos = link.mesh[0].geometry.attributes.position;
+			let i = 0;
 			Hypergraph3D.triangulate( link.hyperedge ).forEach( t => {
-				if ( Hypergraph3D.hasDuplicates( t ) ) {
-					// TODO: self-loop (a circle?)
-				} else {
-					// This is hyperedge, update triangle coordinates
-					const pos = link.mesh[m].geometry.attributes.position;
-					pos.array[0] = t[0].x;
-				  pos.array[1] = t[0].y;
-					pos.array[2] = t[0].z;
-					pos.array[3] = t[1].x;
-					pos.array[4] = t[1].y;
-					pos.array[5] = t[1].z;
-					pos.array[6] = t[2].x;
-					pos.array[7] = t[2].y;
-					pos.array[8] = t[2].z;
-					pos.needsUpdate = true;
-					m++;
+				if ( t[0] !== t[1] && t[0] !== t[2] && t[1] !== t[2] ) {
+					t.forEach( v => {
+						pos.array[ i++ ] = v.x;
+						pos.array[ i++ ] = v.y;
+						pos.array[ i++ ] = v.z;
+					});
 				}
 			});
+			pos.needsUpdate = true;
 		}
 		return false;
 	}
@@ -309,7 +291,15 @@ class Hypergraph3D {
 		if ( typeof this.hyperedgematerial !== 'undefined' ) {
 			this.hyperedgematerial.dispose();
 		}
-		this.hyperedgematerial = new MeshStandardMaterial( { color: this.spatialStyles[4].fill, transparent: true, opacity: this.spatialStyles[4].opacity, side: DoubleSide, depthTest: false } );
+		this.hyperedgematerial = new MeshBasicMaterial( {
+			color: this.spatialStyles[4].fill,
+			transparent: true,
+			opacity: this.spatialStyles[4].opacity,
+			shininess: 0,
+			side: DoubleSide,
+			depthTest: false,
+		 	depthWrite: false,
+		 	flatShading: true } );
 	}
 
 	/**
@@ -390,28 +380,28 @@ class Hypergraph3D {
 				edge.forEach( e => hyperlink.hyperedge.push( nodes[ e ] ) );
 
 				// Triangulate
-				Hypergraph3D.triangulate( hyperlink["hyperedge"] ).forEach( t => {
-					if ( Hypergraph3D.hasDuplicates( t ) ) {
-						// TODO: self-loop -> a circle?
-					} else {
-						// Triangle
-						const geom = new BufferGeometry();
-						const positions = new Float32Array([
-							t[0].x, t[0].y, t[0].z,
-							t[1].x, t[1].y, t[1].z,
-							t[2].x , t[2].y, t[2].z
-						]);
-						const normals = new Float32Array(9);
-						geom.setAttribute( 'position', new BufferAttribute( positions, 3 ) );
-						geom.setAttribute( 'normal', new BufferAttribute( normals, 3 ) );
-						geom.computeVertexNormals();
-
-						const mesh = new Mesh(geom, this.hyperedgematerial );
-						this.graph3d.scene().add(mesh);
-
-						hyperlink.mesh.push( mesh );
+				// TODO: duplicates = self-loops -> circles?
+				const coordinates = [];
+				Hypergraph3D.triangulate( hyperlink.hyperedge ).forEach( t => {
+					if ( t[0] !== t[1] && t[0] !== t[2] && t[1] !== t[2] ) {
+						t.forEach( v => coordinates.push( v.x, v.y, v.z ) );
 					}
 				});
+
+				if ( coordinates.length > 0 ) {
+					const geom = new BufferGeometry();
+					const positions = new Float32Array( coordinates );
+					const normals = new Float32Array( coordinates.length );
+					geom.setAttribute( 'position', new BufferAttribute( positions, 3 ) );
+					geom.setAttribute( 'normal', new BufferAttribute( normals, 3 ) );
+					geom.computeVertexNormals();
+
+					const mesh = new Mesh(geom, this.hyperedgematerial );
+					this.graph3d.scene().add( mesh);
+
+					hyperlink.mesh.push( mesh );
+				}
+
 				// Hyperedge link
 				links.push( hyperlink );
 
@@ -632,7 +622,14 @@ class Hypergraph3D {
 						}
 					});
 					const geom = new ConvexBufferGeometry( points );
-					const mat = new MeshStandardMaterial( { color: this.spatialStyles[i].fill, transparent: true, opacity: this.spatialStyles[i].opacity, side: DoubleSide, depthTest: false } );
+					const mat = new MeshBasicMaterial( {
+						color: this.spatialStyles[i].fill,
+						transparent: true,
+						opacity: this.spatialStyles[i].opacity,
+						side: DoubleSide,
+						depthTest: false,
+					 	depthWrite: false,
+					 	flatShading: true } );
 					const mesh = new Mesh(geom, mat);
 					this.hypersurface[0].push( mesh );
 					this.graph3d.scene().add( mesh );
