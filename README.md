@@ -73,7 +73,7 @@ Event order | Description
 
 ## Simulation
 
-Simulation currently supports two modes: `Space` and `Time`.
+Simulation currently supports three modes: `Space`, `Time` and `Rule` (experimental).
 
 In `Space` mode the system simulates the evolution of the spatial hypergraph.
 According to the Wolfram Model, the spatial hypergraph represents a spacelike
@@ -84,8 +84,10 @@ updating events and the directed edges their causal relationships. According to 
 Wolfram Model, the flux of causal edges through spacelike and timelike hypersurfaces
 is related to energy and momentum respectively.
 
-Media control buttons let you rewind to the beginning, start/pause simulation and
-skip to the end / reheat. `Speed` sets the frame rate.
+`Rule` mode represents the hypergraph rewriting rule as a hypergraph (experimental).
+
+Media control buttons let you reset the mode, start/pause simulation and
+skip to the end / reheat force engine.
 
 ## Highlighting
 
@@ -121,4 +123,4 @@ to the ancient Greek idea of *atomos* ("uncuttable") than what chemists would no
 
 > “The atoms come together in different order and position, like letters, which, though they
 > are few, yet, by being placed together in different ways, produce innumerable words.”
-> -- Epicurus (341–270 BCE) (according to one of his later critics Lactantius)
+> -- Epicurus (341–270 BCE) (according to Lactantius)
