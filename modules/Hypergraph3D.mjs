@@ -4,17 +4,16 @@ import { BufferGeometry, BufferAttribute, MeshBasicMaterial, Mesh, DoubleSide, V
 import { ConvexBufferGeometry } from 'https://threejs.org/examples/jsm/geometries/ConvexGeometry.js';
 import { GLTFExporter } from 'https://threejs.org/examples/jsm/exporters/GLTFExporter.js';
 
-class Hypergraph3D {
+class Hypergraph3D extends HypergraphRewritingSystem {
 
 	/**
 	* Creates an instance of Hypergraph3D.
 	* @constructor
 	*/
 	constructor() {
-		this.hrs = new HypergraphRewritingSystem();
+		super();
 		this.graph3d = ForceGraph3D({ rendererConfig: { antialias: true, precision: "lowp" }});
-		this.mode = "spatial"; // Displayed graph
-		this.data = this.hrs.spatial; // Displayed graph
+		this.data = this.spatial; // Displayed graph
 		this.pos = 0; // Log position
 		this.updatetimer = null;
 		this.stopfn = null; // stop callback function
@@ -46,100 +45,13 @@ class Hypergraph3D {
 	}
 
 	/**
-	* Parse string based rules to array structure.
-	* @param {string} r Rule string
-	* @return {Rules} Rules.
+	* Check rewriting rule by passing it to algorithmic parser.
+	* @param {string} rulestr Rewriting rule in string format.
+	* @return {string} Rewriting rule in standard string format.
 	*/
-	static parseRules( r ) {
-		// Change parenthesis types and remove extra ones
-		r = r.toLowerCase()
-		.replace( /\{|\[/g , "(" ).replace( /}|]/g , ")" )
-		.replace( /(\()+/g , "(" ).replace( /(\))+/g , ")" );
-
-		// Discard all unsupported characters
-		r = r.replace( /[^()a-z0-9,;>]+/g , "" );
-
-		// To json format, '>' is the separator between lhr/rhs
-		r = r.replace( /\),\(/g , ")(" )
-		.replace( /^\(/g , "[{\"lhs\": [[\"" ).replace( /,/g , "\",\"" )
-		.replace( /\);\(/g , "\"]]},{\"lhs\": [[\"" )
-		.replace( /\)>\(/g , "\"]],\"rhs\": [[\"" )
-		.replace( /\)\(/g , "\"],[\"" ).replace( /\)$/g , "\"]]}]" );
-
-		// Nulls
-		r = r.replace( /\[\[\"\"\]\]/g , "[]" );
-
-		// JSON
-		const s = JSON.parse( r );
-
-		// Normalize each rule and sort
-		let k, unique;
-		s.forEach((v,i) => {
-			const lhs = v.hasOwnProperty("lhs") ? v.lhs.flat() : [];
-			const rhs = v.hasOwnProperty("rhs") ? v.rhs.flat() : [];
-			const unique = [ ...new Set( [ ...lhs, ...rhs ] ) ];
-			v.lhs.forEach( (w,j) => {
-				for( k=0; k < w.length; k++ ) s[i].lhs[j][k] = unique.indexOf( w[k] );
-			});
-			v.lhs.sort( (a,b) => Math.min( ...a ) - Math.min( ...b ) );
-			if ( v.hasOwnProperty("rhs") ) {
-				v.rhs.forEach((w,j) => {
-					for( k=0; k < w.length; k++ ) s[i].rhs[j][k] = unique.indexOf( w[k] );
-				});
-				v.rhs.sort( (a,b) => Math.min( ...a ) - Math.min( ...b ) );
-			}
-		});
-
-		return s;
-	}
-
-	/**
-	* Callback for rewriting progress update.
-	* @callback progressfn
-	* @param {numeric} eventcnt Number of events processed.
-	*/
-
-	/**
-	* Callback for rewriting process finished.
-	* @callback finishedfn
-	*/
-
-	/**
-	* Run abstract rewriting rules.
-	* @param {string} rulestring Rule string
-	* @param {string} [ruleOrdering="none"] Rewriting rules
-	* @param {string} [eventOrdering="random"] Rewriting rules
-	* @param {number} [maxevents=500] Rewriting rules
-	* @param {progressfn} progressfn Progress update callback function
-	* @param {finishedfn} finishedfn Rewriting finished callback function
-	*/
-	run( rulestring, ruleOrdering = "none", eventOrdering = "random", maxevents = 500, progressfn = null, finishedfn = null ) {
-
-		let rules, initial;
-
-		// Check parameters
-		if ( rulestring.length == 0 ) throw new SyntaxError("Given rule is empty.");
-		try {
-			rules = Hypergraph3D.parseRules( rulestring );
-		}
-		catch( e ) {
-			throw new SyntaxError("Invalid rule format.");
-		}
-		if ( rules.length == 0 ) throw new SyntaxError("Parsing the rule failed.");
-
-		// Set initial graph, use first lhs if not specified
-		initial = rules[0].lhs;
-		rules = rules.filter( v => !( (!v.hasOwnProperty("rhs") && (initial = v.lhs)) || ( v["lhs"].length == 0 && (initial = v.rhs) ) ) );
-
-		this.hrs.run( rules, initial, ruleOrdering, eventOrdering, maxevents, progressfn, finishedfn );
-
-	}
-
-	/**
-	* Cancel rewrite process.
-	*/
-	cancel() {
-		this.hrs.cancel();
+	validateRule( rulestr ) {
+		this.algorithmic.setRule( rulestr );
+		return this.algorithmic.getRule();
 	}
 
 	/**
@@ -147,7 +59,7 @@ class Hypergraph3D {
 	* @param {string} str Commands in string format
 	* @return {Object} Edges, vertices, points and results.
 	*/
-	execute( str, surface = true ) {
+	execute( str ) {
 		// Change parenthesis types and remove extra ones
 		str = str.toLowerCase()
 		.replace( /\{|\[/g , "(" ).replace( /}|]/g , ")" )
@@ -176,7 +88,7 @@ class Hypergraph3D {
 				p.push( parseInt(params[0]) );
 				ret = this.data.nsphere( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
 				r.push( ret.length );
-				if ( surface ) v.push( ret );
+				v.push( ret );
 				break;
 
 			case "nball": case "ball": case "tree":
@@ -184,10 +96,8 @@ class Hypergraph3D {
 				ret = this.data.nball( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
 				r.push( ret.length );
 				e.push( ret );
-				if ( surface ) {
-					ret = this.data.nsphere( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
-					v.push( ret );
-				}
+				ret = this.data.nsphere( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
+				v.push( ret );
 				break;
 
 			case "random": case "walk":
@@ -199,7 +109,7 @@ class Hypergraph3D {
 
 			case "worldline": case "timeline":
 				p.push( parseInt(params[0]) );
-				if ( this.mode !== "causal" ) throw new Error("Timeline only available in 'Time' mode.");
+				if ( this.data !== this.causal ) throw new Error("Timeline only available in 'Time' mode.");
 				ret = this.data.worldline( parseInt(params[0]) );
 				r.push( ret.length );
 				e.push( ret );
@@ -207,25 +117,23 @@ class Hypergraph3D {
 
 			case "lightcone":
 				p.push( parseInt(params[0]) );
-				if ( this.mode !== "causal" ) throw new Error("Lightcones only available in 'Time' mode.");
+				if ( this.data !== this.causal ) throw new Error("Lightcones only available in 'Time' mode.");
 				ret = this.data.lightcone( parseInt(params[0]), parseInt(params[1]) );
 				r.push( ret["past"].length + ret["future"].length );
 				e.push( [ ...ret["past"], ...ret["future"] ] );
-				if ( surface ) {
-					v.push( [ ...new Set( ret["past"].flat() ) ] );
-					v.push( [ ...new Set( ret["future"].flat() ) ] );
-				}
+				v.push( [ ...new Set( ret["past"].flat() ) ] );
+				v.push( [ ...new Set( ret["future"].flat() ) ] );
 				break;
 
 			case "space":
-				if ( this.mode !== "spatial" ) throw new Error("Space only available in 'Space' mode.");
+				if ( this.data !== this.spatial ) throw new Error("Space only available in 'Space' mode.");
 				ret = this.data.space( parseInt(params[0]), parseInt(params[1]) );
 				r.push( ret.length );
 				v.push( ret );
 				break;
 
 			case "time":
-				if ( this.mode !== "causal" ) throw new Error("Time only available in 'Time' mode.");
+				if ( this.data !== this.causal ) throw new Error("Time only available in 'Time' mode.");
 				ret = this.data.time( parseInt(params[0]), parseInt(params[1]) );
 				r.push( ret.length );
 				v.push( ret );
@@ -249,15 +157,15 @@ class Hypergraph3D {
 	* @return {boolean} False.
 	*/
 	static linkPositionUpdate( linkObject, coordinates, link ) {
-		if ( link.hasOwnProperty("hyperedge") && link.mesh.length > 0 ) {
-			const pos = link.mesh[0].geometry.attributes.position;
+		if ( link.hasOwnProperty("hyperedge") && link.meshes.length > 0 ) {
+			const pos = link.meshes[0].geometry.attributes.position;
 			let i = 0;
 			Hypergraph3D.triangulate( link.hyperedge ).forEach( t => {
 				if ( t[0] !== t[1] && t[0] !== t[2] && t[1] !== t[2] ) {
 					t.forEach( v => {
 						pos.array[ i++ ] = v.x;
 						pos.array[ i++ ] = v.y;
-						pos.array[ i++ ] = v.z;
+						pos.array[ i++ ] = v.z ? v.z : 0;
 					});
 				}
 			});
@@ -272,9 +180,10 @@ class Hypergraph3D {
 	* @param {Object} spatialStyles Styles for spatial graph
 	* @param {Object} causalStyles Styles for causal graph
 	*/
-	setup( element, spatialStyles, causalStyles ) {
+	setup( element, spatialStyles, causalStyles, algorithmicStyles ) {
 		this.spatialStyles = spatialStyles;
 		this.causalStyles = causalStyles;
+		this.algorithmicStyles = algorithmicStyles;
 		this.graph3d( element )
 		.forceEngine('d3')
 		.numDimensions( 3 )
@@ -287,7 +196,6 @@ class Hypergraph3D {
 		.linkOpacity( 1 )
 		.cooldownTime( 5000 )
 		.onEngineStop( () => { this.hypersurfaceUpdate(); } );
-		this.linkforcestrength = this.graph3d.d3Force("link").strength();
 		if ( typeof this.hyperedgematerial !== 'undefined' ) {
 			this.hyperedgematerial.dispose();
 		}
@@ -299,8 +207,6 @@ class Hypergraph3D {
 			depthTest: false,
 		 	depthWrite: false,
 		 	flatShading: true } );
-
-		// highlighting
 
 	}
 
@@ -321,29 +227,44 @@ class Hypergraph3D {
 	* @param {Object} links Links
 	*/
 	add( event, nodes, links ) {
-		let k = { x: Math.random() - 0.5, y: Math.random() - 0.5, z: Math.random() - 0.5 };
 		const { ["a"]: edge, ...props } = event;
 
-		edge.forEach( n => { if (typeof nodes[n] !== 'undefined') k = nodes[n]; });
+		// Calculate mean position from existing nodes
+		let k = { x: 0, y: 0, z: 0 }, i = 0;
+		edge.forEach( n => {
+			if (typeof nodes[n] !== 'undefined') {
+				k.x += nodes[n].x; k.y += nodes[n].y; k.z += nodes[n].z;
+				nodes[n].refs++; i++;
+			}
+		});
+		if ( i ) { k.x /= i; k.y /= i; k.z /= i; }
 
-		if ( this.mode === "causal" ) {
-			edge.forEach( (n,i) => {
+		// Causal mode (DAG)
+		if ( this.data === this.causal ) {
+			edge.forEach( n => {
 				if (typeof nodes[n] === 'undefined') {
-					nodes[n] = { id: n, refs: 1, x: k.x + 10 * Math.random(), y: k.y  + 10 * Math.random(), z: k.z  + 10 * Math.random(), style: 0 };
-				} else {
-					nodes[n].refs++;
+					nodes[n] = { id: n, refs: 1, style: 0, ...props,
+						x: k.x + Math.sign(k.x) * 10 * Math.random(),
+						y: k.y + Math.sign(k.y) * 10 * Math.random(),
+						z: k.z + Math.sign(k.z) * 10 * Math.random() };
 				}
 			});
 			// Add link
-			links.push({source: nodes[edge[0]], target: nodes[edge[1]], style: 0, ...props });
+			links.push( {source: nodes[edge[0]], target: nodes[edge[1]], style: 0, ...props } );
+
 		} else {
-			edge.forEach( (n,i) => {
+
+			// Set new nodes near neighbour
+			edge.forEach( n => {
 				if (typeof nodes[n] === 'undefined') {
-					nodes[n] = {id: n, refs: 1, x: k.x + (10 * Math.random() - 5) , y: k.y  + (10 * Math.random() - 5), z: k.z  + (10 * Math.random() - 5), style: 0 };
-				} else {
-					nodes[n].refs++;
+					nodes[n] = {id: n, refs: 1, style: 0, ...props,
+						x: k.x + Math.sign(k.x) * 5 * Math.random(),
+						y: k.y + Math.sign(k.y) * 5 * Math.random(),
+						z: k.z + Math.sign(k.z) * 5 * Math.random() };
 				}
 			});
+
+			// Add all edge pairs
 			Hypergraph3D.pairs(edge).forEach( p => {
 				let curv = 0.5;
 				if (p[0] !== p[1]) {
@@ -363,30 +284,22 @@ class Hypergraph3D {
 				}
 
 				// Add link
-				links.push({source: nodes[p[0]], target: nodes[p[1]], style: 0, curvature: curv, rotation: (curv == 0 ? 0 : 2 * Math.PI * Math.random()), ...props });
+				links.push( {source: nodes[p[0]], target: nodes[p[1]], style: 0, curvature: curv,
+					rotation: (curv == 0 ? 0 : 2 * Math.PI * Math.random()), ...props });
+
 			});
 
 			// If hyperedge, fill with triangles and connect the two ends for force effect
 			if ( edge.length > 2 ) {
-				// Hyperlink
-				const hyperlink = {
-					source: nodes[ edge[edge.length-1] ],
-					target: nodes[ edge[0] ],
-					hyperedge: [],
-					mesh: [],
-					style: 4,
-					curvature: 0,
-					rotation: 0 };
-
-				// Set nodes of the hyperlink
-				edge.forEach( e => hyperlink.hyperedge.push( nodes[ e ] ) );
+				const hyperedge = edge.map( n => nodes[ n ] );
 
 				// Triangulate
-				// TODO: duplicates = self-loops -> circles?
 				const coordinates = [];
-				Hypergraph3D.triangulate( hyperlink.hyperedge ).forEach( t => {
+				Hypergraph3D.triangulate( hyperedge ).forEach( t => {
 					if ( t[0] !== t[1] && t[0] !== t[2] && t[1] !== t[2] ) {
-						t.forEach( v => coordinates.push( v.x, v.y, v.z ) );
+						t.forEach( v => coordinates.push( v.x, v.y, v.z ? v.z : 0 ) );
+					} else {
+						// TODO: duplicates i.e. self-loops -> circles?
 					}
 				});
 
@@ -401,13 +314,18 @@ class Hypergraph3D {
 					const mesh = new Mesh(geom, this.hyperedgematerial );
 					this.graph3d.scene().add( mesh);
 
-					hyperlink.mesh.push( mesh );
+					// Hyperlink
+					links.push( {
+						source: nodes[ edge[ edge.length-1 ] ],
+						target: nodes[ edge[0] ],
+						hyperedge: hyperedge,
+						meshes: [ mesh ],
+						style: 4, curvature: 0, rotation: 0, ...props } );
+
 				}
 
-				// Hyperedge link
-				links.push( hyperlink );
-
 			}
+
 		}
 	}
 
@@ -433,10 +351,10 @@ class Hypergraph3D {
 		let idx = links.findIndex( l => l.hasOwnProperty("hyperedge") && l.hyperedge.length === edge.length && l.hyperedge.every( (x,i) => x.id === edge[i] ) );
 		if ( idx !== -1 ) {
 			// Remove filled hyperedges
-			links[ idx ].mesh.forEach( m => {
-				this.graph3d.scene().remove( m );
-				m.geometry.dispose();
-				m = undefined;
+			links[ idx ].meshes.forEach( mesh => {
+				this.graph3d.scene().remove( mesh );
+				mesh.geometry.dispose();
+				mesh = undefined;
 			});
 			// Remove link
 			links.splice( idx, 1 );
@@ -464,10 +382,10 @@ class Hypergraph3D {
 		let { nodes, links } = this.graph3d.graphData();
 		links.forEach( l => {
 			if ( l.hasOwnProperty("hyperedge") ) {
-				l.mesh.forEach( m => {
-					this.graph3d.scene().remove( m );
-					m.geometry.dispose();
-					m = undefined;
+				l.meshes.forEach( mesh => {
+					this.graph3d.scene().remove( mesh );
+					mesh.geometry.dispose();
+					mesh = undefined;
 				});
 			}
 		});
@@ -478,10 +396,11 @@ class Hypergraph3D {
 		this.graph3d.graphData({ nodes, links });
 
 		// Initialize the correct graph type
-		if ( mode === "spatial" ) {
-			this.mode = "spatial";
-			this.data = this.hrs.spatial;
+		switch( mode ) {
+		case "spatial":
+			this.data = this.spatial;
 			this.graph3d
+			.numDimensions( 3 )
 			.dagMode( null )
 			.backgroundColor( this.spatialStyles[0]["bgColor"] )
 			.nodeRelSize( this.spatialStyles[0]["nRelSize"] )
@@ -493,16 +412,21 @@ class Hypergraph3D {
 			.linkPositionUpdate( Hypergraph3D.linkPositionUpdate )
 			.linkCurvature( 'curvature' )
 			.linkCurveRotation( 'rotation' )
-			.linkDirectionalArrowLength(0);
+			.linkDirectionalArrowLength(0)
+			.d3VelocityDecay( 0.3 );
 			this.graph3d.d3Force("center").strength( 1 );
-			this.graph3d.d3Force("link").strength( this.linkforcestrength );
+			this.graph3d.d3Force("charge").strength( -100 );
 			// First additions
 			while( this.pos < this.data.events.length && this.data.events[ this.pos ].hasOwnProperty('a') && this.tick() );
-		} else if ( mode === "causal" ) {
-			this.mode = "causal";
-			this.data = this.hrs.causal;
+			this.graph3d.cameraPosition( { x: 0, y: 0, z: 500 }, { x: 0, y: 0, z: 0 } );
+			break;
+
+		case "causal":
+			this.data = this.causal;
 			this.graph3d
-			.dagMode( "zout" )
+			.numDimensions( 3 )
+			.dagMode( "zin" )
+			.dagLevelDistance( 3 )
 			.backgroundColor( this.causalStyles[0]["bgColor"] )
 			.nodeRelSize( this.causalStyles[0]["nRelSize"] )
 			.nodeVal( d => (d.big ? 14 : 1) * this.causalStyles[d.style]["nVal"] )
@@ -514,10 +438,45 @@ class Hypergraph3D {
 			.linkCurvature( null )
 			.linkCurveRotation( null )
 			.linkDirectionalArrowLength(15)
-			.linkDirectionalArrowRelPos(1);
+			.linkDirectionalArrowRelPos(1)
+			.d3VelocityDecay( 0.3 );
 			this.graph3d.d3Force("center").strength( 0.2 );
-			this.graph3d.d3Force("link").strength( 0.8 );
+			this.graph3d.d3Force("charge").strength( -100 );
+			// First additions
+			while( this.pos < 10 && this.tick() );
+			this.graph3d.cameraPosition( { x: 0, y: 0, z: 500 }, { x: 0, y: 0, z: 0 } );
+			break;
+
+		case "algorithmic":
+			this.data = this.algorithmic;
+			this.graph3d
+			.numDimensions( 2 )
+			.dagMode( null )
+			.backgroundColor( this.algorithmicStyles[0]["bgColor"] )
+			.nodeRelSize( this.algorithmicStyles[0]["nRelSize"] )
+			.nodeVal( d => (d.big ? 14 : 1) * this.algorithmicStyles[d.style]["nVal"] )
+			.nodeColor( d => this.algorithmicStyles[d.style]["nColor"] )
+			.linkLabel( null )
+			.linkWidth( d => this.algorithmicStyles[d.style]["lWidth"] )
+			.linkColor( d => this.algorithmicStyles[d.style]["lColor"] )
+			.linkPositionUpdate( Hypergraph3D.linkPositionUpdate )
+			.linkCurvature( 'curvature' )
+			.linkCurveRotation( 'rotation' )
+			.linkDirectionalArrowLength(20)
+			.linkDirectionalArrowRelPos(1)
+			.d3VelocityDecay( 0.1 );
+			this.graph3d.d3Force("center").strength( 1 );
+			this.graph3d.d3Force("charge").strength( -50 );
+			// Rewrite and reveal all
+			this.algorithmic.rewrite();
+			while( this.tick() );
+			this.graph3d.cameraPosition( { x: 0, y: 0, z: 1100 }, { x: 0, y: 0, z: 0 } );
+			break;
+
+		default:
+			throw new Error( "Unknown mode: " + mode );
 		}
+
 	}
 
 	/**
@@ -589,8 +548,8 @@ class Hypergraph3D {
 		if ( this.updatetimer ) {
 			clearInterval( this.updatetimer );
 			this.updatetimer = null;
-			this.graph3d.enablePointerInteraction( true );
 		}
+		this.graph3d.enablePointerInteraction( true );
 	}
 
 	/**
@@ -613,6 +572,7 @@ class Hypergraph3D {
 					this.graph3d.scene().remove( m );
 					m.geometry.dispose();
 					m.material.dispose();
+					m = undefined;
 				});
 				h.length = 0;
 			} else {
@@ -620,7 +580,7 @@ class Hypergraph3D {
 					const points = [];
 					vs.forEach( v => {
 						if ( typeof nodes[v] !== 'undefined' ) {
-							points.push( new Vector3( nodes[v].x, nodes[v].y, nodes[v].z ) );
+							points.push( new Vector3( nodes[v].x, nodes[v].y, nodes[v].z ? nodes[v].z : 0 ) );
 						}
 					});
 					const geom = new ConvexBufferGeometry( points );
@@ -646,7 +606,7 @@ class Hypergraph3D {
 	* @param {Object} subgraph Edges, nodes and points to highlight.
 	* @param {number} style Style to use in highlighting.
 	*/
-	setHighlight( subgraph, style ) {
+	setHighlight( subgraph, style, surface = true ) {
 		let { nodes, links } = this.graph3d.graphData();
 
 		// Big Vertices
@@ -662,7 +622,7 @@ class Hypergraph3D {
 			v.forEach( n => {
 				if ( typeof nodes[n] !== 'undefined' ) nodes[n].style = nodes[n].style | style;
 			});
-			if ( v.length > 3 ) {
+			if ( surface && v.length > 3 ) {
 				this.hypersurface[ style ].push( v );
 				this.hypersurfaceUpdate();
 			}
@@ -737,7 +697,7 @@ class Hypergraph3D {
 	* @return {Object} Status of the Hypergraph3D.
 	*/
 	status() {
-		return { ...this.data.status(), ...this.hrs.status() };
+		return { ...this.data.status(), ...super.status() };
 	}
 
 }
