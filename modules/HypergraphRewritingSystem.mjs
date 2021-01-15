@@ -1,5 +1,6 @@
 import { SpatialGraph } from "./SpatialGraph.mjs";
 import { CausalGraph } from "./CausalGraph.mjs";
+import { AlgorithmicGraph } from "./AlgorithmicGraph.mjs";
 
 /**
 * @class Graph representing a regular graph with adjacency lists and methods.
@@ -19,9 +20,7 @@ class HypergraphRewritingSystem {
 	constructor() {
 		this.spatial = new SpatialGraph(); // Spatial hypergraph
 		this.causal = new CausalGraph(); // Causal graph
-
-		this.rules = []; // Rewriting rules
-		this.initial = []; // Initial graph
+		this.algorithmic = new AlgorithmicGraph(); // Algorithmic graph
 
 		this.step = 0;
 		this.eventcnt = 0;
@@ -55,15 +54,15 @@ class HypergraphRewritingSystem {
 		this.matches.length = 0;
 
 		// No rules, no matches
-		if ( this.rules.length == 0 ) return;
+		if ( this.algorithmic.rules.length == 0 ) return;
 
 		// Check each edge for hit
 		for( let e of graph.E.values() ) {
 			let edge = e.edge;
 
 			// Go through all the rules
-			for( let i=0; i < this.rules.length; i++ ) {
-				let rule = this.rules[i];
+			for( let i=0; i < this.algorithmic.rules.length; i++ ) {
+				let rule = this.algorithmic.rules[i];
 
 				// Next rule if the lengths don't match
 				if ( edge.length !== rule.lhs[0].length ) continue;
@@ -108,16 +107,16 @@ class HypergraphRewritingSystem {
 	processMatches( spatial, causal ) {
 		// Remove overlapping parts from the rules
 		let rulesNol = [];
-		for( let i=0; i < this.rules.length; i++ ) {
-			const lhs = this.rules[i].lhs.filter( p => !this.rules[i].rhs.map(x => x.join(",") ).includes( p.join(",") ) );
-			const rhs = this.rules[i].rhs.filter( p => !this.rules[i].lhs.map(x => x.join(",") ).includes( p.join(",") ) );
+		for( let i=0; i < this.algorithmic.rules.length; i++ ) {
+			const lhs = this.algorithmic.rules[i].lhs.filter( p => !this.algorithmic.rules[i].rhs.map(x => x.join(",") ).includes( p.join(",") ) );
+			const rhs = this.algorithmic.rules[i].rhs.filter( p => !this.algorithmic.rules[i].lhs.map(x => x.join(",") ).includes( p.join(",") ) );
 			rulesNol.push( { lhs: lhs, rhs: rhs } );
 		}
 
 		// Process all maps in sequence
 		for( let i=0; i < this.matches.length; i++ ) {
 
-			const hit = this.mapper( spatial, this.rules[ this.matches[i].r ].lhs , this.matches[i].m );
+			const hit = this.mapper( spatial, this.algorithmic.rules[ this.matches[i].r ].lhs , this.matches[i].m );
 			if ( spatial.count( hit ) ) {
 
 				// Rewrite spatial graph
@@ -180,7 +179,7 @@ class HypergraphRewritingSystem {
 				}
 			}
 			// Rule ordering
-			if ( this.rules.length > 1 ) {
+			if ( this.algorithmic.rules.length > 1 ) {
 				if ( this.ruleordering === 'index' ) {
 					this.matches.sort( (a,b) => a.r - b.r );
 				} else if ( this.ruleordering === 'indexrev' ) {
@@ -228,15 +227,14 @@ class HypergraphRewritingSystem {
 
 	/**
 	* Run abstract rewriting rules.
-	* @param {Rules} rules Rewriting rules
-	* @param {Rules} initial Rewriting rules
+	* @param {Rules} rulestr Rewriting rules as a string
 	* @param {string} [ruleOrdering="mixed"] Rewriting rules
 	* @param {string} [eventOrdering="random"] Rewriting rules
 	* @param {number} [maxevents=500] Rewriting rules
 	* @param {progressfn} progressfn Progress update callback function
 	* @param {finishedfn} finishedfn Rewriting finished callback function
 	*/
-	run( rules, initial, ruleOrdering = "mixed", eventOrdering = "random", maxevents = 500, progressfn = null, finishedfn = null ) {
+	run( rulestr, ruleOrdering = "mixed", eventOrdering = "random", maxevents = 500, progressfn = null, finishedfn = null ) {
 
 		// Initialize system
 		this.spatial.clear();
@@ -247,8 +245,7 @@ class HypergraphRewritingSystem {
 		this.step = 0;
 
 		// Set parameters
-		this.rules = rules;
-		this.initial = initial;
+		this.algorithmic.setRule( rulestr );
 		this.ruleordering = ruleOrdering;
 		this.eventordering = eventOrdering;
 		this.maxevents = maxevents;
@@ -256,8 +253,8 @@ class HypergraphRewritingSystem {
 		this.finishedfn = finishedfn;
 
 		// Add initial edges
-		this.spatial.rewrite( [], this.initial );
-		this.causal.rewrite( [], [ ...new Set( this.initial.flat() ) ].sort(), { step: this.step } );
+		this.spatial.rewrite( [], this.algorithmic.initial );
+		this.causal.rewrite( [], [ ...new Set( this.algorithmic.initial.flat() ) ].sort(), { step: this.step } );
 
 		// Start rewriting process
 		setTimeout( this.rewrite, this.rewritedelay );
