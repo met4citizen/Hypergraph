@@ -3,7 +3,7 @@ import { CausalGraph } from "./CausalGraph.mjs";
 import { AlgorithmicGraph } from "./AlgorithmicGraph.mjs";
 
 /**
-* @class Graph representing a regular graph with adjacency lists and methods.
+* @class Hypergraph Rewriting System.
 * @author Mika Suominen
 */
 class HypergraphRewritingSystem {
@@ -14,7 +14,7 @@ class HypergraphRewritingSystem {
 	*/
 
 	/**
-	* Creates an instance of SpatialGraph.
+	* Creates an instance of HypergraphRewritingSystem.
 	* @constructor
 	*/
 	constructor() {
