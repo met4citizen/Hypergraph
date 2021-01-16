@@ -4,6 +4,10 @@ import { BufferGeometry, BufferAttribute, MeshBasicMaterial, Mesh, DoubleSide, V
 import { ConvexBufferGeometry } from 'https://threejs.org/examples/jsm/geometries/ConvexGeometry.js';
 import { GLTFExporter } from 'https://threejs.org/examples/jsm/exporters/GLTFExporter.js';
 
+/**
+* @class Uses ForceGraph3D to visualize hypergraph rewriting.
+* @author Mika Suominen
+*/
 class Hypergraph3D extends HypergraphRewritingSystem {
 
 	/**
@@ -192,10 +196,12 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 		.backgroundColor( this.spatialStyles[0]["bgColor"] )
 		.nodeLabel( d => `<span class="nodeLabelGraph3d">${ d.id }</span>` )
 		.nodeVisibility( 'refs' )
-		.nodeOpacity( 1 )
-		.linkOpacity( 1 )
+		.nodeOpacity( 0.9 )
+		.linkOpacity( 0.9 )
 		.cooldownTime( 5000 )
 		.onEngineStop( () => { this.hypersurfaceUpdate(); } );
+
+		// Material for hyperedges
 		if ( typeof this.hyperedgematerial !== 'undefined' ) {
 			this.hyperedgematerial.dispose();
 		}
@@ -253,14 +259,15 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			links.push( {source: nodes[edge[0]], target: nodes[edge[1]], style: 0, ...props } );
 
 		} else {
+			// Spatial and algorithmic modes
 
-			// Set new nodes near neighbour
+			// Set new nodes near neighbours
 			edge.forEach( n => {
 				if (typeof nodes[n] === 'undefined') {
 					nodes[n] = {id: n, refs: 1, style: 0, ...props,
-						x: k.x + Math.sign(k.x) * 5 * Math.random(),
-						y: k.y + Math.sign(k.y) * 5 * Math.random(),
-						z: k.z + Math.sign(k.z) * 5 * Math.random() };
+						x: k.x + Math.sign(k.x) * 2 * Math.random(),
+						y: k.y + Math.sign(k.y) * 2 * Math.random(),
+						z: k.z + Math.sign(k.z) * 2 * Math.random() };
 				}
 			});
 
@@ -285,7 +292,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 
 				// Add link
 				links.push( {source: nodes[p[0]], target: nodes[p[1]], style: 0, curvature: curv,
-					rotation: (curv == 0 ? 0 : 2 * Math.PI * Math.random()), ...props });
+					rotation: (curv === 0 ? 0 : 2 * Math.PI * Math.random()), ...props });
 
 			});
 
@@ -389,9 +396,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				});
 			}
 		});
-
-		// Reset graph
-		nodes = [ { id: 0, refs: 0, style: 0, x: Math.random() - 0.5, y: Math.random() - 0.5, z: Math.random() - 0.5 } ];
+		nodes = [ { id: 0, refs: 0, style: 0, x: Math.random() - 0.5, y: Math.random() - 0.5, z: Math.random() - 0.5, step: 0 } ];
 		links = [];
 		this.graph3d.graphData({ nodes, links });
 
@@ -406,6 +411,8 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.nodeRelSize( this.spatialStyles[0]["nRelSize"] )
 			.nodeVal( d => (d.big ? 14 : 1) * this.spatialStyles[d.style]["nVal"] )
 			.nodeColor( d => this.spatialStyles[d.style]["nColor"] )
+			.nodeVisibility( 'refs' )
+			.linkVisibility( true )
 			.linkLabel( null )
 			.linkWidth( d => this.spatialStyles[d.style]["lWidth"] )
 			.linkColor( d => this.spatialStyles[d.style]["lColor"] )
@@ -413,9 +420,9 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.linkCurvature( 'curvature' )
 			.linkCurveRotation( 'rotation' )
 			.linkDirectionalArrowLength(0)
-			.d3VelocityDecay( 0.3 );
+			.d3VelocityDecay( 0.4 );
 			this.graph3d.d3Force("center").strength( 1 );
-			this.graph3d.d3Force("charge").strength( -100 );
+			this.graph3d.d3Force("charge").strength( -90 );
 			// First additions
 			while( this.pos < this.data.events.length && this.data.events[ this.pos ].hasOwnProperty('a') && this.tick() );
 			this.graph3d.cameraPosition( { x: 0, y: 0, z: 500 }, { x: 0, y: 0, z: 0 } );
@@ -431,6 +438,8 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.nodeRelSize( this.causalStyles[0]["nRelSize"] )
 			.nodeVal( d => (d.big ? 14 : 1) * this.causalStyles[d.style]["nVal"] )
 			.nodeColor( d => this.causalStyles[d.style]["nColor"] )
+			.nodeVisibility( 'refs' )
+			.linkVisibility( true )
 			.linkLabel( d => `<span class="linkLabelGraph3d">${ "[" + d.step.toString()+ "] " + d.mod }</span>` )
 			.linkWidth( d => this.causalStyles[d.style]["lWidth"] )
 			.linkColor( d => this.causalStyles[d.style]["lColor"] )
@@ -439,7 +448,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.linkCurveRotation( null )
 			.linkDirectionalArrowLength(15)
 			.linkDirectionalArrowRelPos(1)
-			.d3VelocityDecay( 0.3 );
+			.d3VelocityDecay( 0.4 );
 			this.graph3d.d3Force("center").strength( 0.2 );
 			this.graph3d.d3Force("charge").strength( -100 );
 			// First additions
@@ -456,6 +465,8 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.nodeRelSize( this.algorithmicStyles[0]["nRelSize"] )
 			.nodeVal( d => (d.big ? 14 : 1) * this.algorithmicStyles[d.style]["nVal"] )
 			.nodeColor( d => this.algorithmicStyles[d.style]["nColor"] )
+			.nodeVisibility( 'refs' )
+			.linkVisibility( true )
 			.linkLabel( null )
 			.linkWidth( d => this.algorithmicStyles[d.style]["lWidth"] )
 			.linkColor( d => this.algorithmicStyles[d.style]["lColor"] )
@@ -605,8 +616,10 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 	* Highlight nodes/edges.
 	* @param {Object} subgraph Edges, nodes and points to highlight.
 	* @param {number} style Style to use in highlighting.
+	* @param {boolean} surface If true, fill hypersurfaces.
+	* @param {boolean} background If false, show only highlighted nodes/edges.
 	*/
-	setHighlight( subgraph, style, surface = true ) {
+	setHighlight( subgraph, style, surface = true, background = true ) {
 		let { nodes, links } = this.graph3d.graphData();
 
 		// Big Vertices
@@ -617,7 +630,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			}
 		});
 
-		// Vertices
+		// Vertices and hypersurfaces connecting them
 		subgraph['v'].forEach( v => {
 			v.forEach( n => {
 				if ( typeof nodes[n] !== 'undefined' ) nodes[n].style = nodes[n].style | style;
@@ -642,7 +655,13 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			});
 		});
 
-		this.graph3d.graphData({ nodes, links });
+		// Show/hide background graph and update
+		if ( background ) {
+			this.graph3d.nodeVisibility( 'refs' ).linkVisibility( true );
+		} else {
+			this.graph3d.nodeVisibility( d => d.refs && d.style ).linkVisibility( d => d.style );
+		}
+
 	}
 
 	/**
@@ -655,7 +674,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 		links.forEach( l => l.style = l.style & ~style );
 		this.hypersurface[style].length = 0;
 		this.hypersurfaceUpdate();
-		this.graph3d.graphData({ nodes, links });
+		this.graph3d.nodeVisibility( 'refs' ).linkVisibility( true );
 	}
 
 	/**

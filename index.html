@@ -40,8 +40,9 @@
   .text[contenteditable="true"] { min-width: 320px; -webkit-touch-callout: text; -webkit-user-select: text; -khtml-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; opacity: 1; }
   div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
   .option { display: inline-block; margin: 0; padding: 0; width: 32px; height:14px; background-color: transparent; color: black;  border: 1px solid white; border-radius: 3px; font-size: 8px; font-weight: bold; line-height: 14px; text-align: center; vertical-align: middle; cursor: pointer; pointer-events: auto; }
-  .limit, .ruleordering, .eventordering, .red-surface, .blue-surface  { width: 20px; }
-  .mode-selected, .ruleordering-selected, .eventordering-selected, .limit-selected, .red-surface-selected, .blue-surface-selected { border: 1px solid grey; }
+  .limit, .ruleordering, .eventordering { width: 20px; }
+  .mode-selected, .ruleordering-selected, .eventordering-selected, .limit-selected,
+  .red-surface-selected, .blue-surface-selected, .background-selected { border: 1px solid grey; }
   .label { display: inline-block; line-height: 16px; font-size: 8px; font-weight: bold; text-align:left; text-transform: uppercase; color: grey; margin: 2px; min-width: 4px; }
   .status { min-width: 38px; }
   .up { position: absolute; transform: translateY(-15px); z-index: -1; }
@@ -206,10 +207,11 @@ $(document).ready(function() {
     $(x+"-show").on("click", function() {
       try {
         const command = $(x+"-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
-        const surface = $("."+x.substring(1)+"-surface-selected").data("value");
+        const surface = $("."+x.substring(1)+"-surface-selected").length;
+        const background = $(".background-selected").length;
         const result = hypergraph.execute( command );
         hypergraph.clearHighlight( i+1 );
-        hypergraph.setHighlight( result , i+1, surface );
+        hypergraph.setHighlight( result , i+1, surface, background );
         if ( result.r.length > 0 ) {
           $(x+"-result").text( '['+result.r.toString()+']' );
           $(x+"-result-label").show();
@@ -235,11 +237,22 @@ $(document).ready(function() {
     });
   });
 
-  // Rule settings
-  [ "ruleordering", "eventordering", "limit", "red-surface", "blue-surface" ].forEach( x => {
+  // Multi-options
+  [ "ruleordering", "eventordering", "limit" ].forEach( x => {
     $("."+x).on("click", function(e) {
       $("."+x).removeClass(x+"-selected");
       $(this).addClass(x+"-selected");
+    });
+  });
+
+  // Single-options
+  [ "red-surface", "blue-surface", "background" ].forEach( x => {
+    $("."+x).on("click", function() {
+      if ( $("."+x+"-selected").length ) {
+        $("."+x).removeClass(x+"-selected");
+      } else {
+        $("."+x).addClass(x+"-selected");
+      }
     });
   });
 
@@ -332,7 +345,6 @@ $(document).ready(function() {
     <div id="rule-settings" class="settings">
       <span title="Run rule" id ="rule-run" class="button">RUN</span>
       <span title="Format rule" id ="rule-check" class="button">SCAN</span>
-      <span class="label"></span>
       <span class="label down">Rule order</span>
       <span title="Allow mixing rules" class="option ruleordering ruleordering-selected" data-value="none">NON</span>
       <span title="Index order" class="option ruleordering" data-value="index">NDX</span>
@@ -347,24 +359,22 @@ $(document).ready(function() {
       <span title="Max 2000" class="option limit" data-value="2000">2K</span>
     </div>
     <span id="red" class="button button-disabled">RED</span>
-    <span id="red-text" class="text text-disabled" spellcheck="false">geodesic(0,10,all)</span><br/>
+    <span id="red-text" class="text text-disabled" spellcheck="false">nball(100,2)</span><br/>
     <div id="red-settings" class="settings">
       <span title="Show red" id="red-show" class="button">SHOW</span>
       <span title="Hide red" id="red-hide" class="button">HIDE</span>
-      <span class="label"></span>
-      <span class="label down">Surfaces</span>
-      <span title="Show hypersurfaces" class="option red-surface red-surface-selected" data-value="true">ON</span>
-      <span title="Hide hypersurfaces" class="option red-surface" data-value="false">OFF</span>
+      <span class="label down">Visibility</span>
+      <span title="Show background" class="option background background-selected">BACK</span>
+      <span title="Show hypersurfaces" class="option red-surface red-surface-selected">FACES</span>
     </div>
     <span id="blue" class="button button-disabled">BLUE</span>
-    <span id="blue-text" class="text text-disabled" spellcheck="false">nsphere(0,3)</span><br/>
+    <span id="blue-text" class="text text-disabled" spellcheck="false">geodesic(0,100)</span><br/>
     <div id="blue-settings" class="settings">
       <span title="Show blue" id ="blue-show" class="button">SHOW</span>
       <span title="Hide blue" id ="blue-hide" class="button">HIDE</span>
-      <span class="label"></span>
-      <span class="label down">Surfaces</span>
-      <span title="Show hypersurfaces" class="option blue-surface blue-surface-selected" data-value="true">ON</span>
-      <span title="Hide hypersurfaces" class="option blue-surface" data-value="false">OFF</span>
+      <span class="label down">Visibility</span>
+      <span title="Show background" class="option background background-selected">BACK</span>
+      <span title="Show hypersurfaces" class="option blue-surface blue-surface-selected">FACES</span>
     </div>
   </div>
 
