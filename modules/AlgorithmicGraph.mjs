@@ -43,7 +43,7 @@ class AlgorithmicGraph extends Hypergraph  {
         pattern.forEach( v => {
           const edge = [ this.maxv ];
           for( let k = 0; k <= v; k++ ) edge.push( ++this.maxv );
-          this.add( edge, { fz: 0 } );
+          this.add( edge );
         });
       });
       this.add( [ this.maxv, this.maxv ] );
@@ -68,30 +68,7 @@ class AlgorithmicGraph extends Hypergraph  {
       });
     });
     this.add( [ prev, root ] );
-/*
-    this.add( [ this.maxv, root ], { fz: 0 } );
-    this.add( [ prev, this.maxv ], { fz: 0 } );
-    prev = this.maxv;
-    this.initial.forEach( (pattern,i) => {
-      if ( i > 0 ) {
-        this.add( [ prev, this.maxv ], { fz: 0 } );
-        prev = this.maxv;
-      }
-      pattern.forEach( (v,j) => {
-        const edge = [ this.maxv ];
-        for( let k = 0; k <= v; k++ ) {
-          if ( i === (this.initial.length - 1) && j === (pattern.length-1) && k === v ) {
-            edge.push( root );
-          } else {
-            edge.push( ++this.maxv );
-          }
-        }
-        this.add( edge, { fz: 0 } );
-      });
-
-    });
-*/
-
+    
   }
 
   /**
