@@ -127,7 +127,7 @@ class HypergraphRewritingSystem {
 				// Add event to causal graph
 				const match = this.matches[i].m;
 				const modified = [ ...new Set( add.flat() ) ].sort();
-				causal.rewrite( match, modified, { step: this.step } );
+				causal.rewrite( match, modified, this.step );
 
 				// Break when limit reached
 				if ( ++this.eventcnt >= this.maxevents ) break;
@@ -254,7 +254,7 @@ class HypergraphRewritingSystem {
 
 		// Add initial edges
 		this.spatial.rewrite( [], this.algorithmic.initial );
-		this.causal.rewrite( [], [ ...new Set( this.algorithmic.initial.flat() ) ].sort(), { step: this.step } );
+		this.causal.rewrite( [], [ ...new Set( this.algorithmic.initial.flat() ) ].sort(), this.step );
 
 		// Start rewriting process
 		setTimeout( this.rewrite, this.rewritedelay );
