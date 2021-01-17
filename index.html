@@ -84,7 +84,7 @@ const causalStyles = [
 ];
 
 const algorithmicStyles = [
-  {  nColor: "black", lColor: "grey", nVal: 2, lWidth: 3, bgColor: "white", nRelSize: 3 }, // 0 defaults
+  {  nColor: "black", lColor: "grey", nVal: 2, lWidth: 1, bgColor: "white", nRelSize: 3 }, // 0 defaults
   {  nColor: "purple", lColor: "hotpink", nVal: 10, lWidth: 5, fill: "hotpink", opacity: 0.2 }, // 1 Red
   {  nColor: "blue", lColor: "deepskyblue", nVal: 10, lWidth: 5, fill: "deepskyblue", opacity: 0.2 }, // 2 Blue
   {  nColor: "darkblue", lColor: "darkblue", nVal: 10, lWidth: 5 }, // 3 Red + Blue
@@ -361,18 +361,18 @@ $(document).ready(function() {
     <span id="red" class="button button-disabled">RED</span>
     <span id="red-text" class="text text-disabled" spellcheck="false">nball(100,2)</span><br/>
     <div id="red-settings" class="settings">
-      <span title="Show red" id="red-show" class="button">SHOW</span>
+      <span title="Show red" id="red-show" class="button">RUN</span>
       <span title="Hide red" id="red-hide" class="button">HIDE</span>
-      <span class="label down">Visibility</span>
+      <span class="label down">Show</span>
       <span title="Show background" class="option background background-selected">BACK</span>
       <span title="Show hypersurfaces" class="option red-surface red-surface-selected">FACES</span>
     </div>
     <span id="blue" class="button button-disabled">BLUE</span>
     <span id="blue-text" class="text text-disabled" spellcheck="false">geodesic(0,100)</span><br/>
     <div id="blue-settings" class="settings">
-      <span title="Show blue" id ="blue-show" class="button">SHOW</span>
+      <span title="Show blue" id ="blue-show" class="button">RUN</span>
       <span title="Hide blue" id ="blue-hide" class="button">HIDE</span>
-      <span class="label down">Visibility</span>
+      <span class="label down">Show</span>
       <span title="Show background" class="option background background-selected">BACK</span>
       <span title="Show hypersurfaces" class="option blue-surface blue-surface-selected">FACES</span>
     </div>
