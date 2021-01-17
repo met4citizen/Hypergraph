@@ -5,7 +5,7 @@ import { Hypergraph } from "./Hypergraph.mjs";
 * @author Mika Suominen
 */
 class SpatialGraph extends Hypergraph {
-	
+
 	/**
 	* Creates an instance of SpatialGraph.
 	* @constructor
@@ -29,7 +29,7 @@ class SpatialGraph extends Hypergraph {
 	* @param {Hyperedge[]} add Hyperedges to add
 	* @param {Object} [event={}] Optional event properties
 	*/
-	rewrite( del, add, event = {} ) {
+	rewrite( del, add ) {
 		// Process all edges to delete
 		for( let i=0; i < del.length; i++ ) {
 			// Decrease/remove edge
@@ -46,7 +46,7 @@ class SpatialGraph extends Hypergraph {
 		// Process all edges
 		for( let i=0; i < add.length; i++ ) {
 			// Add edge
-			this.add( add[i], event );
+			this.add( add[i] );
 			// Add search patterns
 			for( let j = add[i].length - 1; j >= 0; j-- ) {
 				const pattern = add[i].map( (x,k) => ( k === j ? x : "*" ) ).join(",");
