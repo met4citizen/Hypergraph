@@ -1,6 +1,7 @@
 import { HypergraphRewritingSystem } from "./HypergraphRewritingSystem.mjs";
+import { SpriteText } from "./SpriteText.mjs";
 
-import { BufferGeometry, BufferAttribute, MeshBasicMaterial, Mesh, DoubleSide, Vector3  } from 'https://threejs.org/build/three.module.js'
+import { BufferGeometry, BufferAttribute, MeshBasicMaterial, Mesh, DoubleSide, Vector3 } from 'https://threejs.org/build/three.module.js'
 import { ConvexBufferGeometry } from 'https://threejs.org/examples/jsm/geometries/ConvexGeometry.js';
 import { GLTFExporter } from 'https://threejs.org/examples/jsm/exporters/GLTFExporter.js';
 
@@ -409,7 +410,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.dagMode( null )
 			.backgroundColor( this.spatialStyles[0]["bgColor"] )
 			.nodeRelSize( this.spatialStyles[0]["nRelSize"] )
-			.nodeVal( d => (d.big ? 14 : 1) * this.spatialStyles[d.style]["nVal"] )
+			.nodeVal( d => (d.big ? 14 : 1 ) * this.spatialStyles[d.style]["nVal"]  )
 			.nodeColor( d => this.spatialStyles[d.style]["nColor"] )
 			.nodeVisibility( 'refs' )
 			.linkVisibility( true )
@@ -420,7 +421,8 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.linkCurvature( 'curvature' )
 			.linkCurveRotation( 'rotation' )
 			.linkDirectionalArrowLength(0)
-			.d3VelocityDecay( 0.4 );
+			.d3VelocityDecay( 0.4 )
+			.nodeThreeObject( null );
 			this.graph3d.d3Force("center").strength( 1 );
 			this.graph3d.d3Force("charge").strength( -90 );
 			// First additions
@@ -436,11 +438,11 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.dagLevelDistance( 3 )
 			.backgroundColor( this.causalStyles[0]["bgColor"] )
 			.nodeRelSize( this.causalStyles[0]["nRelSize"] )
-			.nodeVal( d => (d.big ? 14 : 1) * this.causalStyles[d.style]["nVal"] )
+			.nodeVal( d => (d.big ? 14 : 1 ) * this.causalStyles[d.style]["nVal"] )
 			.nodeColor( d => this.causalStyles[d.style]["nColor"] )
 			.nodeVisibility( 'refs' )
 			.linkVisibility( true )
-			.linkLabel( d => `<span class="linkLabelGraph3d">${ "[" + d.step.toString()+ "] " + d.mod }</span>` )
+			.linkLabel( d => `<span class="linkLabelGraph3d">${this.causal.linkLabel( d.source.id, d.target.id )}</span>` )
 			.linkWidth( d => this.causalStyles[d.style]["lWidth"] )
 			.linkColor( d => this.causalStyles[d.style]["lColor"] )
 			.linkPositionUpdate( null )
@@ -448,7 +450,8 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.linkCurveRotation( null )
 			.linkDirectionalArrowLength(15)
 			.linkDirectionalArrowRelPos(1)
-			.d3VelocityDecay( 0.4 );
+			.d3VelocityDecay( 0.4 )
+			.nodeThreeObject( null );
 			this.graph3d.d3Force("center").strength( 0.2 );
 			this.graph3d.d3Force("charge").strength( -100 );
 			// First additions
@@ -459,11 +462,11 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 		case "algorithmic":
 			this.data = this.algorithmic;
 			this.graph3d
-			.numDimensions( 2 )
+			.numDimensions( 3 )
 			.dagMode( null )
 			.backgroundColor( this.algorithmicStyles[0]["bgColor"] )
 			.nodeRelSize( this.algorithmicStyles[0]["nRelSize"] )
-			.nodeVal( d => (d.big ? 14 : 1) * this.algorithmicStyles[d.style]["nVal"] )
+			.nodeVal( d => (d.big ? 14 : 3 * d.refs ) * this.algorithmicStyles[d.style]["nVal"] )
 			.nodeColor( d => this.algorithmicStyles[d.style]["nColor"] )
 			.nodeVisibility( 'refs' )
 			.linkVisibility( true )
@@ -471,13 +474,21 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.linkWidth( d => this.algorithmicStyles[d.style]["lWidth"] )
 			.linkColor( d => this.algorithmicStyles[d.style]["lColor"] )
 			.linkPositionUpdate( Hypergraph3D.linkPositionUpdate )
-			.linkCurvature( 'curvature' )
-			.linkCurveRotation( 'rotation' )
-			.linkDirectionalArrowLength(20)
+			.linkCurvature( null )
+			.linkCurveRotation( null )
+			.linkDirectionalArrowLength(10)
 			.linkDirectionalArrowRelPos(1)
-			.d3VelocityDecay( 0.1 );
+			.d3VelocityDecay( 0.1 )
+			.nodeThreeObject( n => {
+				const text = this.algorithmic.vertexLabel( n.id );
+				if ( !text ) return false;
+				const sprite = new SpriteText( text, 24, "black" );
+				sprite.material.depthWrite = false; // make sprite background transparent
+				return sprite;
+      })
+			.nodeThreeObjectExtend( false );
 			this.graph3d.d3Force("center").strength( 1 );
-			this.graph3d.d3Force("charge").strength( -50 );
+			this.graph3d.d3Force("charge").strength( -180 );
 			// Rewrite and reveal all
 			this.algorithmic.rewrite();
 			while( this.tick() );
