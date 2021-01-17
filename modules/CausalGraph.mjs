@@ -24,12 +24,25 @@ class CausalGraph extends Hypergraph {
 	}
 
 	/**
+	* Return link label including modified vertices.
+	* @param {Vertex} v1 Source vertex
+	* @param {Vertex} v2 Target vertex
+	* @return {string} Link label.
+	*/
+	linkLabel( v1, v2 ) {
+		const key = [ v1, v2 ].join(",");
+		if ( !this.E.has( key ) ) return "unknown";
+		const e = this.E.get( key );
+		return '[' + e.step +'] ' + e.mods.toString();
+	}
+
+	/**
 	* Rewrite event.
 	* @param {numbers[]} match Array of vertices matching LHS
 	* @param {numbers[]} modified Array of vertices modified by
 	* @param {Object} [event={}] Event properties
 	*/
-	rewrite( match, modified, event = {} ) {
+	rewrite( match, modified, step ) {
 		// Add Hyperedges
 		const v2 = ++this.maxv;
 		this.V.set( v2, { in: [], out: [] });
@@ -42,7 +55,10 @@ class CausalGraph extends Hypergraph {
 			const e = [ v1, v2 ];
 			const key = e.join(",");
 			if ( !this.E.has( key ) ) {
-				this.add( e, { ...event, mod: modified.join(",") } );
+				this.add( e );
+				const edge = this.E.get( key );
+				edge["step"] = step;
+				edge["mods"] = modified;
 			}
 		}
 
@@ -102,9 +118,9 @@ class CausalGraph extends Hypergraph {
 	*/
 	time( moment1, moment2 ) {
 		const vertices = [];
-		this.events.forEach( e => {
-			if ( e.hasOwnProperty("step") && e["step"] >= moment1 && e["step"] <= moment2 ) {
-				vertices.push( e["a"][1] );
+		this.E.forEach( e => {
+			if ( e.hasOwnProperty("step") && e.step >= moment1 && e.step <= moment2 ) {
+				vertices.push( e.edge[1] );
 			}
 		});
 		return [ ...new Set( vertices ) ];
