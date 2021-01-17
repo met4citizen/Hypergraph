@@ -17,6 +17,18 @@ class AlgorithmicGraph extends Hypergraph  {
   }
 
   /**
+  * Return vertex label.
+  * @param {Vertex} v Vertex
+  * @return {string} Vertex label.
+  */
+  vertexLabel( v ) {
+    if ( !this.V.has( v ) ) return false;
+    const u = this.V.get( v );
+    if ( !u.hasOwnProperty("label") ) return false;
+    return u.label;
+  }
+
+  /**
   * Construct algorithmic graphs based on graph grammar.
   */
   rewrite() {
@@ -24,8 +36,7 @@ class AlgorithmicGraph extends Hypergraph  {
     this.clear();
 
     let root = ++this.maxv;
-    this.add( [ root, root, root ] );
-
+    this.add( [ root ] );
     let prev = root;
 
     // Rules
@@ -36,6 +47,7 @@ class AlgorithmicGraph extends Hypergraph  {
         prev = this.maxv;
       }
       rule.lhs.forEach( (pattern,j) => {
+        this.V.get( this.maxv )["label"] = "("+pattern.map( x => x+1 ).toString()+")";
         if ( j > 0 ) {
           this.add( [ prev, this.maxv ] );
           prev = this.maxv;
@@ -46,11 +58,13 @@ class AlgorithmicGraph extends Hypergraph  {
           this.add( edge );
         });
       });
-      this.add( [ this.maxv, this.maxv ] );
       this.add( [ prev, this.maxv ] );
       prev = this.maxv;
       rule.rhs.forEach( (pattern,j) => {
-        if ( j > 0 ) {
+        if ( j === 0 ) {
+          this.V.get( this.maxv )["label"] = "->("+pattern.map( x => x+1 ).toString()+")";
+        } else {
+          this.V.get( this.maxv )["label"] = "("+pattern.map( x => x+1 ).toString()+")";
           this.add( [ prev, this.maxv ] );
           prev = this.maxv;
         }
@@ -68,7 +82,7 @@ class AlgorithmicGraph extends Hypergraph  {
       });
     });
     this.add( [ prev, root ] );
-    
+
   }
 
   /**
