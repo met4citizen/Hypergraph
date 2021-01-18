@@ -24,42 +24,36 @@ class CausalGraph extends Hypergraph {
 	}
 
 	/**
-	* Return link label including modified vertices.
-	* @param {Vertex} v1 Source vertex
-	* @param {Vertex} v2 Target vertex
+	* Return vertex label including modified vertices.
+	* @param {Vertex} v Vertex
 	* @return {string} Link label.
 	*/
-	linkLabel( v1, v2 ) {
-		const key = [ v1, v2 ].join(",");
-		if ( !this.E.has( key ) ) return "unknown";
-		const e = this.E.get( key );
-		return '[' + e.step +'] ' + e.mods.toString();
+	vertexLabel( v ) {
+		if ( !this.V.has( v ) ) return "";
+		const u = this.V.get( v );
+		return '[' + v +'] ' + u.mods.toString() + ' (step: ' + u.step + ')';
 	}
 
 	/**
 	* Rewrite event.
-	* @param {numbers[]} match Array of vertices matching LHS
-	* @param {numbers[]} modified Array of vertices modified by
-	* @param {Object} [event={}] Event properties
+	* @param {Vertex[]} match Array of vertices matching LHS
+	* @param {Vertex[]} modified Array of vertices modified by
+	* @param {number} step Rewriting step number
 	*/
 	rewrite( match, modified, step ) {
-		// Add Hyperedges
+		// Add new vertex
 		const v2 = ++this.maxv;
-		this.V.set( v2, { in: [], out: [] });
+		this.V.set( v2, { in: [], out: [], step: step, mods: modified });
 
+		// Add causal edges, if missing
 		for( let i = match.length - 1; i >= 0; i-- ) {
 			const l = this.L.get( match[i] );
-			if ( typeof l === 'undefined' ) continue;
+			if ( typeof l === 'undefined' ) continue; // Ignore first instance
 			const v1 = l[ l.length - 1 ];
-			if ( v1 === v2 ) continue;
+			if ( v1 === v2 ) continue; // Ignore self-loops
 			const e = [ v1, v2 ];
 			const key = e.join(",");
-			if ( !this.E.has( key ) ) {
-				this.add( e );
-				const edge = this.E.get( key );
-				edge["step"] = step;
-				edge["mods"] = modified;
-			}
+			if ( !this.E.has( key ) ) this.add( e );
 		}
 
 		// Update leafs
@@ -118,10 +112,8 @@ class CausalGraph extends Hypergraph {
 	*/
 	time( moment1, moment2 ) {
 		const vertices = [];
-		this.E.forEach( e => {
-			if ( e.hasOwnProperty("step") && e.step >= moment1 && e.step <= moment2 ) {
-				vertices.push( e.edge[1] );
-			}
+		this.V.forEach( (v,i) => {
+			if ( v.step >= moment1 && v.step <= moment2 ) vertices.push( i );
 		});
 		return [ ...new Set( vertices ) ];
 	}

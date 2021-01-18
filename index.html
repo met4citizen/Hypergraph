@@ -53,7 +53,6 @@
   #progress-bar-fill { display: inline-block; height: 16px; background-color: #659cef; border-radius: 3px; transition: width 100ms ease-in-out; }
   .noselect { -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
   .nodeLabelGraph3d, .linkLabelGraph3d { display: inline-block; background-color: olive; color: white; font-size: 14px; font-weight: bold; line-height: 20px; padding: 0 4px; height: 20px; min-width: 14px; border-radius: 10px; text-align: center; vertical-align: middle; }
-  .linkLabelGraph3d { background-color: darkkhaki; }
 </style>
 
 <script src="https://unpkg.com/3d-force-graph"></script>
@@ -64,7 +63,7 @@
 import {Hypergraph3D} from "./modules/Hypergraph3D.mjs";
 
 // Hypergraph object and define colors, sizes and widths for different graph styles
-// Note: use CSS to define node/link label styles .nodeLabelGraph3d and .linkLabelGraph3d
+// Note: use CSS to define node label style .nodeLabelGraph3d
 const hypergraph = new Hypergraph3D();
 window.hgraph = hypergraph; // TODO: REMOVE THIS AFTER DEBUGGING
 
