@@ -52,7 +52,7 @@
   #progress-bar { display: inline-block; width: 250px; background-color: #e0e0e0; margin: 0; padding: 0; line-height: 16px; height: 16px; border-radius: 3px; }
   #progress-bar-fill { display: inline-block; height: 16px; background-color: #659cef; border-radius: 3px; transition: width 100ms ease-in-out; }
   .noselect { -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
-  .nodeLabelGraph3d, .linkLabelGraph3d { display: inline-block; background-color: olive; color: white; font-size: 14px; font-weight: bold; line-height: 20px; padding: 0 4px; height: 20px; min-width: 14px; border-radius: 10px; text-align: center; vertical-align: middle; }
+  .nodeLabelGraph3d, .linkLabelGraph3d { display: inline-block; background-color: olive; color: white; font-size: 14px; font-weight: bold; line-height: 20px; padding: 0 4px; height: auto; min-width: 14px; border-radius: 4px; text-align: center; vertical-align: middle; }
 </style>
 
 <script src="https://unpkg.com/3d-force-graph"></script>
@@ -68,11 +68,11 @@ const hypergraph = new Hypergraph3D();
 window.hgraph = hypergraph; // TODO: REMOVE THIS AFTER DEBUGGING
 
 const spatialStyles = [
-  {  nColor: "black", lColor: "grey", nVal: 6, lWidth: 4, bgColor: "white", nRelSize: 3 }, // 0 defaults
-  {  nColor: "purple", lColor: "hotpink", nVal: 10, lWidth: 7, fill: "hotpink", opacity: 0.2 }, // 1 Red
-  {  nColor: "blue", lColor: "deepskyblue", nVal: 10, lWidth: 7, fill: "deepskyblue", opacity: 0.2 }, // 2 Blue
-  {  nColor: "darkblue", lColor: "darkblue", nVal: 10, lWidth: 7 }, // 3 Red + Blue
-  {  nColor: "lightgrey", lColor: "lightgrey", fill: "#A0D0D6", opacity: 0.3, nVal: 6, lWidth: 0 } // 4 Multiedge
+  {  nColor: "black", lColor: "grey", nVal: 4, lWidth: 3, bgColor: "white", nRelSize: 3 }, // 0 defaults
+  {  nColor: "purple", lColor: "hotpink", nVal: 10, lWidth: 6, fill: "hotpink", opacity: 0.2 }, // 1 Red
+  {  nColor: "blue", lColor: "deepskyblue", nVal: 10, lWidth: 6, fill: "deepskyblue", opacity: 0.2 }, // 2 Blue
+  {  nColor: "darkblue", lColor: "darkblue", nVal: 10, lWidth: 6 }, // 3 Red + Blue
+  {  nColor: "lightgrey", lColor: "lightgrey", fill: "#A0D0D6", opacity: 0.3, nVal: 4, lWidth: 0 } // 4 Multiedge
 ];
 
 const causalStyles = [
@@ -381,7 +381,7 @@ $(document).ready(function() {
     <span class="label down">Mode/reset </span>
     <span id="space" title="Spatial graph" class="option mode mode-selected" data-value="spatial">SPACE</span>
     <span id="time" title="Causal graph" class="option mode" data-value="causal">TIME</span>
-    <span id="algo" title="Rewriting rule" class="option mode" data-value="algorithmic">RULE</span>
+    <!-- <span id="algo" title="Rewriting rule" class="option mode" data-value="algorithmic">RULE</span> -->
     <span class="label down">Simulation</span>
     <span title="Play/pause" id="playstop" class="button button-disabled">
       <svg id="play" viewBox="0 0 32 16"><polygon fill="white" points="14,3 14,11 20,7"/></svg>

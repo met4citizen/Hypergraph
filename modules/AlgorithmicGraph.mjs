@@ -36,54 +36,45 @@ class AlgorithmicGraph extends Hypergraph  {
     this.clear();
 
     let root = ++this.maxv;
-    this.add( [ root ] );
-    let prev = root;
+    this.V.set( root, { in: [], out: [], label: AlgorithmicGraph.ruleToString( this.rules ) });
 
-    // Rules
-    this.rules.forEach( (rule, i) => {
-      if ( i > 0 ) {
-        this.add( [ this.maxv, root ] );
-        this.add( [ prev, this.maxv ] );
-        prev = this.maxv;
+    for( let i = 0; i < 5; i++ ) {
+      let prev = ++this.maxv;
+      this.V.set( prev, { in: [], out: [], label: AlgorithmicGraph.ruleToString( this.rules ) });
+      this.add( [ root, prev ] );
+      for( let j = 0; j < 5; j++ ) {
+        let node = ++this.maxv;
+        this.V.set( node, { in: [], out: [], label: AlgorithmicGraph.ruleToString( this.rules ) });
+        this.add( [ prev, node ] );
       }
-      rule.lhs.forEach( (pattern,j) => {
-        this.V.get( this.maxv )["label"] = "("+pattern.map( x => x+1 ).toString()+")";
-        if ( j > 0 ) {
-          this.add( [ prev, this.maxv ] );
-          prev = this.maxv;
-        }
-        pattern.forEach( v => {
-          const edge = [ this.maxv ];
-          for( let k = 0; k <= v; k++ ) edge.push( ++this.maxv );
-          this.add( edge );
-        });
-      });
-      this.add( [ prev, this.maxv ] );
-      prev = this.maxv;
-      rule.rhs.forEach( (pattern,j) => {
-        if ( j === 0 ) {
-          this.V.get( this.maxv )["label"] = "->("+pattern.map( x => x+1 ).toString()+")";
-        } else {
-          this.V.get( this.maxv )["label"] = "("+pattern.map( x => x+1 ).toString()+")";
-          this.add( [ prev, this.maxv ] );
-          prev = this.maxv;
-        }
-        pattern.forEach( (v,l) => {
-          const edge = [ this.maxv ];
-          for( let k = 0; k <= v; k++ ) {
-            if ( i === (this.rules.length - 1) && j === (rule.rhs.length-1) && l === (pattern.length-1) && k === v ) {
-              edge.push( root );
-            } else {
-              edge.push( ++this.maxv );
-            }
-          }
-          this.add( edge );
-        });
-      });
-    });
-    this.add( [ prev, root ] );
+    }
 
   }
+
+  static ruleToString( rule, initial = [] ) {
+    let rulestr = "";
+    rule.forEach( r => {
+      if ( rulestr !== "" ) rulestr = rulestr + "<br>";
+      r.lhs.forEach( e => {
+        rulestr = rulestr + "(" + e.map( v => v + 1 ).join(",") + ")";
+      });
+      if ( typeof r.rhs !== 'undefined' ) {
+        rulestr = rulestr + "->";
+        r.rhs.forEach( e => {
+          rulestr = rulestr + "(" + e.map( v => v + 1 ).join(",") + ")";
+        });
+      }
+    });
+    // Initial state
+    if ( initial.length ) {
+      if ( rulestr.length > 0 ) rulestr = rulestr + "<br>";
+      initial.forEach( e => {
+        rulestr = rulestr + "(" + e.map( v => v + 1 ).join(",") + ")";
+      });
+    }
+    return rulestr;
+  }
+
 
   /**
   * Parse rule from a string.
@@ -164,25 +155,7 @@ class AlgorithmicGraph extends Hypergraph  {
   * @return {string} Rule as a string.
   */
   getRule() {
-    var rulestr = "";
-    this.rules.forEach( r => {
-      if ( rulestr !== "" ) rulestr = rulestr + "<br>";
-      r.lhs.forEach( e => {
-        rulestr = rulestr + "(" + e.map( v => v + 1 ).join(",") + ")";
-      });
-      if ( typeof r.rhs !== 'undefined' ) {
-        rulestr = rulestr + "->";
-        r.rhs.forEach( e => {
-          rulestr = rulestr + "(" + e.map( v => v + 1 ).join(",") + ")";
-        });
-      }
-    });
-    // Initial state
-    if ( rulestr.length > 0 ) rulestr = rulestr + "<br>";
-    this.initial.forEach( e => {
-      rulestr = rulestr + "(" + e.map( v => v + 1 ).join(",") + ")";
-    });
-    return rulestr;
+    return AlgorithmicGraph.ruleToString( this.rules, this.initial );
   }
 
   /**

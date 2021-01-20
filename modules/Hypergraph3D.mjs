@@ -202,6 +202,12 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 		.cooldownTime( 5000 )
 		.onEngineStop( () => { this.hypersurfaceUpdate(); } );
 
+		// Set link strength
+		this.graph3d.d3Force("link").strength( l => {
+			let refs = 2 * (Math.min(l.source.refs, l.target.refs) + 1);
+			return 1 / refs;
+		});
+
 		// Material for hyperedges
 		if ( typeof this.hyperedgematerial !== 'undefined' ) {
 			this.hyperedgematerial.dispose();
@@ -236,15 +242,21 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 	add( event, nodes, links ) {
 		const { ["a"]: edge, ...props } = event;
 
-		// Calculate mean position from existing nodes
+		// Base location on existing nodes
 		let k = { x: 0, y: 0, z: 0 }, i = 0;
 		edge.forEach( n => {
 			if (typeof nodes[n] !== 'undefined') {
-				k.x += nodes[n].x; k.y += nodes[n].y; k.z += nodes[n].z;
+				k.x += nodes[n].x;
+				k.y += nodes[n].y;
+				k.z += nodes[n].z;
 				nodes[n].refs++; i++;
 			}
 		});
-		if ( i ) { k.x /= i; k.y /= i; k.z /= i; }
+		if ( i ) {
+			k.x = k.x / i;
+			k.y = k.y / i;
+			k.z = k.z / i;
+		}
 
 		// Causal mode (DAG)
 		if ( this.data === this.causal ) {
@@ -266,9 +278,9 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			edge.forEach( n => {
 				if (typeof nodes[n] === 'undefined') {
 					nodes[n] = {id: n, refs: 1, style: 0, ...props,
-						x: k.x + Math.sign(k.x) * 2 * Math.random(),
-						y: k.y + Math.sign(k.y) * 2 * Math.random(),
-						z: k.z + Math.sign(k.z) * 2 * Math.random() };
+						x: k.x + Math.sign(k.x) * Math.random(),
+						y: k.y + Math.sign(k.y) * Math.random(),
+						z: k.z + Math.sign(k.z) * Math.random() };
 				}
 			});
 
@@ -411,7 +423,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.backgroundColor( this.spatialStyles[0]["bgColor"] )
 			.nodeLabel( d => `<span class="nodeLabelGraph3d">${ d.id }</span>` )
 			.nodeRelSize( this.spatialStyles[0]["nRelSize"] )
-			.nodeVal( d => (d.big ? 14 : 1 ) * this.spatialStyles[d.style]["nVal"]  )
+			.nodeVal( d => (d.big ? 10 : 1 ) * this.spatialStyles[d.style]["nVal"]  )
 			.nodeColor( d => this.spatialStyles[d.style]["nColor"] )
 			.nodeVisibility( 'refs' )
 			.linkVisibility( true )
@@ -423,8 +435,10 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.linkDirectionalArrowLength(0)
 			.d3VelocityDecay( 0.4 )
 			.nodeThreeObject( null );
+			// Set forces
+			this.graph3d.d3Force("link").distance( 60 ).iterations( 2 );
 			this.graph3d.d3Force("center").strength( 1 );
-			this.graph3d.d3Force("charge").strength( -90 );
+			this.graph3d.d3Force("charge").strength( -60 ).distanceMin( 2 );
 			// First additions
 			while( this.pos < this.data.events.length && this.data.events[ this.pos ].hasOwnProperty('a') && this.tick() );
 			this.graph3d.cameraPosition( { x: 0, y: 0, z: 500 }, { x: 0, y: 0, z: 0 } );
@@ -434,12 +448,12 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			this.data = this.causal;
 			this.graph3d
 			.numDimensions( 3 )
-			.dagMode( "zin" )
+			.dagMode( "zout" )
 			.dagLevelDistance( 3 )
 			.backgroundColor( this.causalStyles[0]["bgColor"] )
 			.nodeLabel( d => `<span class="nodeLabelGraph3d">${this.causal.vertexLabel( d.id )}</span>` )
 			.nodeRelSize( this.causalStyles[0]["nRelSize"] )
-			.nodeVal( d => (d.big ? 14 : 1 ) * this.causalStyles[d.style]["nVal"] )
+			.nodeVal( d => (d.big ? 10 : 1 ) * this.causalStyles[d.style]["nVal"] )
 			.nodeColor( d => this.causalStyles[d.style]["nColor"] )
 			.nodeVisibility( 'refs' )
 			.linkVisibility( true )
@@ -452,8 +466,10 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.linkDirectionalArrowRelPos(1)
 			.d3VelocityDecay( 0.4 )
 			.nodeThreeObject( null );
-			this.graph3d.d3Force("center").strength( 0.2 );
-			this.graph3d.d3Force("charge").strength( -100 );
+			// Set forces
+			this.graph3d.d3Force("link").distance( 20 ).iterations( 1 );
+			this.graph3d.d3Force("center").strength( 1 );
+			this.graph3d.d3Force("charge").strength( -30 ).distanceMin( 1 );
 			// First additions
 			while( this.pos < 10 && this.tick() );
 			this.graph3d.cameraPosition( { x: 0, y: 0, z: 500 }, { x: 0, y: 0, z: 0 } );
@@ -467,7 +483,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.backgroundColor( this.algorithmicStyles[0]["bgColor"] )
 			.nodeLabel( d => `<span class="nodeLabelGraph3d">${ d.id }</span>` )
 			.nodeRelSize( this.algorithmicStyles[0]["nRelSize"] )
-			.nodeVal( d => (d.big ? 14 : 3 * d.refs ) * this.algorithmicStyles[d.style]["nVal"] )
+			.nodeVal( d => (d.big ? 10 : 3 * d.refs ) * this.algorithmicStyles[d.style]["nVal"] )
 			.nodeColor( d => this.algorithmicStyles[d.style]["nColor"] )
 			.nodeVisibility( 'refs' )
 			.linkVisibility( true )
@@ -476,19 +492,21 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.linkPositionUpdate( Hypergraph3D.linkPositionUpdate )
 			.linkCurvature( null )
 			.linkCurveRotation( null )
-			.linkDirectionalArrowLength(10)
+			.linkDirectionalArrowLength(0)
 			.linkDirectionalArrowRelPos(1)
 			.d3VelocityDecay( 0.1 )
 			.nodeThreeObject( n => {
 				const text = this.algorithmic.vertexLabel( n.id );
 				if ( !text ) return false;
-				const sprite = new SpriteText( text, 24, "black" );
+				const sprite = new SpriteText( text, 16, "black" );
 				sprite.material.depthWrite = false; // make sprite background transparent
 				return sprite;
       })
 			.nodeThreeObjectExtend( false );
-			this.graph3d.d3Force("center").strength( 1 );
-			this.graph3d.d3Force("charge").strength( -180 );
+			// Set forces
+			this.graph3d.d3Force("link").distance( 60 ).iterations( 1 );
+			this.graph3d.d3Force("center").strength( 0.5 );
+			this.graph3d.d3Force("charge").strength( -30 ).distanceMin( 1 );
 			// Rewrite and reveal all
 			this.algorithmic.rewrite();
 			while( this.tick() );
@@ -504,9 +522,10 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 	/**
 	* Process events.
 	* @param {number} [steps=1] Number of steps to process
+	* @param {boolean} [final=false] If true, skip to the end
 	* @return {boolean} True there are more events to process.
 	*/
-	tick( steps = 1 ) {
+	tick( steps = 1, final = false ) {
 		let { nodes, links } = this.graph3d.graphData();
 		for( let i = steps; i > 0; i-- ) {
 			if ( this.pos >= this.data.events.length ) {
@@ -514,7 +533,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				return false;
 			}
 			if ( this.data.events[ this.pos ].hasOwnProperty('a') ) {
-				this.add( this.data.events[ this.pos ], nodes, links );
+				this.add( this.data.events[ this.pos ], nodes, links, final );
 			} else if ( this.data.events[ this.pos ].hasOwnProperty('x') ) {
 				this.remove( this.data.events[ this.pos ], nodes, links );
 			}
@@ -579,6 +598,10 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 	*/
 	final() {
 		this.stop();
+		// More iterations for spatial graph
+		if ( this.data === this.spatial ) {
+			this.graph3d.d3Force("link").iterations( 8 );
+		}
 		this.tick( this.data.events.length );
 	}
 

@@ -13,6 +13,7 @@ class CausalGraph extends Hypergraph {
 	constructor() {
 		super();
 		this.L = new Map(); // Search for leafs of hypergraph vertices
+		this.maxstep = 0; // Record max step
 	}
 
 	/**
@@ -21,6 +22,7 @@ class CausalGraph extends Hypergraph {
 	clear() {
 		super.clear();
 		this.L.clear();
+		this.maxstep = 0;
 	}
 
 	/**
@@ -44,6 +46,7 @@ class CausalGraph extends Hypergraph {
 		// Add new vertex
 		const v2 = ++this.maxv;
 		this.V.set( v2, { in: [], out: [], step: step, mods: modified });
+		if ( this.maxstep < step ) this.maxstep = step;
 
 		// Add causal edges, if missing
 		for( let i = match.length - 1; i >= 0; i-- ) {
