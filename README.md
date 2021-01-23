@@ -45,7 +45,7 @@ The system supports several rules separated with a semicolon `;` or written
 on separate lines. Hyperedge patterns can be described by using numbers and/or
 characters. Several types of parentheses are supported. For example, a rule like
 `[{x,y}{x,z}]->[{x,y}{x,w}{y,w}{z,w}]` is considered valid and can be
-converted to the default format by clicking `Check`.
+converted to the default format by clicking `Scan`.
 
 Some rules to try out (copy-paste the rule part and change the setting if specified):
 
@@ -73,7 +73,7 @@ Event order | Description
 
 ## Simulation
 
-Simulation currently supports three modes: `Space`, `Time` and `Rule` (experimental).
+Simulation currently supports two modes: `Space` and `Time`.
 
 In `Space` mode the system simulates the evolution of the spatial hypergraph.
 According to the Wolfram Model, the spatial hypergraph represents a spacelike
@@ -83,8 +83,6 @@ In `Time` mode the system builds up the causal graph. In this view, the nodes ar
 updating events and the directed edges their causal relationships. According to the
 Wolfram Model, the flux of causal edges through spacelike and timelike hypersurfaces
 is related to energy and momentum respectively.
-
-`Rule` mode represents the hypergraph rewriting rule as a hypergraph (experimental).
 
 Media control buttons let you reset the mode, start/pause simulation and
 skip to the end / reheat force engine.
