@@ -449,7 +449,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			this.graph3d
 			.numDimensions( 3 )
 			.dagMode( "zout" )
-			.dagLevelDistance( 3 )
+			.dagLevelDistance( Math.max( 2, 30 - 0.1 * this.step ) )
 			.backgroundColor( this.causalStyles[0]["bgColor"] )
 			.nodeLabel( d => `<span class="nodeLabelGraph3d">${this.causal.vertexLabel( d.id )}</span>` )
 			.nodeRelSize( this.causalStyles[0]["nRelSize"] )
@@ -467,7 +467,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.d3VelocityDecay( 0.4 )
 			.nodeThreeObject( null );
 			// Set forces
-			this.graph3d.d3Force("link").distance( 20 ).iterations( 1 );
+			this.graph3d.d3Force("link").distance( 50 ).iterations( 1 );
 			this.graph3d.d3Force("center").strength( 1 );
 			this.graph3d.d3Force("charge").strength( -30 ).distanceMin( 1 );
 			// First additions
