@@ -113,11 +113,13 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				break;
 
 			case "worldline": case "timeline":
-				p.push( parseInt(params[0]) );
 				if ( this.data !== this.causal ) throw new Error("Timeline only available in 'Time' mode.");
 				ret = this.data.worldline( parseInt(params[0]) );
 				r.push( ret.length );
 				e.push( ret );
+				if ( ret.length ) {
+					p.push( ret[0][0], ret[ ret.length - 1][1] );
+				}
 				break;
 
 			case "lightcone":
