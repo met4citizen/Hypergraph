@@ -278,8 +278,8 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			edge.forEach( n => {
 				if (typeof nodes[n] === 'undefined') {
 					nodes[n] = {id: n, refs: 1, style: 0, ...props,
-						x: k.x + Math.sign(k.x) * Math.random(),
-						y: k.y + Math.sign(k.y) * Math.random(),
+						x: k.x + Math.random() - 0.5,
+						y: k.y + Math.random() - 0.5,
 						z: k.z + Math.sign(k.z) * Math.random() };
 				}
 			});
@@ -409,7 +409,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				});
 			}
 		});
-		nodes = [ { id: 0, refs: 0, style: 0, x: Math.random() - 0.5, y: Math.random() - 0.5, z: Math.random() - 0.5, step: 0 } ];
+		nodes = [ { id: 0, refs: 0, style: 0, x: Math.random() - 0.5, y: Math.random() - 0.5, z: Math.random() - 0.5 } ];
 		links = [];
 		this.graph3d.graphData({ nodes, links });
 
@@ -436,7 +436,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.d3VelocityDecay( 0.4 )
 			.nodeThreeObject( null );
 			// Set forces
-			this.graph3d.d3Force("link").distance( 60 ).iterations( 2 );
+			this.graph3d.d3Force("link").iterations( 2 );
 			this.graph3d.d3Force("center").strength( 1 );
 			this.graph3d.d3Force("charge").strength( -60 ).distanceMin( 2 );
 			// First additions
@@ -449,7 +449,6 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			this.graph3d
 			.numDimensions( 3 )
 			.dagMode( "zout" )
-			.dagLevelDistance( Math.max( 2, 30 - 0.1 * this.step ) )
 			.backgroundColor( this.causalStyles[0]["bgColor"] )
 			.nodeLabel( d => `<span class="nodeLabelGraph3d">${this.causal.vertexLabel( d.id )}</span>` )
 			.nodeRelSize( this.causalStyles[0]["nRelSize"] )
@@ -467,9 +466,9 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.d3VelocityDecay( 0.4 )
 			.nodeThreeObject( null );
 			// Set forces
-			this.graph3d.d3Force("link").distance( 50 ).iterations( 1 );
-			this.graph3d.d3Force("center").strength( 1 );
-			this.graph3d.d3Force("charge").strength( -30 ).distanceMin( 1 );
+			this.graph3d.d3Force("link").iterations( 1 );
+			this.graph3d.d3Force("center").strength( 0.1 );
+			this.graph3d.d3Force("charge").strength( -200 ).distanceMin( 1 );
 			// First additions
 			while( this.pos < 10 && this.tick() );
 			this.graph3d.cameraPosition( { x: 0, y: 0, z: 500 }, { x: 0, y: 0, z: 0 } );
@@ -504,7 +503,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
       })
 			.nodeThreeObjectExtend( false );
 			// Set forces
-			this.graph3d.d3Force("link").distance( 60 ).iterations( 1 );
+			this.graph3d.d3Force("link").iterations( 1 );
 			this.graph3d.d3Force("center").strength( 0.5 );
 			this.graph3d.d3Force("charge").strength( -30 ).distanceMin( 1 );
 			// Rewrite and reveal all

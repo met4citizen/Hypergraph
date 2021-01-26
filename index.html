@@ -29,6 +29,8 @@
   #paused span { background-color: white; padding: 0 10px; }
   #logo { margin: 3px; padding: 3px; position: fixed; z-index: 3; opacity: 0.7; bottom: 0; left: 0; width: 32px; height: 32px; }
   .button { display: inline-block; margin: 1px 0 1px 0; padding: 0; background-color: black; color: white; width: 32px; height: 14px; border: 1px solid black; border-radius: 3px; font-size: 8px; font-weight: bold; line-height:14px; text-align: center; vertical-align: middle; cursor: pointer; pointer-events: auto; }
+  #distance { margin: 16px 0 0 0; width: 100%; }
+  #distance-range { width: 96%; cursor: pointer; pointer-events: auto; }
   .button:active { opacity: 0.2; }
   .button-disabled { opacity: 0.2; pointer-events: none; }
   #red { background-color: hotpink; border-color: hotpink; }
@@ -278,6 +280,8 @@ $(document).ready(function() {
     $("#play, #final").show();
     $("#stop, #reheat").hide();
 
+    $("#distance-range").val(0).change();
+
     if ( mode === "algorithmic" ) {
       $("#playstop").click();
     }
@@ -318,6 +322,15 @@ $(document).ready(function() {
     catch(e) {
       alert(e);
     }
+  });
+
+  // Set distance
+  $(document).on('input', '#distance-range', function() {
+    let value = parseInt( $(this).val(), 10 );
+    hypergraph.graph3d
+      .dagLevelDistance( value / 4 + 1 )
+      .d3Force("link").distance( value + 1 );
+    resumeTimeout();
   });
 
   // Export to GLB
@@ -378,7 +391,7 @@ $(document).ready(function() {
   </div>
 
   <div id="topright" class="controls noselect">
-    <span class="label down">Mode/reset </span>
+    <span class="label down">Mode/reset</span>
     <span id="space" title="Spatial graph" class="option mode mode-selected" data-value="spatial">SPACE</span>
     <span id="time" title="Causal graph" class="option mode" data-value="causal">TIME</span>
     <!-- <span id="algo" title="Rewriting rule" class="option mode" data-value="algorithmic">RULE</span> -->
@@ -391,6 +404,10 @@ $(document).ready(function() {
       <svg id="reheat" viewBox="0 0 32 14"><path fill="white" d="M16.1 10.2c-2 0-3-1-3.1-3S14 4 15.7 3.9c1.8-.1 2.1 1.1 2.1 1.1L16.7 6.3h4V2.5l-1.3 1C18.4 2.4 17.5 2 16 2C13 2 11 4 11 7S12.9 11.8 16 12c3.1-.3 4.2-2 4.5-4h-2.1c-.3 1.2-1 2-2.3 2.2z"/></svg>
       <svg id="final" viewBox="0 0 32 14"><polygon fill="white" points="12,3 12,11 18,7"/><polygon fill="white" points="18,3 20,3 20,11 18,11" /></svg>
     </span>
+    <div id="distance">
+      <span class="label down">Link distance</span>
+      <input id="distance-range" type="range" value="0">
+    </div>
   </div>
 
   <div id="bottomleft" class="controls noselect">
