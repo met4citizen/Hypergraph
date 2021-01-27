@@ -60,9 +60,13 @@ class AlgorithmicGraph extends Hypergraph  {
       });
       if ( typeof r.rhs !== 'undefined' ) {
         rulestr = rulestr + "->";
-        r.rhs.forEach( e => {
-          rulestr = rulestr + "(" + e.map( v => v + 1 ).join(",") + ")";
-        });
+        if ( r.rhs.length ) {
+          r.rhs.forEach( e => {
+            rulestr = rulestr + "(" + e.map( v => v + 1 ).join(",") + ")";
+          });
+        } else {
+          rulestr = rulestr + "()";
+        }
       }
     });
     // Initial state
