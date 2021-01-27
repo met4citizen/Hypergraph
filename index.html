@@ -92,6 +92,13 @@ const algorithmicStyles = [
   {  nColor: "lightgrey", lColor: "lightgrey", fill: "#A0D0D6", opacity: 0.3, nVal: 6, lWidth: 0 } // 4 Multiedge
 ];
 
+function getUrlParameter(name) {
+    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+    var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+    var results = regex.exec(location.href);
+    return results === null ? false : decodeURIComponent(results[1].replace(/\+/g, '    '));
+}
+
 $(document).ready(function() {
 
   // Setup graph element
@@ -343,8 +350,45 @@ $(document).ready(function() {
     hypergraph.export( false );
   });
 
-  // Run default rule
-  $("#rule-run").click();
+  // Copy URL link for the current rule to clipboard
+  $("#url").on("click", function() {
+    let baseurl = window.location.href.split('?')[0];
+    let rule = $("#rule-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
+    let ruleorder = $(".ruleordering-selected").data("value");
+    let eventorder = $(".eventordering-selected").data("value");
+    let url = baseurl
+      + "?rule=" + encodeURIComponent(rule).replace(/%2C/g,",").replace(/%3B/g,";")
+      + "&ruleorder=" + encodeURIComponent(ruleorder)
+      + "&eventorder=" + encodeURIComponent(eventorder);
+    var $temp = $("<input>");
+    $("body").append($temp);
+    $temp.val(url).select();
+    document.execCommand("copy");
+    $temp.remove();
+    alert( "The following URL copied to clipboard:\n\n" + url );
+  });
+
+  // Specify the initial rule and settings and run it
+  function firstrun() {
+    let rule = getUrlParameter('rule');
+    if ( rule ) {
+      $("#rule-text").html( hypergraph.validateRule( rule ) );
+    }
+    let ruleorder = getUrlParameter('ruleorder');
+    if ( ruleorder && ( ruleorder === "none" || ruleorder === "index" || ruleorder === "indexrev" ) ) {
+      $(".ruleordering").removeClass("ruleordering-selected");
+      $(".ruleordering[data-value='" + ruleorder + "']").addClass("ruleordering-selected");
+    }
+    let eventorder = getUrlParameter('eventorder');
+    if ( eventorder && ( eventorder === "random" || eventorder === "ascending" || eventorder === "descending" ) ) {
+      $(".eventordering").removeClass("eventordering-selected");
+      $(".eventordering[data-value='" + eventorder + "']").addClass("eventordering-selected");
+    }
+    $("#rule-run").click();
+  }
+
+  // Autorun the first time
+  firstrun();
 
 });
 
@@ -405,7 +449,7 @@ $(document).ready(function() {
       <svg id="final" viewBox="0 0 32 14"><polygon fill="white" points="12,3 12,11 18,7"/><polygon fill="white" points="18,3 20,3 20,11 18,11" /></svg>
     </span>
     <div id="distance">
-      <span class="label down">Link distance</span>
+      <span class="label down">Link length</span>
       <input id="distance-range" type="range" value="0">
     </div>
   </div>
@@ -426,6 +470,7 @@ $(document).ready(function() {
     <span class="label up">Download</span>
     <span title="Download GLB" id="glb" class="button">GLB</span>
     <span title="Download glTF" id="gltf" class="button">GLTF</span>
+    <span title="Copy URL" id="url" class="button">URL</span>
   </div>
 
   <div id="3d-graph" class="noselect"></div>
