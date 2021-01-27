@@ -2,7 +2,7 @@ import { HypergraphRewritingSystem } from "./HypergraphRewritingSystem.mjs";
 import { SpriteText } from "./SpriteText.mjs";
 
 import { BufferGeometry, BufferAttribute, MeshBasicMaterial, Mesh, DoubleSide, Vector3 } from 'https://threejs.org/build/three.module.js'
-import { ConvexBufferGeometry } from 'https://threejs.org/examples/jsm/geometries/ConvexGeometry.js';
+import { ConvexGeometry } from 'https://threejs.org/examples/jsm/geometries/ConvexGeometry.js';
 import { GLTFExporter } from 'https://threejs.org/examples/jsm/exporters/GLTFExporter.js';
 
 /**
@@ -629,7 +629,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 							points.push( new Vector3( nodes[v].x, nodes[v].y, nodes[v].z ? nodes[v].z : 0 ) );
 						}
 					});
-					const geom = new ConvexBufferGeometry( points );
+					const geom = new ConvexGeometry( points );
 					const mat = new MeshBasicMaterial( {
 						color: this.spatialStyles[i].fill,
 						transparent: true,
