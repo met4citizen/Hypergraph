@@ -101,8 +101,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				ret = this.data.nball( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
 				r.push( ret.length );
 				e.push( ret );
-				ret = this.data.nsphere( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
-				v.push( ret );
+				v.push( [ ...new Set( ret.flat() ) ] );
 				break;
 
 			case "random": case "walk":
