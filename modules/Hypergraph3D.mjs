@@ -19,7 +19,8 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 		super();
 		this.graph3d = ForceGraph3D({ rendererConfig: { antialias: true, precision: "lowp" }});
 		this.data = this.spatial; // Displayed graph
-		this.pos = 0; // Log position
+		this.pos = 0; // Event log position
+		this.playpos = 0; // Play position
 		this.updatetimer = null;
 		this.stopfn = null; // stop callback function
 		this.hypersurface = [ [], [], [] ]; // meshes, red, blue
@@ -393,6 +394,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 		// Stop animation and set position to start
 		this.stop();
 		this.pos = 0;
+		this.playpos = 0;
 
 		// Remove hypersurfaces
 		this.hypersurface[1].length = 0;
@@ -441,7 +443,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			this.graph3d.d3Force("center").strength( 1 );
 			this.graph3d.d3Force("charge").strength( -60 ).distanceMin( 2 );
 			// First additions
-			while( this.pos < this.data.events.length && this.data.events[ this.pos ].hasOwnProperty('a') && this.tick() );
+			while( this.pos < this.algorithmic.initial.length && this.tick() );
 			this.graph3d.cameraPosition( { x: 0, y: 0, z: 500 }, { x: 0, y: 0, z: 0 } );
 			break;
 
@@ -538,6 +540,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				this.remove( this.data.events[ this.pos ], nodes, links );
 			}
 			this.pos++;
+			this.playpos++;
 		}
 		this.graph3d.graphData( { nodes, links } );
 		return true;
@@ -547,7 +550,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 	* Timed update process.
 	*/
 	update = () => {
-		const steps = Math.min( 50, Math.ceil( ( this.pos + 1 ) / 10) );
+		const steps = Math.min( 50, Math.ceil( ( this.playpos + 1 ) / 10) );
 		if ( !this.tick( steps ) ) {
 			this.stop();
 			if ( this.stopfn ) this.stopfn();
@@ -568,6 +571,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 		this.graph3d.enablePointerInteraction( false );
 		if ( this.updatetimer ) clearInterval( this.updatetimer );
 		this.stopfn = stopcallbackfn;
+		this.playpos = 0;
 		this.updatetimer = setInterval( this.update, msec );
 	}
 
