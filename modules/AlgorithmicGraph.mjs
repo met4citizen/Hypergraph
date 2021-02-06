@@ -91,7 +91,8 @@ class AlgorithmicGraph extends Hypergraph  {
     // Change parenthesis types and remove extra ones
     rulestr = rulestr.toLowerCase()
     .replace( /\{|\[/g , "(" ).replace( /}|]/g , ")" )
-    .replace( /(\()+/g , "(" ).replace( /(\))+/g , ")" );
+    .replace( /(\()+/g , "(" ).replace( /(\))+/g , ")" )
+    .replace( /(;)+/g , ";" ).replace( /;$/g ,"" );
 
     // Discard all unsupported characters
     rulestr = rulestr.replace( /[^()a-z0-9,;>]+/g , "" );
