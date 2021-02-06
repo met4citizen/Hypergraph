@@ -69,7 +69,8 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 		// Change parenthesis types and remove extra ones
 		str = str.toLowerCase()
 		.replace( /\{|\[/g , "(" ).replace( /}|]/g , ")" )
-		.replace( /(\()+/g , "(" ).replace( /(\))+/g , ")" );
+		.replace( /(\()+/g , "(" ).replace( /(\))+/g , ")" )
+		.replace( /(;)+/g , ";" ).replace( /;$/g ,"" );
 
 		// Discard all unsupported characters
 		str = str.replace( /[^()a-z0-9,.-;]+/g , "" );
@@ -77,7 +78,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 		const cmds = str.split(";").map( c => [ ...c.split("(").map( p => [ ...p.replace( /[^a-z0-9,.-]+/g, "" ).split(",") ] ) ] );
 
 		const v = [], e = [], p = [], r = [];
-		cmds.forEach( c => {
+		cmds.forEach( (c,i) => {
 			const func = c[0][0];
 			const params = c[1];
 			let ret;
@@ -144,6 +145,18 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				ret = this.data.time( parseInt(params[0]), parseInt(params[1]) );
 				r.push( ret.length );
 				v.push( ret );
+				break;
+
+			case "": // pattern matching
+				if ( this.data !== this.spatial ) throw new Error("Pattern matching only available in 'Space' mode.");
+				this.algorithmic.setRule( str.split(";")[i] + "->()" );
+				this.findMatches( this.spatial );
+				r.push( this.matches.length );
+				for( let j=0; j < this.matches.length; j++ ) {
+					const hit = this.mapper( this.spatial, this.algorithmic.rules[ this.matches[j].r ].lhs , this.matches[j].m );
+					e.push( hit );
+					v.push( [ ...new Set( hit.flat() ) ] );
+				}
 				break;
 
 			default:
