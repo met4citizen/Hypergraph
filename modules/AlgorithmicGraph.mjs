@@ -88,6 +88,19 @@ class AlgorithmicGraph extends Hypergraph  {
     // Check if empty
     if ( rulestr.length === 0 ) throw new SyntaxError("Given rule is empty.");
 
+    // Expand equal signs == as two separate reversible rules
+    let a = rulestr.split(";");
+    rulestr = "";
+    a.forEach( s => {
+      let b = s.split("==");
+      if ( b.length === 2 ) {
+        rulestr = rulestr + b[0] + "->" + b[1] + ";" + b[1] + "->" + b[0] + ";";
+      } else {
+        rulestr = rulestr + s + ";";
+      }
+    });
+    rulestr.replace(/;$/g,"");
+
     // Change parenthesis types and remove extra ones
     rulestr = rulestr.toLowerCase()
     .replace( /\{|\[/g , "(" ).replace( /}|]/g , ")" )
