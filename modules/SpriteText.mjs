@@ -1,4 +1,4 @@
-import { LinearFilter, Sprite, SpriteMaterial, Texture } from 'https://threejs.org/build/three.module.js'
+import { LinearFilter, Sprite, SpriteMaterial, Texture } from 'https://unpkg.com/three@0.127.0/build/three.module.js'
 
 class SpriteText extends Sprite {
 
