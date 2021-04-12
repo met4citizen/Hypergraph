@@ -99,7 +99,6 @@ class AlgorithmicGraph extends Hypergraph  {
         rulestr = rulestr + s + ";";
       }
     });
-    rulestr.replace(/;$/g,"");
 
     // Change parenthesis types and remove extra ones
     rulestr = rulestr.toLowerCase()
