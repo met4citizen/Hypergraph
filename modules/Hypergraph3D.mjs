@@ -1,9 +1,9 @@
+import { BufferGeometry, BufferAttribute, MeshBasicMaterial, Mesh, DoubleSide, Vector3 } from 'https://unpkg.com/three@0.127.0/build/three.module.js'
+import { ConvexGeometry } from 'https://unpkg.com/three@0.127.0/examples/jsm/geometries/ConvexGeometry.js';
+import { GLTFExporter } from 'https://unpkg.com/three@0.127.0/examples/jsm/exporters/GLTFExporter.js';
+
 import { HypergraphRewritingSystem } from "./HypergraphRewritingSystem.mjs";
 import { SpriteText } from "./SpriteText.mjs";
-
-import { BufferGeometry, BufferAttribute, MeshBasicMaterial, Mesh, DoubleSide, Vector3 } from 'https://threejs.org/build/three.module.js'
-import { ConvexGeometry } from 'https://threejs.org/examples/jsm/geometries/ConvexGeometry.js';
-import { GLTFExporter } from 'https://threejs.org/examples/jsm/exporters/GLTFExporter.js';
 
 /**
 * @class Uses ForceGraph3D to visualize hypergraph rewriting.
@@ -73,9 +73,9 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 		.replace( /(;)+/g , ";" ).replace( /;$/g ,"" );
 
 		// Discard all unsupported characters
-		str = str.replace( /[^()a-z0-9,.-;]+/g , "" );
+		str = str.replace( /[^-()a-z0-9,.;]+/g , "" );
 
-		const cmds = str.split(";").map( c => [ ...c.split("(").map( p => [ ...p.replace( /[^a-z0-9,.-]+/g, "" ).split(",") ] ) ] );
+		const cmds = str.split(";").map( c => [ ...c.split("(").map( p => [ ...p.replace( /[^-a-z0-9,.]+/g, "" ).split(",") ] ) ] );
 
 		const v = [], e = [], p = [], r = [];
 		cmds.forEach( (c,i) => {
@@ -159,6 +159,33 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				}
 				break;
 
+			case "-": case "^": // pattern matching, EXCLUDE
+				if ( this.data !== this.spatial ) throw new Error("Pattern matching only available in 'Space' mode.");
+				this.algorithmic.setRule( str.split(";")[i].substr(1) + "->()" );
+				this.findMatches( this.spatial );
+				r.push( this.matches.length );
+				for( let j=0; j < this.matches.length; j++ ) {
+					const hit = this.mapper( this.spatial, this.algorithmic.rules[ this.matches[j].r ].lhs , this.matches[j].m );
+					const hitflat = [ ...new Set( hit.flat() ) ];
+
+					// Remove from edges
+					for( let m = hit.length-1; m >= 0; m-- ) {
+						for( let k = e.length - 1; k >= 0; k--) {
+							for( let l = e[k].length - 1; l >=0; l-- ) {
+	 							if ( e[k][l].length === hit[m].length && e[k][l].every( (x,y) => x === hit[m][y] ) ) e[k].splice(l, 1);
+							}
+						}
+					}
+
+					// remove from vertices
+					for( let k = v.length -1; k >= 0; k--) {
+						for (let l = v[k].length - 1; l >= 0; l--) {
+							if ( hitflat.includes( v[k][l] ) ) v[k].splice(l, 1);
+						}
+					}
+				}
+				break;
+
 			default:
 				throw new Error( "Unknown command: " + func );
 			}
@@ -233,8 +260,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			opacity: this.spatialStyles[4].opacity,
 			side: DoubleSide,
 			depthTest: false,
-		 	depthWrite: false,
-		 	flatShading: true } );
+		 	depthWrite: false } );
 
 	}
 
@@ -652,8 +678,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 						opacity: this.spatialStyles[i].opacity,
 						side: DoubleSide,
 						depthTest: false,
-					 	depthWrite: false,
-					 	flatShading: true } );
+					 	depthWrite: false } );
 					const mesh = new Mesh(geom, mat);
 					this.hypersurface[0].push( mesh );
 					this.graph3d.scene().add( mesh );
