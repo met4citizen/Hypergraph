@@ -38,8 +38,8 @@ An example of a hypergraph rewriting rule:
 In this case, wherever a subhypergraph in the form of the left-hand side pattern `(1,1,2)(2,3,4)`
 is found on the hypergraph, it is replaced with a new subhypergraph in the
 form of the right-hand side pattern `(1,5,4)(2,5,3)(5,5,4)`. The two sides of the rule must be
-separated with an arrow `->`. A rule without the right-hand side is used as the initial
-state.
+separated with an arrow `->`. A spearator `==` can be used as a shortcut for reversible two-way rule.
+A rule without the right-hand side is used as the initial state.
 
 The system supports several rules separated with a semicolon `;` or written
 on separate lines. Hyperedge patterns can be described by using numbers and/or
@@ -98,7 +98,7 @@ Command | Description | Examples
 `nball(center,radius,[dir],[rev])`<br/><br/>Status line:<br/>N-dimensional volume as the number of edges. | N-dimensional ball is a set of nodes and edges within a distance `radius` of a given node `center`. | `nball(0,4)`
 `nsphere(center,radius,[dir],[rev])`<br/><br/>Status line:<br/>N-dimensional area as the number of nodes. | N-dimensional sphere/hypersurface is a set of nodes within a distance `radius` of a given node `center`. | `nsphere(0,4)`
 `random(n,distance,[dir],[rev])`<br/><br/>Status line:<br/>Distance as the number of edges. | Random walk starting from a specific node with some maximum `distance`. | `random(1,100,dir)`
-`(x,y)(y,z)`<br/><br/>Status line:<br/>Number of rule-based matches. | Hypersurfaces matching the given rule-based pattern. `SPACE` mode only. | `(1,2,3)(3,4,5)`<br/>`(x,y)(x,z,y)(x,u,y)`
+`(x,y)(y,z)`<br/><br/>Status line:<br/>Number of rule-based matches. | Hypersurfaces matching the given rule-based pattern. Using a prefix '-' or '^' matched hypersurfaces are excluded from the results. `SPACE` mode only. | `(1,2,3)(3,4,5)`<br/>`(x,y)(x,z,y)(x,u,y)`
 `space(n1,n2)`<br/><br/>Status line:<br/>N-dimensional volume as the number of nodes. | Space-like hypersurface based on a range of nodes. `SPACE` mode only. | `space(100,150)`
 `time(t1,t2)`<br/><br/>Status line:<br/>N-dimensional volume as the number of nodes. | Time-like hypersurface based on a range of iterations. `TIME` mode only. | `time(300,350)`
 `worldline(n)`<br/><br/>Status line:<br/>Distance as the number of nodes. | Time-like curve of the space-like node. `TIME` mode only. | `worldline(0)`
