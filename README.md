@@ -38,7 +38,7 @@ An example of a hypergraph rewriting rule:
 In this case, wherever a subhypergraph in the form of the left-hand side pattern `(1,1,2)(2,3,4)`
 is found on the hypergraph, it is replaced with a new subhypergraph in the
 form of the right-hand side pattern `(1,5,4)(2,5,3)(5,5,4)`. The two sides of the rule must be
-separated with an arrow `->`. A spearator `==` can be used as a shortcut for reversible two-way rule.
+separated with an arrow `->`. The separator `==` can be used as a shortcut for a reversible two-way rule.
 A rule without the right-hand side is used as the initial state.
 
 The system supports several rules separated with a semicolon `;` or written
