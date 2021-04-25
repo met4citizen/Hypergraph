@@ -242,7 +242,7 @@ class HypergraphRewritingSystem {
 		this.matches.length = 0;
 		this.duration = 0;
 		this.eventcnt = 0;
-		this.step = 0;
+		this.step = -1;
 
 		// Set parameters
 		this.algorithmic.setRule( rulestr );
@@ -254,7 +254,17 @@ class HypergraphRewritingSystem {
 
 		// Add initial edges
 		this.spatial.rewrite( [], this.algorithmic.initial );
-		this.causal.rewrite( [], [ ...new Set( this.algorithmic.initial.flat() ) ].sort(), this.step );
+		let modified = [ ...new Set( this.algorithmic.initial.flat() ) ].sort();
+
+		// Add point zero in causal graph
+		this.causal.rewrite( [], modified, this.step );
+
+		// Add initial edges to causal graph
+		this.algorithmic.initial.forEach( e => {
+			this.step++;
+			let modified = [ ...new Set( e.flat() ) ].sort();
+			this.causal.rewrite( modified, modified, this.step );
+		});
 
 		// Start rewriting process
 		setTimeout( this.rewrite, this.rewritedelay );
