@@ -39,13 +39,22 @@ In this case, wherever a subhypergraph in the form of the left-hand side pattern
 is found on the hypergraph, it is replaced with a new subhypergraph in the
 form of the right-hand side pattern `(1,5,4)(2,5,3)(5,5,4)`. The two sides of the rule must be
 separated with an arrow `->`. The separator `==` can be used as a shortcut for a reversible two-way rule.
-A rule without the right-hand side is used as the initial state.
 
 The system supports several rules separated with a semicolon `;` or written
 on separate lines. Hyperedge patterns can be described by using numbers and/or
 characters. Several types of parentheses are supported. For example, a rule like
 `[{x,y}{x,z}]->[{x,y}{x,w}{y,w}{z,w}]` is considered valid and can be
 converted to the default format by clicking `Scan`.
+
+A rule without the right-hand side `(1,1,1)(1,1,1)` is used as the initial state. An alternative
+way of specifying the initial state is to use some predefined function described
+in the table below.
+
+Initial graph | Description
+--- | ---
+`line(n)` | Create a line with `n` vertices.
+`grid(dim,n)` | Create a `dim` dimensional grid with approximately `n` vertices.
+`sphere(n)` | Create a sphere with `n` vertices.
 
 Some rules to try out (copy-paste the rule part and change the setting if specified):
 
