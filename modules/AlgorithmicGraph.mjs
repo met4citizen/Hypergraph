@@ -12,9 +12,9 @@ class AlgorithmicGraph extends Hypergraph  {
   */
   constructor() {
     super();
-    this.rules = [];
-    this.initial = [];
-    this.command = "";
+    this.rules = []; // rewriting rules
+    this.initial = []; // initial graph
+    this.command = ""; // command for a function to generate initial graph
   }
 
   /**
@@ -29,6 +29,12 @@ class AlgorithmicGraph extends Hypergraph  {
     return u.label;
   }
 
+  /**
+  * Return euclidean distance between two points in n-dimension
+  * @param {number} a Coordinates for point A
+  * @param {number} b Coordinates for point B
+  * @return {number} Distance.
+  */
   static dist(a,b) {
     let sum = 0;
     for (let i = a.length - 1; i >= 0; i--) {
@@ -37,6 +43,12 @@ class AlgorithmicGraph extends Hypergraph  {
     return Math.sqrt(sum);
   }
 
+  /**
+  * Return all r sized permutations of elements in array xs.
+  * @param {number[]} xs Array of possible elements.
+  * @param {number} r Number of elements in one permutation.
+  * @return {number[][]} Permutations.
+  */
   static perm(xs, r) {
     if (!r) return [];
     return xs.reduce(function(memo, cur, i) {
@@ -47,12 +59,18 @@ class AlgorithmicGraph extends Hypergraph  {
     }, []);
   }
 
+  /**
+  * Return a spherical Fibonacci lattice with 'samples' points.
+  * @param {number} samples Number of points on the sphere.
+  * @param {number} radius Radius of the sphere.
+  * @return {number[][]} Coordinates of the points.
+  */
   static fibonacciSphere(samples, radius = 1 ) {
     let points = [];
     let phi = Math.PI * (3.0 - Math.sqrt(5.0))  // golden angle in radians
     for (var i = 0; i < samples; i++) {
       let y = 1 - (i / (samples - 1)) * 2;  // y goes from 1 to -1
-      let distance = Math.sqrt( 1 - y * y );  // radius at y
+      let distance = Math.sqrt( 1 - y * y );  // distance at y
       let theta = phi * i;  // golden angle increment
       let x = Math.cos(theta) * distance;
       let z = Math.sin(theta) * distance;
@@ -78,7 +96,6 @@ class AlgorithmicGraph extends Hypergraph  {
         }
       }
     }
-    console.log( edges );
     return edges;
   }
 
@@ -112,14 +129,12 @@ class AlgorithmicGraph extends Hypergraph  {
   * @return {number[][]} Edges
   */
   sphere( points ) {
-    if ( (points < 1) || (points > 10000) )
-      throw new Error("Number of points must be between 1-10000.");
+    if ( (points < 10) || (points > 10000) )
+      throw new Error("Number of points must be between 10-10000.");
 
     // Sprinkling
     let p = AlgorithmicGraph.fibonacciSphere( points );
     let dist = AlgorithmicGraph.dist( p[1], p[2] );
-
-    console.log( p );
 
     return this.manifoldToGraph( p, 1.1 * dist );
   }
@@ -289,6 +304,9 @@ class AlgorithmicGraph extends Hypergraph  {
         case "sphere": case "nsphere":
           this.initial = this.sphere( parseInt(params[0]) );
           break;
+        default:
+          throw new Error( "Unknown command: " + func );
+
       }
       // Normalize
       const unique = [ ...new Set( [ ...this.initial.flat() ] ) ];
