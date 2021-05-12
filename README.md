@@ -52,6 +52,7 @@ in the table below.
 
 Initial graph | Description
 --- | ---
+`points(n)` | Create `n` vertices.
 `line(n)` | Create a line with `n` vertices.
 `grid(dim,n)` | Create a `dim` dimensional grid with approximately `n` vertices.
 `sphere(n)` | Create a sphere with `n` vertices.
