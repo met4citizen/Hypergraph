@@ -100,6 +100,23 @@ class AlgorithmicGraph extends Hypergraph  {
   }
 
   /**
+  * Produces a random sprinkling of points
+  * @param {number} points Number of vertices
+  * @return {number[][]} Edges
+  */
+  points( points ) {
+    if ( (points < 10) || (points > 10000) )
+      throw new Error("Number of points must be between 10-10000.");
+
+    let edges = [];
+    for( let i=0; i<points; i++) {
+      edges.push( [i] );
+    }
+
+    return edges;
+  }
+
+  /**
   * Produces a random sprinkling of points into a flat grid of
   * given dimension and number of vertices.
   * @param {number} dim Dimension
@@ -124,7 +141,7 @@ class AlgorithmicGraph extends Hypergraph  {
 
   /**
   * Produces a random sprinkling of points into a flat sphere of
-  * given dimension and number of vertices.
+  * given number of vertices.
   * @param {number} points Number of vertices
   * @return {number[][]} Edges
   */
@@ -295,13 +312,16 @@ class AlgorithmicGraph extends Hypergraph  {
       const func = cmd[0][0];
 			const params = cmd[1];
       switch( func ) {
+        case "points":
+          this.initial = this.points( parseInt(params[0]) );
+          break;
         case "line":
           this.initial = this.grid( 1, parseInt(params[0]) );
           break;
         case "grid": case "ngrid":
           this.initial = this.grid( parseInt(params[0]), parseInt(params[1]) );
           break;
-        case "sphere": case "nsphere":
+        case "sphere":
           this.initial = this.sphere( parseInt(params[0]) );
           break;
         default:
