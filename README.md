@@ -54,16 +54,9 @@ Initial graph | Description
 --- | ---
 `points(n)` | Create `n` vertices.
 `line(n)` | Create a line with `n` vertices.
-`grid(dim,n)` | Create a `dim` dimensional grid with approximately `n` vertices.
+`grid(n,dim)` | Create a `dim` dimensional grid with approximately `n` vertices.
 `sphere(n)` | Create a sphere with `n` vertices.
-
-Some rules to try out (copy-paste the rule part and change the setting if specified):
-
-- (1,2)(1,3)->(1,2)(1,4)(2,4)(3,4)
-- (1,2,3)(1,4,5)->(3,3,6)(4,5,6)(6,6,5);(1,1,1)(1,1,1)
-- (1,1,2)(3,2,4)->(5,1,4)(3,2,3)(5,5,4);(1,1,1)(1,1,1)
-- (1,2,2)(1,3,4)->(3,2,5)(5,5,2)(4,5,5);(1,1,1)(1,1,1) | Set event ordering: DEC
-- (1,2,2)(1,3,4)->(1,5,2)(2,3,4)(4,5,5);(1,1,1)(1,1,1) | Set event ordering: DEC
+`random(n,dim,conn)` | Create a random graph with `n` vertices each with minimum `conn` edges by springling random points in `dim` dimensions.
 
 Rule ordering:
 

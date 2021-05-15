@@ -104,12 +104,12 @@ class AlgorithmicGraph extends Hypergraph  {
   * @param {number} points Number of vertices
   * @return {number[][]} Edges
   */
-  points( points ) {
-    if ( (points < 10) || (points > 10000) )
+  points( n ) {
+    if ( (n < 10) || (n > 10000) )
       throw new Error("Number of points must be between 10-10000.");
 
     let edges = [];
-    for( let i=0; i<points; i++) {
+    for( let i=0; i<n; i++) {
       edges.push( [i] );
     }
 
@@ -119,22 +119,22 @@ class AlgorithmicGraph extends Hypergraph  {
   /**
   * Produces a random sprinkling of points into a flat grid of
   * given dimension and number of vertices.
-  * @param {number} dim Dimension
-  * @param {number} points Number of vertices
+  * @param {number} n Number of vertices
+  * @param {number} dimension Dimension
   * @return {number[][]} Edges
   */
-  grid( dim, points ) {
-    if ( (dim < 1) || (dim > 10) )
-      throw new Error("Dimension must be between 1-10.");
-    if ( (points < 1) || (points > 10000) )
+  grid( n, dimension ) {
+    if ( (n < 1) || (n > 10000) )
       throw new Error("Number of points must be between 1-10000.");
+    if ( (dimension < 1) || (dimension > 10) )
+      throw new Error("Dimension must be between 1-10.");
 
     // Calculate one edge based on dimension
-    let size = Math.ceil( Math.pow(points, 1 / dim) );
+    let size = Math.ceil( Math.pow(n, 1 / dimension ) );
     let arr = Array( size ).fill().map( (v,i) => i );
 
     // Sprinkling
-    let grid = AlgorithmicGraph.perm(arr, dim);
+    let grid = AlgorithmicGraph.perm(arr, dimension);
 
     return this.manifoldToGraph( grid );
   }
@@ -142,18 +142,65 @@ class AlgorithmicGraph extends Hypergraph  {
   /**
   * Produces a random sprinkling of points into a flat sphere of
   * given number of vertices.
-  * @param {number} points Number of vertices
+  * @param {number} n Number of vertices
   * @return {number[][]} Edges
   */
-  sphere( points ) {
-    if ( (points < 10) || (points > 10000) )
+  sphere( n ) {
+    if ( (n < 10) || (points > 10000) )
       throw new Error("Number of points must be between 10-10000.");
 
     // Sprinkling
-    let p = AlgorithmicGraph.fibonacciSphere( points );
+    let p = AlgorithmicGraph.fibonacciSphere( n );
     let dist = AlgorithmicGraph.dist( p[1], p[2] );
 
     return this.manifoldToGraph( p, 1.1 * dist );
+  }
+
+
+  /**
+  * Produces a random graph of n vertices using sprinkling
+  * @param {number} n Number of vertices
+  * @param {number} dimension Mininum number of edges per vertix
+  * @param {number} connections Mininum number of edges per vertix
+  * @return {number[][]} Edges
+  */
+  random( n, dimension, connections ) {
+    if ( (n < 10) || (n > 1000) )
+      throw new Error("Number of points must be between 10-1000.");
+    if ( (dimension < 1) || (dimension > 20) )
+      throw new Error("Dimension must be between 1-20.");
+    if ( (connections < 1) || (connections > 100) )
+      throw new Error("Connections must be between 1-100.");
+
+    // Sprinkling
+    let points = [];
+    let alledges = [];
+    for ( let i = 0; i < n; i++ ) {
+      let point = Array( dimension ).fill().map(() => Math.random() );
+      points.push( point );
+      for ( let j = 0; j < i; j++ ) {
+        let dist = AlgorithmicGraph.dist( points[i], points[j] );
+        let edge = Math.random() > 0.5 ? [i,j] : [j,i]; // Random direction
+        alledges.push( { edge: edge, dist: dist } );
+      }
+    }
+
+    // Sort, min length first
+    alledges.sort( (a,b) => a.dist - b.dist );
+
+    // Ensure all vertices get at least two links
+    let linkcnt = Array(n).fill(0);
+    let edges = [];
+    for ( let i = 0; i < alledges.length; i++ ) {
+      let a = alledges[i].edge[0];
+      let b = alledges[i].edge[1];
+      if ( (linkcnt[ a ] < connections ) && (linkcnt[ b ] < connections ) ) {
+        linkcnt[ a ]++; linkcnt[ b ]++;
+        edges.push( [ a,b ]);
+      }
+    }
+
+    return edges;
   }
 
 
@@ -235,7 +282,7 @@ class AlgorithmicGraph extends Hypergraph  {
     .replace( /(;)+/g , ";" ).replace( /;$/g ,"" );
 
     // Discard all unsupported characters
-    rulestr = rulestr.replace( /[^()a-z0-9,=;>]+/g , "" );
+    rulestr = rulestr.replace( /[^()a-z0-9,=;>\.]+/g , "" );
 
     // Expand equal signs == as two separate reversible rules
     let a = rulestr.split(";");
@@ -308,7 +355,7 @@ class AlgorithmicGraph extends Hypergraph  {
 
     // Commands
     if ( this.command.length ) {
-      const cmd = this.command.split("(").map( p => [ ...p.replace( /[^-a-z0-9,.]+/g, "" ).split(",") ] );
+      const cmd = this.command.split("(").map( p => [ ...p.replace( /[^-a-z0-9,\.]+/g, "" ).split(",") ] );
       const func = cmd[0][0];
 			const params = cmd[1];
       switch( func ) {
@@ -316,13 +363,16 @@ class AlgorithmicGraph extends Hypergraph  {
           this.initial = this.points( parseInt(params[0]) );
           break;
         case "line":
-          this.initial = this.grid( 1, parseInt(params[0]) );
+          this.initial = this.grid( parseInt(params[0]), 1 );
           break;
         case "grid": case "ngrid":
           this.initial = this.grid( parseInt(params[0]), parseInt(params[1]) );
           break;
         case "sphere":
           this.initial = this.sphere( parseInt(params[0]) );
+          break;
+        case "random":
+          this.initial = this.random( parseInt(params[0]), parseInt(params[1]), parseInt(params[2]) );
           break;
         default:
           throw new Error( "Unknown command: " + func );
