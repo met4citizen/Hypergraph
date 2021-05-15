@@ -101,7 +101,7 @@ class AlgorithmicGraph extends Hypergraph  {
 
   /**
   * Produces a random sprinkling of points
-  * @param {number} points Number of vertices
+  * @param {number} n Number of vertices
   * @return {number[][]} Edges
   */
   points( n ) {
@@ -146,7 +146,7 @@ class AlgorithmicGraph extends Hypergraph  {
   * @return {number[][]} Edges
   */
   sphere( n ) {
-    if ( (n < 10) || (points > 10000) )
+    if ( (n < 10) || (n > 10000) )
       throw new Error("Number of points must be between 10-10000.");
 
     // Sprinkling
@@ -178,6 +178,60 @@ class AlgorithmicGraph extends Hypergraph  {
     for ( let i = 0; i < n; i++ ) {
       let point = Array( dimension ).fill().map(() => Math.random() );
       points.push( point );
+      for ( let j = 0; j < i; j++ ) {
+        let dist = AlgorithmicGraph.dist( points[i], points[j] );
+        let edge = Math.random() > 0.5 ? [i,j] : [j,i]; // Random direction
+        alledges.push( { edge: edge, dist: dist } );
+      }
+    }
+
+    // Sort, min length first
+    alledges.sort( (a,b) => a.dist - b.dist );
+
+    // Ensure all vertices get at least two links
+    let linkcnt = Array(n).fill(0);
+    let edges = [];
+    for ( let i = 0; i < alledges.length; i++ ) {
+      let a = alledges[i].edge[0];
+      let b = alledges[i].edge[1];
+      if ( (linkcnt[ a ] < connections ) && (linkcnt[ b ] < connections ) ) {
+        linkcnt[ a ]++; linkcnt[ b ]++;
+        edges.push( [ a,b ]);
+      }
+    }
+
+    return edges;
+  }
+
+  /**
+  * Produces a random graph of n vertices using sprinkling
+  * @param {number} n Number of vertices
+  * @param {number} dimension Mininum number of edges per vertix
+  * @param {number} connections Mininum number of edges per vertix
+  * @param {number} mode Mode, 0=n-cube, 1=n-ball
+  * @return {number[][]} Edges
+  */
+  random( n, dimension, connections, mode = 0 ) {
+    if ( (n < 10) || (n > 1000) )
+      throw new Error("Number of points must be between 10-1000.");
+    if ( (dimension < 1) || (dimension > 20) )
+      throw new Error("Dimension must be between 1-20.");
+    if ( (connections < 1) || (connections > 100) )
+      throw new Error("Connections must be between 1-100.");
+
+    // Sprinkling
+    let points = [];
+    let alledges = [];
+    let origo = Array( dimension ).fill(0);
+    for ( let i = 0; i < n; i++ ) {
+      // Random point; if mode==1 filter out points outside the n-ball
+      let point;
+      do {
+        point = Array( dimension ).fill().map(() => 2 * Math.random() - 1 );
+      } while ( (mode == 1) && ( AlgorithmicGraph.dist( point, origo ) > 1 ) );
+      points.push( point );
+
+      // All possible edges using random direction
       for ( let j = 0; j < i; j++ ) {
         let dist = AlgorithmicGraph.dist( points[i], points[j] );
         let edge = Math.random() > 0.5 ? [i,j] : [j,i]; // Random direction
@@ -371,8 +425,11 @@ class AlgorithmicGraph extends Hypergraph  {
         case "sphere":
           this.initial = this.sphere( parseInt(params[0]) );
           break;
+        case "ball": case "nball":
+          this.initial = this.random( parseInt(params[0]), parseInt(params[1]), parseInt(params[2]), 1 );
+          break;
         case "random":
-          this.initial = this.random( parseInt(params[0]), parseInt(params[1]), parseInt(params[2]) );
+          this.initial = this.random( parseInt(params[0]), parseInt(params[1]), parseInt(params[2]), 0 );
           break;
         default:
           throw new Error( "Unknown command: " + func );
