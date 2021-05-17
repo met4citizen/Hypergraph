@@ -374,7 +374,7 @@ $(document).ready(function() {
   function firstrun() {
     let rule = getUrlParameter('rule');
     if ( rule ) {
-      $("#rule-text").html( hypergraph.validateRule( rule ) );
+      $("#rule-text").html( rule.split(";").join("<br>") );
     }
     let ruleorder = getUrlParameter('ruleorder');
     if ( ruleorder && ( ruleorder === "none" || ruleorder === "index" || ruleorder === "indexrev" ) ) {
