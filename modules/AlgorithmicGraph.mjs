@@ -209,9 +209,10 @@ class AlgorithmicGraph extends Hypergraph  {
   * @param {number} dimension Mininum number of edges per vertix
   * @param {number} connections Mininum number of edges per vertix
   * @param {number} mode Mode, 0=n-cube, 1=n-ball
+  * @param {number} exp If TRUE use exponential distribution
   * @return {number[][]} Edges
   */
-  random( n, dimension, connections, mode = 0 ) {
+  random( n, dimension, connections, mode = 0, exp = false ) {
     if ( (n < 10) || (n > 1000) )
       throw new Error("Number of points must be between 10-1000.");
     if ( (dimension < 1) || (dimension > 20) )
@@ -227,7 +228,10 @@ class AlgorithmicGraph extends Hypergraph  {
       // Random point; if mode==1 filter out points outside the n-ball
       let point;
       do {
-        point = Array( dimension ).fill().map(() => 2 * Math.random() - 1 );
+        point = Array( dimension ).fill().map(() => {
+          let v = 2 * Math.random() - 1;
+          return exp ? v*v : v;
+        });
       } while ( (mode == 1) && ( AlgorithmicGraph.dist( point, origo ) > 1 ) );
       points.push( point );
 
@@ -426,10 +430,10 @@ class AlgorithmicGraph extends Hypergraph  {
           this.initial = this.sphere( parseInt(params[0]) );
           break;
         case "ball": case "nball":
-          this.initial = this.random( parseInt(params[0]), parseInt(params[1]), parseInt(params[2]), 1 );
+          this.initial = this.random( parseInt(params[0]), parseInt(params[1]), parseInt(params[2]), 1, params.includes("exp") );
           break;
         case "random":
-          this.initial = this.random( parseInt(params[0]), parseInt(params[1]), parseInt(params[2]), 0 );
+          this.initial = this.random( parseInt(params[0]), parseInt(params[1]), parseInt(params[2]), 0, params.includes("exp") );
           break;
         default:
           throw new Error( "Unknown command: " + func );
