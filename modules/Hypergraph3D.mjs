@@ -148,19 +148,27 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				break;
 
 			case "": // pattern matching
-				if ( this.data !== this.spatial ) throw new Error("Pattern matching only available in 'Space' mode.");
 				this.algorithmic.setRule( str.split(";")[i] + "->()" );
 				this.findMatches( this.spatial );
 				r.push( this.matches.length );
 				for( let j=0; j < this.matches.length; j++ ) {
 					const hit = this.mapper( this.spatial, this.algorithmic.rules[ this.matches[j].r ].lhs , this.matches[j].m );
-					e.push( hit );
-					v.push( [ ...new Set( hit.flat() ) ] );
+					if ( this.data === this.spatial ) {
+						// Space mode
+						e.push( hit );
+						v.push( [ ...new Set( hit.flat() ) ] );
+					} else {
+						// Time mode
+						let w = [ ...new Set( hit.flat() ) ];
+						for ( let k=0; k < w.length; k++ ) {
+							ret = this.data.worldline( w[k] );
+							e.push( ret );
+						}
+					}
 				}
 				break;
 
 			case "-": case "^": // pattern matching, EXCLUDE
-				if ( this.data !== this.spatial ) throw new Error("Pattern matching only available in 'Space' mode.");
 				this.algorithmic.setRule( str.split(";")[i].substr(1) + "->()" );
 				this.findMatches( this.spatial );
 				r.push( this.matches.length );
@@ -168,19 +176,36 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 					const hit = this.mapper( this.spatial, this.algorithmic.rules[ this.matches[j].r ].lhs , this.matches[j].m );
 					const hitflat = [ ...new Set( hit.flat() ) ];
 
-					// Remove from edges
-					for( let m = hit.length-1; m >= 0; m-- ) {
-						for( let k = e.length - 1; k >= 0; k--) {
-							for( let l = e[k].length - 1; l >=0; l-- ) {
-	 							if ( e[k][l].length === hit[m].length && e[k][l].every( (x,y) => x === hit[m][y] ) ) e[k].splice(l, 1);
+					if ( this.data === this.spatial ) {
+						// Space mode
+
+						// Remove from edges
+						for( let m = hit.length-1; m >= 0; m-- ) {
+							for( let k = e.length - 1; k >= 0; k--) {
+								for( let l = e[k].length - 1; l >=0; l-- ) {
+		 							if ( e[k][l].length === hit[m].length && e[k][l].every( (x,y) => x === hit[m][y] ) ) e[k].splice(l, 1);
+								}
 							}
 						}
-					}
 
-					// remove from vertices
-					for( let k = v.length -1; k >= 0; k--) {
-						for (let l = v[k].length - 1; l >= 0; l--) {
-							if ( hitflat.includes( v[k][l] ) ) v[k].splice(l, 1);
+						// remove from vertices
+						for( let k = v.length -1; k >= 0; k--) {
+							for (let l = v[k].length - 1; l >= 0; l--) {
+								if ( hitflat.includes( v[k][l] ) ) v[k].splice(l, 1);
+							}
+						}
+					} else {
+						// Time mode
+						for ( let n=0; n < hitflat.length; n++ ) {
+							ret = this.data.worldline( hitflat[n] );
+							// Remove from edges
+							for( let m = ret.length-1; m >= 0; m-- ) {
+								for( let k = e.length - 1; k >= 0; k--) {
+									for( let l = e[k].length - 1; l >=0; l-- ) {
+			 							if ( e[k][l].length === ret[m].length && e[k][l].every( (x,y) => x === ret[m][y] ) ) e[k].splice(l, 1);
+									}
+								}
+							}
 						}
 					}
 				}
@@ -503,7 +528,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.linkPositionUpdate( null )
 			.linkCurvature( null )
 			.linkCurveRotation( null )
-			.linkDirectionalArrowLength(15)
+			.linkDirectionalArrowLength( 20 )
 			.linkDirectionalArrowRelPos(1)
 			.d3VelocityDecay( 0.4 )
 			.nodeThreeObject( null );
