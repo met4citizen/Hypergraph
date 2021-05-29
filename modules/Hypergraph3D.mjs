@@ -541,44 +541,6 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			this.graph3d.cameraPosition( { x: 0, y: 0, z: 500 }, { x: 0, y: 0, z: 0 } );
 			break;
 
-		case "algorithmic":
-			this.data = this.algorithmic;
-			this.graph3d
-			.numDimensions( 3 )
-			.dagMode( null )
-			.backgroundColor( this.algorithmicStyles[0]["bgColor"] )
-			.nodeLabel( d => `<span class="nodeLabelGraph3d">${ d.id }</span>` )
-			.nodeRelSize( this.algorithmicStyles[0]["nRelSize"] )
-			.nodeVal( d => (d.big ? 10 : 3 * d.refs ) * this.algorithmicStyles[d.style]["nVal"] )
-			.nodeColor( d => this.algorithmicStyles[d.style]["nColor"] )
-			.nodeVisibility( 'refs' )
-			.linkVisibility( true )
-			.linkWidth( d => this.algorithmicStyles[d.style]["lWidth"] )
-			.linkColor( d => this.algorithmicStyles[d.style]["lColor"] )
-			.linkPositionUpdate( Hypergraph3D.linkPositionUpdate )
-			.linkCurvature( null )
-			.linkCurveRotation( null )
-			.linkDirectionalArrowLength(0)
-			.linkDirectionalArrowRelPos(1)
-			.d3VelocityDecay( 0.1 )
-			.nodeThreeObject( n => {
-				const text = this.algorithmic.vertexLabel( n.id );
-				if ( !text ) return false;
-				const sprite = new SpriteText( text, 16, "black" );
-				sprite.material.depthWrite = false; // make sprite background transparent
-				return sprite;
-      })
-			.nodeThreeObjectExtend( false );
-			// Set forces
-			this.graph3d.d3Force("link").iterations( 1 );
-			this.graph3d.d3Force("center").strength( 0.5 );
-			this.graph3d.d3Force("charge").strength( -30 ).distanceMin( 1 );
-			// Rewrite and reveal all
-			this.algorithmic.rewrite();
-			while( this.tick() );
-			this.graph3d.cameraPosition( { x: 0, y: 0, z: 1100 }, { x: 0, y: 0, z: 0 } );
-			break;
-
 		default:
 			throw new Error( "Unknown mode: " + mode );
 		}
