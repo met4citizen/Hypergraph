@@ -12,9 +12,11 @@ class AlgorithmicGraph extends Hypergraph  {
   */
   constructor() {
     super();
+    this.rulestr = ""; // user-specified rewriting rules
+
+    this.commands = []; // commands
     this.rules = []; // rewriting rules
     this.initial = []; // initial graph
-    this.command = ""; // command for a function to generate initial graph
   }
 
   /**
@@ -261,101 +263,43 @@ class AlgorithmicGraph extends Hypergraph  {
     return edges;
   }
 
-
   /**
-  * Construct algorithmic graphs based on graph grammar.
+  * Parse rule/command from a string.
+  * @param {string} str Rule/command string
   */
-  rewrite() {
-    // Clear the graph
-    this.clear();
-
-    let root = ++this.maxv;
-    this.V.set( root, { in: [], out: [], label: AlgorithmicGraph.ruleToString( this.rules ) });
-
-    for( let i = 0; i < 5; i++ ) {
-      let prev = ++this.maxv;
-      this.V.set( prev, { in: [], out: [], label: AlgorithmicGraph.ruleToString( this.rules ) });
-      this.add( [ root, prev ] );
-      for( let j = 0; j < 5; j++ ) {
-        let node = ++this.maxv;
-        this.V.set( node, { in: [], out: [], label: AlgorithmicGraph.ruleToString( this.rules ) });
-        this.add( [ prev, node ] );
-      }
-    }
-
-  }
-
-  static ruleToString( rule, initial = [], command = '' ) {
-    let rulestr = "";
-    rule.forEach( r => {
-      if ( rulestr !== "" ) rulestr = rulestr + "<br>";
-      r.lhs.forEach( e => {
-        rulestr = rulestr + "(" + e.map( v => v + 1 ).join(",") + ")";
-      });
-      if ( typeof r.rhs !== 'undefined' ) {
-        rulestr = rulestr + "->";
-        if ( r.rhs.length ) {
-          r.rhs.forEach( e => {
-            rulestr = rulestr + "(" + e.map( v => v + 1 ).join(",") + ")";
-          });
-        } else {
-          rulestr = rulestr + "()";
-        }
-      }
-    });
-
-    // Initial state either as a command or sub-hypergraph
-    if ( command.length ) {
-      if ( rulestr.length > 0 ) rulestr = rulestr + "<br>";
-      rulestr = rulestr + command;
-    } else {
-      if ( initial.length ) {
-        if ( rulestr.length > 0 ) rulestr = rulestr + "<br>";
-        initial.forEach( e => {
-          rulestr = rulestr + "(" + e.map( v => v + 1 ).join(",") + ")";
-        });
-      }
-    }
-    return rulestr;
-  }
-
-
-  /**
-  * Parse rule from a string.
-  * @param {string} rulestr Rule string
-  */
-  setRule( rulestr ) {
+  setRule( str ) {
     // Reset
-    this.rules = [];
+    this.rulestr = "";
+    this.commands.length = 0;
+    this.rules.length = 0;
     this.initial.length = 0;
-    this.command = "";
 
     // Check if empty
-    if ( rulestr.length === 0 ) throw new SyntaxError("Given rule is empty.");
+    if ( str.length === 0 ) throw new SyntaxError("Given rule is empty.");
 
     // Change parenthesis types and remove extra ones
-    rulestr = rulestr.toLowerCase()
+    str = str.toLowerCase()
     .replace( /\{|\[/g , "(" ).replace( /}|]/g , ")" )
     .replace( /(\()+/g , "(" ).replace( /(\))+/g , ")" )
     .replace( /(;)+/g , ";" ).replace( /;$/g ,"" );
 
     // Discard all unsupported characters
-    rulestr = rulestr.replace( /[^()a-z0-9,=;>\.]+/g , "" );
+    str = str.replace( /[^()a-z0-9,=;>\.]+/g , "" );
 
     // Expand equal signs == as two separate reversible rules
-    let a = rulestr.split(";");
-    rulestr = "";
-    a.forEach( s => {
-      let b = s.split("==");
-      if ( b.length === 2 ) {
-        rulestr = rulestr + b[0] + ">" + b[1] + ";" + b[1] + ">" + b[0] + ";";
-      } else {
-        if ( s[0] !== '(' ) {
-          // Any line not starting with parenthesis is consired as a command
-          this.command = s.slice();
+    let rulestr = "";
+    str.split(";").forEach( s => {
+      if ( s[0] === '(' && ( s.includes("==") || s.includes(">") ) ) {
+        // Rule
+        let b = s.split("==");
+        if ( b.length === 2 ) {
+          rulestr = rulestr + b[0] + ">" + b[1] + ";" + b[1] + ">" + b[0] + ";";
         } else {
           rulestr = rulestr + s + ";";
         }
+      } else {
+        // Command
+        this.commands.push( s.slice() );
       }
     });
 
@@ -370,10 +314,9 @@ class AlgorithmicGraph extends Hypergraph  {
     rulestr = rulestr.replace( /\[\[\"\"\]\]/g , "[]" );
 
     // JSON
-    let r = [];
     try {
       if ( rulestr.length ) {
-        r = JSON.parse( rulestr );
+        this.rules = JSON.parse( rulestr );
       }
     }
     catch( e ) {
@@ -382,73 +325,82 @@ class AlgorithmicGraph extends Hypergraph  {
 
     // Normalize each rule and sort
     let k, unique;
-    r.forEach( (v,i) => {
+    this.rules.forEach( (v,i) => {
       const lhs = v.hasOwnProperty("lhs") ? v.lhs.flat() : [];
       const rhs = v.hasOwnProperty("rhs") ? v.rhs.flat() : [];
       const unique = [ ...new Set( [ ...lhs, ...rhs ] ) ];
       v.lhs.forEach( (w,j) => {
-        for( k=0; k < w.length; k++ ) r[i].lhs[j][k] = unique.indexOf( w[k] );
+        for( k=0; k < w.length; k++ ) this.rules[i].lhs[j][k] = unique.indexOf( w[k] );
       });
       v.lhs.sort( (a,b) => Math.min( ...a ) - Math.min( ...b ) );
       if ( v.hasOwnProperty("rhs") ) {
         v.rhs.forEach((w,j) => {
-          for( k=0; k < w.length; k++ ) r[i].rhs[j][k] = unique.indexOf( w[k] );
+          for( k=0; k < w.length; k++ ) this.rules[i].rhs[j][k] = unique.indexOf( w[k] );
         });
         v.rhs.sort( (a,b) => Math.min( ...a ) - Math.min( ...b ) );
       }
     });
 
-    // Set rule and initial graph
-    this.rules = r.filter( v => {
-      if ( !v.hasOwnProperty("rhs") ) {
-        this.initial = [ ...this.initial, ...v.lhs ];
-        return false;
-      }
-      if ( v.lhs.length === 0 ) {
-        this.initial = [ ...this.initial, ...v.rhs ];
-        return false;
-      }
-      return true;
+    // Take user specified rules as a basis for rules
+    this.rules.forEach( r => {
+      if ( this.rulestr.length ) this.rulestr = this.rulestr + "<br>";
+      r.lhs.forEach( e => {
+        this.rulestr = this.rulestr + "(" + e.map( v => v + 1 ).join(",") + ")";
+      });
+      this.rulestr = this.rulestr + "->";
+      r.rhs.forEach( e => {
+        this.rulestr = this.rulestr + "(" + e.map( v => v + 1 ).join(",") + ")";
+      });
     });
 
     // Commands
-    if ( this.command.length ) {
-      const cmd = this.command.split("(").map( p => [ ...p.replace( /[^-a-z0-9,\.]+/g, "" ).split(",") ] );
+    this.commands.forEach( c => {
+      const cmd = c.split("(").map( p => [ ...p.replace( /[^-a-z0-9,\.]+/g, "" ).split(",") ] );
       const func = cmd[0][0];
 			const params = cmd[1];
+
       switch( func ) {
+        case "": // initial graph
+          cmd.forEach( (x,i) => { if ( i > 0 ) this.initial.push( x ); });
+          break;
         case "points":
-          this.initial = this.points( parseInt(params[0]) );
+          this.initial.push( ...this.points( parseInt(params[0]) ) );
           break;
         case "line":
-          this.initial = this.grid( parseInt(params[0]), 1 );
+          this.initial.push( ...this.grid( parseInt(params[0]), 1 ) );
           break;
         case "grid": case "ngrid":
-          this.initial = this.grid( parseInt(params[0]), parseInt(params[1]) );
+          this.initial.push( ...this.grid( parseInt(params[0]), parseInt(params[1]) ) );
           break;
         case "sphere":
-          this.initial = this.sphere( parseInt(params[0]) );
+          this.initial.push( ...this.sphere( parseInt(params[0]) ) );
           break;
         case "ball": case "nball":
-          this.initial = this.random( parseInt(params[0]), parseInt(params[1]), parseInt(params[2]), 1, params.includes("exp") );
+          this.initial.push( ...this.random( parseInt(params[0]), parseInt(params[1]), parseInt(params[2]), 1, params.includes("exp") ) );
           break;
         case "random":
-          this.initial = this.random( parseInt(params[0]), parseInt(params[1]), parseInt(params[2]), 0, params.includes("exp") );
+          this.initial.push( ...this.random( parseInt(params[0]), parseInt(params[1]), parseInt(params[2]), 0, params.includes("exp") ) );
           break;
         default:
           throw new Error( "Unknown command: " + func );
-
       }
-      // Normalize
-      const unique = [ ...new Set( [ ...this.initial.flat() ] ) ];
-      this.initial.forEach( (w,j) => {
-        for( k=0; k < w.length; k++ ) this.initial[j][k] = unique.indexOf( w[k] );
-      });
-      this.initial.sort( (a,b) => Math.min( ...a ) - Math.min( ...b ) );
-    }
+
+      if ( this.rulestr.length ) this.rulestr = this.rulestr + "<br>";
+      this.rulestr = this.rulestr + c;
+    });
 
     // use first lhs as the initial state, if not specified
-    if ( r.length && this.initial.length === 0 ) this.initial = [ ...r[0].lhs ];
+    if ( this.rules.length && this.initial.length === 0 ) {
+      this.initial.push( ...this.rules[0].lhs );
+    }
+
+    // Normalize
+    this.initial = this.initial.map( e => e.map(String) );
+    unique = [ ...new Set( [ ...this.initial.flat() ] ) ];
+    this.initial.forEach( (w,j) => {
+      for( k=0; k < w.length; k++ ) this.initial[j][k] = unique.indexOf( w[k] );
+    });
+    this.initial.sort( (a,b) => Math.min( ...a ) - Math.min( ...b ) );
 
     // Check if there was a valid rule
     if ( this.initial.length === 0 ) {
@@ -462,7 +414,7 @@ class AlgorithmicGraph extends Hypergraph  {
   * @return {string} Rule as a string.
   */
   getRule() {
-    return AlgorithmicGraph.ruleToString( this.rules, this.initial, this.command );
+    return this.rulestr;
   }
 
   /**
