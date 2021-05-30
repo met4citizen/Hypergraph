@@ -23,10 +23,11 @@
   body{ width: 100%; height: 100%; margin: 0; padding: 0; background-color: white; color: black; line-height:1.5rem;  overflow: hidden; cursor: crosshair; text-align: left; }
   div.controls { margin: 2px; padding: 2px; position: fixed; z-index: 3; opacity: 0.7; cursor: default; pointer-events: none; }
   a { cursor: pointer; pointer-events: auto; }
-  #topleft { top:0; left:0; }
+  #topleft { top:0; left:0; z-index: 5; }
   #topright { top:0; right:0; text-align: right; }
   #bottomleft { bottom:0; left:0; margin-left: 42px; }
   #bottomright { bottom:0; right:0; text-align: right; }
+  #cheatsheet { bottom:35px; left:0; text-align: left; opacity: 0.9; display:none;}
   #paused { position: fixed; z-index: 2; top:0; left:50%; width: 120px; margin-left: -60px; text-align: center; background-color: transparent; display:none; }
   #paused span { background-color: white; padding: 0 10px; }
   #logo { margin: 3px; padding: 3px; position: fixed; z-index: 3; opacity: 0.7; bottom: 0; left: 0; width: 32px; height: 32px; }
@@ -52,6 +53,12 @@
   .up { position: absolute; transform: translateY(-15px); z-index: -1; }
   .down { position: absolute; transform: translateY(15px); z-index: -1; }
   .up:before, .down:before { content: "|"; }
+  table { border: 1px solid grey; margin-top: 10px; border-collapse: collapse; background-color: white; color: grey; font-family: arial; line-height:1.3rem; }
+  thead { background-color: grey; color: white; }
+  thead th { font-size: 8px; font-weight: bold; text-transform: uppercase; padding: 0px 0 1px 5px; }
+  tbody th { font-size: 8px; font-weight: bold; color: #333; text-transform: uppercase; padding: 0px 0 1px 5px; }
+  td { border: 0; width: 140px; min-width:140px; max-width:140px; padding: 0px 0 1px 10px; vertical-align: top; }
+  td + td, th + th, th + td, td + th { border-left: 1px solid grey;; }
   #progress { position:absolute; width: 300px; height: 16px; z-index: 15; top: 45%; left: 50%; margin: 0 0 0 -150px; display: none;}
   #progress-bar { display: inline-block; width: 250px; background-color: #e0e0e0; margin: 0; padding: 0; line-height: 16px; height: 16px; border-radius: 3px; }
   #progress-bar-fill { display: inline-block; height: 16px; background-color: #659cef; border-radius: 3px; transition: width 100ms ease-in-out; }
@@ -121,7 +128,7 @@ $(document).ready(function() {
   function resume() {
     hypergraph.graph3d.resumeAnimation();
     $(".text").prop("contenteditable","false").blur();
-    $(".settings, #paused").hide();
+    $(".settings, #paused, #cheatsheet").hide();
     $("#topleft").css("pointer-events","none");
     if ( idleTimer ) { clearTimeout( idleTimer ); idleTimer = null; }
   }
@@ -160,7 +167,7 @@ $(document).ready(function() {
       } else {
         pause();
         $(x+"-text").prop("contenteditable","true").focus();
-        $(x+"-settings").show();
+        $(x+"-settings, #cheatsheet").show();
         $("#topleft").css("pointer-events","auto");
       }
     });
@@ -267,7 +274,7 @@ $(document).ready(function() {
   });
 
   // Mode/reset
-  $("#space, #time, #algo").on("click", function(e) {
+  $("#space, #time").on("click", function(e) {
     $(".mode").removeClass("mode-selected");
     $(this).addClass("mode-selected");
 
@@ -291,9 +298,6 @@ $(document).ready(function() {
 
     $("#distance-range").val(20).change();
 
-    if ( mode === "algorithmic" ) {
-      $("#playstop").click();
-    }
     resumeTimeout();
 
   });
@@ -473,6 +477,26 @@ $(document).ready(function() {
     <span title="Download GLB" id="glb" class="button">GLB</span>
     <!-- <span title="Download glTF" id="gltf" class="button">GLTF</span> -->
     <span title="Copy URL" id="url" class="button">URL</span>
+  </div>
+
+  <div id="cheatsheet" class="controls">
+    <table>
+      <thead>
+        <tr><th colspan="2">Command Cheatsheet</th></tr>
+      </thead>
+      <tbody>
+        <tr><th>One/two-way rules</th><th>Highlighting (Red/Blue)</th></tr>
+        <tr><td>(1,2)(1,3)-&gt;(1,2)(1,4)(2,4)(3,4)</td><td>geodesic(v,u,[dir],[rev],[all])</td></tr>
+        <tr><td>(1,2)(2,3,4)==(1,2)(4,3,2)</td><td>nball(v,radius,[dir],[rev])</td></tr>
+        <tr><th>Initial conditions</th><td>nsphere(v,radius,[dir],[rev])</td></tr>
+        <tr><td>(1,2)(1,3)(1,2,3)</td><td>random(v,steps)</td></tr>
+        <tr><td>points(n)</td><td>(1,2)(2,3)</td></tr>
+        <tr><td>line(n)</td><td>space(v,u)</td></tr>
+        <tr><td>grid(n,dim)</td><td>time(v,u)</td></tr>
+        <tr><td>sphere(n)</td><td>worldline(v)</td></tr>
+        <tr><td>random(n,dim,nedges)</td><td>lightcone(v,length)</td></tr>
+      <tbody>
+    </table>
   </div>
 
   <div id="3d-graph" class="noselect"></div>
