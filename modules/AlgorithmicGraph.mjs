@@ -264,6 +264,26 @@ class AlgorithmicGraph extends Hypergraph  {
   }
 
   /**
+  * Produces a complete graph with n vertices
+  * @param {number} n Number of vertices
+  * @return {number[][]} Edges
+  */
+  complete( n ) {
+    if ( (n < 10) || (n > 10000) )
+      throw new Error("Number of vertices must be between 10-10000.");
+
+    let edges = [];
+    for( let i=0; i<n-1; i++ ) {
+      for( let j=i+1; j<n; j++ ) {
+        // Random direction of the edge
+        Math.random() > 0.5 ? edges.push( [i,j] ) : edges.push( [j,i] );
+      }
+    }
+
+    return edges;
+  }
+
+  /**
   * Parse rule/command from a string.
   * @param {string} str Rule/command string
   */
@@ -380,6 +400,9 @@ class AlgorithmicGraph extends Hypergraph  {
           break;
         case "random":
           this.initial.push( ...this.random( parseInt(params[0]), parseInt(params[1]), parseInt(params[2]), 0, params.includes("exp") ) );
+          break;
+        case "complete":
+          this.initial.push( ...this.complete( parseInt(params[0]) ) );
           break;
         default:
           throw new Error( "Unknown command: " + func );
