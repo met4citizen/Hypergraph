@@ -62,7 +62,7 @@ class Hypergraph {
 	* Add a new edge.
 	* @param {Hyperedge} edge Hyperedge to be added
 	*/
-	add( edge ) {
+	add( edge, props = {} ) {
 		// Add vertices to adjacency arrays
 		for( let i = edge.length - 1; i >= 0; i-- ) {
 			let v = this.V.get( edge[i] );
@@ -79,14 +79,14 @@ class Hypergraph {
 		const e = this.E.get( key );
 		typeof e !== 'undefined' ? e.cnt++ : this.E.set( key, { cnt: 1, edge: edge } );
 		// Add event
-		this.events.push( { a: edge } );
+		this.events.push( { a: edge, ...props } );
 	}
 
 	/**
 	*  Delete edge.
 	* @param {Hyperedge} edge Hyperedge to be deleted
 	*/
-	delete( edge ) {
+	delete( edge, props = {} ) {
 		// Delete vertices
 		for( let i = edge.length - 1; i >= 0; i-- ) {
 			const v = this.V.get( edge[i] );
@@ -99,7 +99,7 @@ class Hypergraph {
 		const e = this.E.get( key );
 		e.cnt === 1 ? this.E.delete( key ) : e.cnt--;
 		// Add event
-		this.events.push( { x: edge } );
+		this.events.push( { x: edge, ...props } );
 	}
 
 	/**

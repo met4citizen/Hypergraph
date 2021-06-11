@@ -12,7 +12,8 @@ class CausalGraph extends Hypergraph {
 	*/
 	constructor() {
 		super();
-		this.L = new Map(); // Search for leafs of hypergraph vertices
+		this.L = new Map(); // From added spatial edge to causal vertex
+		this.K = new Map(); // From modified spatial vertex to causal vertex
 		this.maxstep = 0; // Record max step
 	}
 
@@ -22,6 +23,7 @@ class CausalGraph extends Hypergraph {
 	clear() {
 		super.clear();
 		this.L.clear();
+		this.K.clear();
 		this.maxstep = 0;
 	}
 
@@ -38,35 +40,41 @@ class CausalGraph extends Hypergraph {
 
 	/**
 	* Rewrite event.
-	* @param {Vertex[]} match Array of vertices matching LHS
-	* @param {Vertex[]} modified Array of vertices modified by
+	* @param {Hyperedge[]} hit Hyperedges hit
+	* @param {Hyperedge[]} del Hyperedges to delete
+	* @param {Hyperedge[]} add Hyperedges to add
 	* @param {number} step Rewriting step number
 	*/
-	rewrite( match, modified, step ) {
+	rewrite( hit, del, add, step ) {
 		// Add new vertex
 		const v2 = ++this.maxv;
+		const modified = [ ...new Set( [ ...del.flat(), ...add.flat() ] ) ].sort();
 		this.V.set( v2, { in: [], out: [], step: step, mods: modified });
 		if ( this.maxstep < step ) this.maxstep = step;
 
 		// Add causal edges, if missing
-		for( let i = match.length - 1; i >= 0; i-- ) {
-			const l = this.L.get( match[i] );
-			if ( typeof l === 'undefined' ) continue; // Ignore first instance
-			const v1 = l[ l.length - 1 ];
+		for( let i = hit.length - 1; i >= 0; i-- ) {
+			const v1 = this.L.get( hit[i].join(",") );
+			if ( typeof v1 === 'undefined' ) continue; // Ignore first instance
 			if ( v1 === v2 ) continue; // Ignore self-loops
 			const e = [ v1, v2 ];
 			const key = e.join(",");
-			if ( !this.E.has( key ) ) this.add( e );
+			if ( !this.E.has( key ) ) {
+				this.add( e, { level: step } );
+				// Add worldline
+				modified.forEach( v => {
+					if ( this.K.has( v ) ) {
+						this.K.get( v ).push( e );
+					} else {
+						this.K.set( v, [ e ] );
+					}
+				});
+			}
 		}
 
 		// Update leafs
-		for( let i = modified.length - 1; i >= 0; i-- ) {
-			if ( this.L.has( modified[i] ) ) {
-				this.L.get( modified[i] ).push( v2 );
-			} else {
-				this.L.set( modified[i], [ v2 ] );
-			}
-		}
+		add.forEach( e => this.L.set( e.join(","), v2) );
+
 	}
 
 	/**
@@ -75,10 +83,8 @@ class CausalGraph extends Hypergraph {
 	* @return {Hyperedge[]} Wordline.
 	*/
 	worldline( v ) {
-		const vs = this.L.get( v );
-		if ( typeof vs === 'undefined' ) throw new Error("Vertex not found");
-		const wl = [];
-		for ( let i = 0; i < (vs.length - 1); i++ ) wl.push( [ vs[i], vs[i+1] ] );
+		const wl = this.K.get( v );
+		if ( typeof wl === 'undefined' ) throw new Error("Vertex not found");
 		return wl;
 	}
 
