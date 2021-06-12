@@ -12,8 +12,8 @@ class CausalGraph extends Hypergraph {
 	*/
 	constructor() {
 		super();
-		this.L = new Map(); // From added spatial edge to causal vertex
-		this.K = new Map(); // From modified spatial vertex to causal vertex
+		this.L = new Map(); // Map from spatial edge to causal vertex
+		this.K = new Map(); // Worldlines from undirected spatial edge to causal vertex
 		this.maxstep = 0; // Record max step
 	}
 
@@ -25,6 +25,18 @@ class CausalGraph extends Hypergraph {
 		this.L.clear();
 		this.K.clear();
 		this.maxstep = 0;
+	}
+
+	/**
+	* Make pairs of an array, used to break worldline into pairs of two.
+	* @static
+	* @param {number[]} arr Array of numbers
+	* @return {number[][]} Array of pairs of numbers.
+	*/
+	static pairs( arr ) {
+		const result = [];
+		for ( let i = 0; i < (arr.length - 1); i++ ) result.push( [ arr[i], arr[i+1] ] );
+		return result;
 	}
 
 	/**
@@ -61,30 +73,30 @@ class CausalGraph extends Hypergraph {
 			const key = e.join(",");
 			if ( !this.E.has( key ) ) {
 				this.add( e, { level: step } );
-				// Add worldline
-				modified.forEach( v => {
-					if ( this.K.has( v ) ) {
-						this.K.get( v ).push( e );
-					} else {
-						this.K.set( v, [ e ] );
-					}
-				});
 			}
 		}
 
 		// Update leafs
 		add.forEach( e => this.L.set( e.join(","), v2) );
+		modified.forEach( v => {
+			if ( this.K.has( v ) ) {
+				this.K.get( v ).push( v2 );
+			} else {
+				this.K.set( v, [ v2 ] );
+			}
+		});
 
 	}
 
 	/**
-	* Worldline.
-	* @param {Vertex} v Root vertex of the worldline
+	* Worldline of spatial vertex.
+	* @param {Vertex} v A set of spatial edges
 	* @return {Hyperedge[]} Wordline.
 	*/
 	worldline( v ) {
-		const wl = this.K.get( v );
-		if ( typeof wl === 'undefined' ) throw new Error("Vertex not found");
+		if ( !this.K.has( v ) ) throw new Error("Vertex not found.");
+		const wl = [];
+		CausalGraph.pairs( this.K.get( v ) ).forEach( e => wl.push( e ) );
 		return wl;
 	}
 

@@ -114,7 +114,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				break;
 
 			case "worldline": case "timeline":
-				if ( this.data !== this.causal ) throw new Error("Timeline only available in 'Time' mode.");
+				if ( this.data !== this.causal ) throw new Error("Worldline is only available in 'Time' mode.");
 				ret = this.data.worldline( parseInt(params[0]) );
 				r.push( ret.length );
 				e.push( ret );
@@ -168,7 +168,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				}
 				break;
 
-			case "-": case "^": // pattern matching, EXCLUDE
+			case "-": // pattern matching, EXCLUDE
 				this.algorithmic.setRule( str.split(";")[i].substr(1) + "->()" );
 				this.findMatches( this.spatial );
 				r.push( this.matches.length );
@@ -713,7 +713,14 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			es.forEach( e => {
 				Hypergraph3D.pairs(e).forEach( p => {
 					let idx = links.findIndex(l => l.source.id === p[0] && l.target.id === p[1] && !l.hasOwnProperty("hyperedge") );
-					if (idx !== -1) links[ idx ].style = links[ idx ].style | style;
+					if (idx !== -1) {
+						links[ idx ].style = links[ idx ].style | style;
+					} else {
+						if ( typeof nodes[ p[0] ] !== 'undefined' && typeof nodes[ p[1] ] !== 'undefined' ) {
+							// Not found, add new link
+							links.push( {source: nodes[p[0]], target: nodes[p[1]], style: style, highlight: true } );
+						}
+					}
 				});
 			});
 			const vertices = [ ...new Set( es.flat() ) ];
@@ -738,6 +745,13 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 	clearHighlight( style ) {
 		let { nodes, links } = this.graph3d.graphData();
 		nodes.forEach( n => n.style = n.style & ~style );
+		let idx;
+		do {
+			idx = links.findIndex( l => l.hasOwnProperty("highlight") && (l.style & style) );
+			if ( idx !== -1 ) {
+				links.splice( idx, 1 );
+			}
+		} while ( idx !== -1 );	
 		links.forEach( l => l.style = l.style & ~style );
 		this.hypersurface[style].length = 0;
 		this.hypersurfaceUpdate();
