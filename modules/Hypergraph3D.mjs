@@ -115,7 +115,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 
 			case "worldline": case "timeline":
 				if ( this.data !== this.causal ) throw new Error("Worldline is only available in 'Time' mode.");
-				ret = this.data.worldline( parseInt(params[0]) );
+				ret = this.data.worldline( [ ...params.map( x => parseInt(x) ) ] );
 				r.push( ret.length );
 				e.push( ret );
 				if ( ret.length ) {
@@ -159,11 +159,10 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 						v.push( [ ...new Set( hit.flat() ) ] );
 					} else {
 						// Time mode
-						let w = [ ...new Set( hit.flat() ) ];
-						for ( let k=0; k < w.length; k++ ) {
-							ret = this.data.worldline( w[k] );
+						hit.forEach( x => {
+							ret = this.data.worldline( x );
 							e.push( ret );
-						}
+						});
 					}
 				}
 				break;
@@ -196,17 +195,17 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 						}
 					} else {
 						// Time mode
-						for ( let n=0; n < hitflat.length; n++ ) {
-							ret = this.data.worldline( hitflat[n] );
+						hit.forEach( x => {
+							ret = this.data.worldline( x );
 							// Remove from edges
 							for( let m = ret.length-1; m >= 0; m-- ) {
 								for( let k = e.length - 1; k >= 0; k--) {
 									for( let l = e[k].length - 1; l >=0; l-- ) {
-			 							if ( e[k][l].length === ret[m].length && e[k][l].every( (x,y) => x === ret[m][y] ) ) e[k].splice(l, 1);
+										if ( e[k][l].length === ret[m].length && e[k][l].every( (x,y) => x === ret[m][y] ) ) e[k].splice(l, 1);
 									}
 								}
 							}
-						}
+						});
 					}
 				}
 				break;
@@ -751,7 +750,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			if ( idx !== -1 ) {
 				links.splice( idx, 1 );
 			}
-		} while ( idx !== -1 );	
+		} while ( idx !== -1 );
 		links.forEach( l => l.style = l.style & ~style );
 		this.hypersurface[style].length = 0;
 		this.hypersurfaceUpdate();

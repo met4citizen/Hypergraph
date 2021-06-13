@@ -90,13 +90,18 @@ class CausalGraph extends Hypergraph {
 
 	/**
 	* Worldline of spatial vertex.
-	* @param {Vertex} v A set of spatial edges
+	* @param {Vertex[]} vs An array of vertices
 	* @return {Hyperedge[]} Wordline.
 	*/
-	worldline( v ) {
-		if ( !this.K.has( v ) ) throw new Error("Vertex not found.");
+	worldline( vs ) {
+		const ns = [];
+		vs.forEach( v => {
+			if ( !this.K.has( v ) ) throw new Error("Worldline: Vertex not found.");
+			ns.push( [ ...this.K.get( v ) ] );
+		});
+    const diff = ns.length ? ns.reduce((p,c) => p.filter(e => c.includes(e))) : [];
 		const wl = [];
-		CausalGraph.pairs( this.K.get( v ) ).forEach( e => wl.push( e ) );
+		CausalGraph.pairs( diff ).forEach( e => wl.push( e ) );
 		return wl;
 	}
 

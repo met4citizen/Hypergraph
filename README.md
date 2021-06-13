@@ -109,17 +109,17 @@ related to energy and momentum respectively.
 When the simulation ends, subgraphs can be highlighted by clicking `RED`/`BLUE`
 and using one or more of the following commands:
 
-Command | Description | Examples
---- | --- | ---
-`geodesic(n1,n2,[dir],[rev],[all])` | Shortest path between two nodes.<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction<br/>`all` = all shortest paths<br/><br/>Status line: Distance as the number of edges. | `geodesic(0,10)`<br/>`geodesic(10,200,all)`
-`nball(center,radius,[dir],[rev])` | N-dimensional ball is a set of nodes and edges within a distance `radius` of a given node `center`.<br/><br/>Status line: N-dimensional volume as the number of edges. | `nball(0,4)`
-`nsphere(center,radius,[dir],[rev])` | N-dimensional sphere/hypersurface is a set of nodes within a distance `radius` of a given node `center`.<br/><br/>Status line: N-dimensional area as the number of nodes. | `nsphere(0,4)`
-`random(n,distance,[dir],[rev])` | Random walk starting from a specific node with some maximum `distance`.<br/><br/>Status line: Distance as the number of edges. | `random(1,100,dir)`
-`(x,y)(y,z)` | Hypersurfaces matching the given rule-based pattern. With a prefix '-' the matched hypersurfaces are excluded from the results. NOTE: Matching is always done in `SPACE` mode and only projected to `TIME` mode by highlighting worldlines of the matched hypersurface.<br/><br/>Status line: Number of rule-based matches. | `(1,2,3)(3,4,5)`<br/>`(x,y)(x,z,y)(x,u,y)`
-`space(n1,n2)` | Space-like hypersurface based on a range of nodes. `SPACE` mode only.<br/><br/>Status line: N-dimensional volume as the number of nodes. | `space(100,150)`
-`time(t1,t2)` | Time-like hypersurface based on a range of iterations. `TIME` mode only.<br/><br/>Status line: N-dimensional volume as the number of nodes. | `time(300,350)`
-`worldline(n)` | Time-like curve of the space-like node. `TIME` mode only.<br/><br/>Status line: Distance as the number of nodes. | `worldline(0)`
-`lightcone(n,length)` | Lightcone centered at node `n` with size `length`. `TIME` mode only.<br/><br/>Status line:<br/>Size of the past and future lightlike cones as the number of edges. | `lightcone(200,4)`
+Command/Examples | Description
+--- | ---
+`geodesic(n1,n2,[dir],[rev],[all])`<br/><br/>geodesic(0,10)<br/>geodesic(10,200,all) | Shortest path between two nodes.<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction<br/>`all` = all shortest paths<br/><br/>Status line: Distance as the number of edges.
+`nball(center,radius,[dir],[rev])`<br/><br/>nball(0,4) | N-dimensional ball is a set of nodes and edges within a distance `radius` of a given node `center`.<br/><br/>Status line: N-dimensional volume as the number of edges.
+`nsphere(center,radius,[dir],[rev])`<br/><br/>nsphere(0,4) | N-dimensional sphere/hypersurface is a set of nodes within a distance `radius` of a given node `center`.<br/><br/>Status line: N-dimensional area as the number of nodes.
+`random(n,distance,[dir],[rev])`<br/><br/>random(1,100,dir) | Random walk starting from a specific node with some maximum `distance`.<br/><br/>Status line: Distance as the number of edges.
+`(x,y)(y,z)`<br/><br/>`(1,2,3)(3,4,5)`<br/>(x,y)(x,z,y)(x,u,y) | Hypersurfaces matching the given rule-based pattern. With a prefix '-' the matched hypersurfaces are excluded from the results. NOTE: Matching is always done in `SPACE` mode and only projected to `TIME` mode by highlighting worldlines of the matched hypersurface.<br/><br/>Status line: Number of rule-based matches.
+`space(n1,n2)`<br/><br/>space(100,150) | Space-like hypersurface based on a range of nodes. `SPACE` mode only.<br/><br/>Status line: N-dimensional volume as the number of nodes.
+`time(t1,t2)`<br/><br/>time(300,350) | Time-like hypersurface based on a range of iterations. `TIME` mode only.<br/><br/>Status line: N-dimensional volume as the number of nodes.
+`worldline(n1,n2,...)`<br/><br/>worldline(0)<br/>worldline(1,2) | Time-like curve of space-like node/nodes. `TIME` mode only.<br/><br/>Status line: Distance as the number of edges.
+`lightcone(n,length)`<br/><br/>lightcone(200,4) | Lightcone centered at node `n` with size `length`. `TIME` mode only.<br/><br/>Status line:<br/>Size of the past and future lightlike cones as the number of edges.
 
 ## Notes
 
