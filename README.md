@@ -128,7 +128,7 @@ ideas related to hypergraphs and hypergraph rewriting.
 
 Whereas the Wolfram physics project has been a great inspiration to me,
 this project is not directly associated with it, doesn't use any code from it,
-and doesn't claim any compatible with the Wolfram model.
+and doesn't claim to be compatible with the Wolfram model.
 
 As a historical note, the Wolfram Model comes out of the old Greek tradition of
 atomism started by Leucippus (5thC BCE) and his pupil Democritus
