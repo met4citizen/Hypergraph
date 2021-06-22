@@ -93,7 +93,8 @@ Simulator currently supports two modes: `Space` and `Time`.
 
 In `Space` mode the system simulates the evolution of the hypergraph.
 
-In `Time` mode the system builds up the causal graph. In this view, the nodes
+In `Time` mode the system builds up the causal graph. On, to be more precise,
+the transitive reduction of the full causal graph. In this view, the nodes
 are updating events and the directed edges their causal relationships.
 
 Media control buttons let you reset the mode, start/pause simulation and
@@ -101,7 +102,7 @@ skip to the end / reheat force engine.
 
 According to the Wolfram Model, the (spatial) hypergraph represents a spacelike
 state of the universe with nodes as "atoms of space". In the causal graph,
-the flux of causal edges through spacelike and timelike hypersurfaces graph is
+the flux of causal edges through spacelike and timelike hypersurfaces is
 related to energy and momentum respectively.
 
 ## Highlighting
