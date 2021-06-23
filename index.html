@@ -222,7 +222,7 @@ $(document).ready(function() {
       }, function() {
         $("#progress").hide();
         $("#playstop, #finalreheat").removeClass('button-disabled').css("background-color","black");
-        $("#space").click();
+        $(".mode-selected").click();
       });
     }
     catch (e) {
@@ -388,10 +388,12 @@ $(document).ready(function() {
     let rule = $("#rule-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
     let ruleorder = $(".ruleordering-selected").data("value");
     let eventorder = $(".eventordering-selected").data("value");
+    let mode = $(".mode-selected").attr("id");
     let url = baseurl
       + "?rule=" + encodeURIComponent(rule).replace(/%2C/g,",").replace(/%3B/g,";")
-      + "&ruleorder=" + encodeURIComponent(ruleorder)
-      + "&eventorder=" + encodeURIComponent(eventorder);
+      + ( ruleorder !== "none" ? "&ruleorder=" + encodeURIComponent(ruleorder) : "" )
+      + ( eventorder !== "random" ? "&eventorder=" + encodeURIComponent(eventorder) : "" )
+      + ( mode !== "space" ? "&mode=" + encodeURIComponent(mode) : "" );
     var $temp = $("<input>");
     $("body").append($temp);
     $temp.val(url).select();
@@ -415,6 +417,11 @@ $(document).ready(function() {
     if ( eventorder && ( eventorder === "random" || eventorder === "ascending" || eventorder === "descending" ) ) {
       $(".eventordering").removeClass("eventordering-selected");
       $(".eventordering[data-value='" + eventorder + "']").addClass("eventordering-selected");
+    }
+    let mode = getUrlParameter('mode');
+    if ( mode && ( mode === "space" || mode === "time" ) ) {
+      $(".mode").removeClass("mode-selected");
+      $("#"+mode).addClass("mode-selected");
     }
     $("#rule-run").click();
   }
