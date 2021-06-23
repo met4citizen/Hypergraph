@@ -389,11 +389,15 @@ $(document).ready(function() {
     let ruleorder = $(".ruleordering-selected").data("value");
     let eventorder = $(".eventordering-selected").data("value");
     let mode = $(".mode-selected").attr("id");
+    let red = $("#red-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
+    let blue = $("#blue-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
     let url = baseurl
       + "?rule=" + encodeURIComponent(rule).replace(/%2C/g,",").replace(/%3B/g,";")
       + ( ruleorder !== "none" ? "&ruleorder=" + encodeURIComponent(ruleorder) : "" )
       + ( eventorder !== "random" ? "&eventorder=" + encodeURIComponent(eventorder) : "" )
-      + ( mode !== "space" ? "&mode=" + encodeURIComponent(mode) : "" );
+      + ( mode !== "space" ? "&mode=" + encodeURIComponent(mode) : "" )
+      + ( !$("#red-text").hasClass("text-disabled") ? "&red=" + encodeURIComponent(red) : "" )
+      + ( !$("#blue-text").hasClass("text-disabled") ? "&blue=" + encodeURIComponent(blue) : "" );
     var $temp = $("<input>");
     $("body").append($temp);
     $temp.val(url).select();
@@ -422,6 +426,14 @@ $(document).ready(function() {
     if ( mode && ( mode === "space" || mode === "time" ) ) {
       $(".mode").removeClass("mode-selected");
       $("#"+mode).addClass("mode-selected");
+    }
+    let red = getUrlParameter('red');
+    if ( red ) {
+      $("#red-text").html( $("<p>").html( red ).text().split(";").join("<br>") );
+    }
+    let blue = getUrlParameter('blue');
+    if ( blue ) {
+      $("#blue-text").html( $("<p>").html( blue ).text().split(";").join("<br>") );
     }
     $("#rule-run").click();
   }
