@@ -61,6 +61,8 @@ Initial graph | Description
 `sphere(n)` | Create a sphere with `n` vertices.
 `random(n,dim,nedges)` | Create a random graph with `n` vertices each with minimum `nedges` edges by springling random points in `dim` dimensions.
 `complete(n)` | Create a complete graph `n` vertices each connected to every other vertex.
+`blackhole(n,rs)` | Create a black hole with `n` vertices and Schwarzschild radius `rs`. (Experimental)
+`blackhole2(n,rs)` | Create a twin black hole both with `n` vertices and Schwarzschild radius `rs`. (Experimental)
 
 The system supports several rules separated with a semicolon `;` or written
 on separate lines. If several rules are specified, the rule order setting
@@ -113,6 +115,7 @@ and using one or more of the following commands:
 Command/Examples | Description
 --- | ---
 `geodesic(n1,n2,[dir],[rev],[all])`<br/><br/>geodesic(0,10)<br/>geodesic(10,200,all) | Shortest path between two nodes.<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction<br/>`all` = all shortest paths<br/><br/>Status line: Distance as the number of edges.
+`curv(n1,n2)`<br/><br/>curv(0,10) | Curvature between two nodes based on Ollivier-Ricci (1-Wasserstein) distance.<br/><br/>Status line: Curvature.
 `nball(center,radius,[dir],[rev])`<br/><br/>nball(0,4) | N-dimensional ball is a set of nodes and edges within a distance `radius` of a given node `center`.<br/><br/>Status line: N-dimensional volume as the number of edges.
 `nsphere(center,radius,[dir],[rev])`<br/><br/>nsphere(0,4) | N-dimensional sphere/hypersurface is a set of nodes within a distance `radius` of a given node `center`.<br/><br/>Status line: N-dimensional area as the number of nodes.
 `random(n,distance,[dir],[rev])`<br/><br/>random(1,100,dir) | Random walk starting from a specific node with some maximum `distance`.<br/><br/>Status line: Distance as the number of edges.
