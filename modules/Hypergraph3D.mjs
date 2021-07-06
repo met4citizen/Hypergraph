@@ -91,6 +91,16 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				e.push( ret );
 				break;
 
+			case "curv":
+				p.push( parseInt(params[0]), parseInt(params[1]) );
+				let curv = this.data.orc( parseInt(params[0]), parseInt(params[1]) );
+				curv = curv.toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 });
+				r.push( curv );
+				e.push( this.data.geodesic( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev"), params.includes("all") ).flat() );
+				v.push( this.data.nsphere( parseInt(params[0]), 1 ) );
+				v.push( this.data.nsphere( parseInt(params[1]), 1 ) );
+				break;
+
 			case "nsphere": case "sphere":
 				p.push( parseInt(params[0]) );
 				ret = this.data.nsphere( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
