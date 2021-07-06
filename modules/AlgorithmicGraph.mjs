@@ -80,6 +80,7 @@ class AlgorithmicGraph extends Hypergraph  {
     return AlgorithmicGraph.d( p(i,n), p(j,m) );
   }
 
+
   /**
   * Produces a random sprinkling of points into a flat manifold of
   * given dimension.
@@ -193,40 +194,64 @@ class AlgorithmicGraph extends Hypergraph  {
   }
 
   /**
-  * Produces a black hole (EXPERIMENTAL)
+  * A black hole (EXPERIMENTAL)
+  * Curves Fibonacci spiral by using Schwarzschild proper radial distance.
   * @param {number} n Number of vertices
-  * @param {number} dim Dimension
-  * @param {number} curv Curvature
+  * @param {number} rs Schwarzschild radius
   * @return {number[][]} Edges
   */
-  blackhole() {
-    let edges = [ [0] ];
-    let numlayers = 4;
-    let vertices = [ 10, 32, 32, 64 ];
-    let separation = [ 1, 2, 2, 3 ];
-    let surface = [ false, true, true, true ]
-    let connections = [ 16, 1, 3, 1 ];
+  blackhole( n, rs ) {
+    if ( (n < 10) || (n > 1000) )
+      throw new Error("[Blackhole] Number of points must be between 10-1000.");
+    if ( (rs < 0) || (rs > 1000) )
+      throw new Error("[Blackhole] Schwarzschild radius must be between 0-1000.");
 
-    // Create layers
-    for( let i = 0; i < numlayers; i++ ) {
-      edges.push( ...this.complete( vertices[i], separation[i], surface[i] ).map( e => e.map( x => x + 1000 * i ) ) );
+    // Schwarzschild proper radial distance
+    function prd(r,rs) {
+      return r * Math.sqrt(1-rs/r)+(rs/2)*Math.log(2*r*(Math.sqrt(1-rs/r)+1)-rs);
     }
 
-    // Connect layers
-    for( let i = 0; i < numlayers-1; i++ ) {
-      for( let j = 0; j < vertices[i]; j++ ) {
-        let d = [];
-        for( let k = 0; k < vertices[i+1]; k++ ) {
-          d.push( AlgorithmicGraph.fibonacciD( j, k, vertices[i], vertices[i+1] ) );
+    let edges = [ [0] ];
+    let phi = Math.PI * (3.0 - Math.sqrt(5.0)); // Golden angle
+
+    for( let i = 0; i < n-1; i++ ) {
+      // List of vertices to connect
+      let connect = [];
+
+      // Connect to a closest neighbour
+      connect.push( i + 1 );
+
+      // Connect radial neighbours, # of neighbours relative to curvature
+      let k = Math.max( 1, n * ( prd( ((i+1)/n)+rs, rs ) - prd( (i/n)+rs, rs ) ) );
+      for( let l = 1; l <= k; l++ ) {
+        let x = Math.round( i + l * 2 * Math.PI * (i+rs) / phi );
+        if ( x < n ) {
+          connect.push( x );
         }
-        let idx = Array.from( Array(d.length).keys() ).sort((a,b) => d[a] - d[b] );
-        for( let k = 0; k < connections[i]; k++ ) {
-          let [ a,b ] = Math.random() > 0.5 ? [j + 1000 * i, idx[k] + 1000 * (i+1)] : [idx[k] + 1000 * (i+1),j + 1000 * i];
-          edges.push( [a,b] );
-        }
+      }
+
+      // Create edges with random direction
+      connect = [ ...new Set( connect ) ];
+      for( let m=0; m < connect.length; m++ ) {
+        let [ a,b ] = Math.random() > 0.5 ? [i,connect[m]] : [connect[m],i];
+        edges.push( [ a,b ] );
       }
     }
 
+    return edges;
+  }
+
+  /**
+  * Twin black hole. See function blackhole.
+  * @param {number} n Number of vertices
+  * @param {number} rs Schwarzschild radius
+  * @return {number[][]} Edges
+  */
+  blackhole2( n, rs ) {
+    let bh1 = this.blackhole( n, rs );
+    let bh2 = this.blackhole( n, rs ).map( e => e.map( x => x + Math.round( 4 * n / 5 ) ));
+
+    let edges = [ ...new Set( [ ...bh1, ...bh2 ] ) ];
     return edges;
   }
 
@@ -383,7 +408,10 @@ class AlgorithmicGraph extends Hypergraph  {
           this.initial.push( ...this.complete( parseInt(params[0]), 1, true ) );
           break;
         case "blackhole":
-          this.initial.push( ...this.blackhole() );
+          this.initial.push( ...this.blackhole( parseInt(params[0]), parseFloat(params[1]) ) );
+          break;
+        case "blackhole2":
+          this.initial.push( ...this.blackhole2( parseInt(params[0]), parseFloat(params[1]) ) );
           break;
         case "random":
           this.initial.push( ...this.random( parseInt(params[0]), parseInt(params[1]), parseInt(params[2]) ) );
