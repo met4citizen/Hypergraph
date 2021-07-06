@@ -63,6 +63,7 @@ Initial graph | Description
 `complete(n)` | Create a complete graph `n` vertices each connected to every other vertex.
 `blackhole(n,rs)` | Create a black hole with `n` vertices and Schwarzschild radius `rs`. (Experimental)
 `blackhole2(n,rs)` | Create a twin black hole both with `n` vertices and Schwarzschild radius `rs`. (Experimental)
+`erb(n,rs)` | Create a Einstein-Rosen Bridge both sides with `n` vertices and Schwarzschild radius `rs`. (Experimental)
 
 The system supports several rules separated with a semicolon `;` or written
 on separate lines. If several rules are specified, the rule order setting

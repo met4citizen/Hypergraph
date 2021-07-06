@@ -222,7 +222,7 @@ class AlgorithmicGraph extends Hypergraph  {
       connect.push( i + 1 );
 
       // Connect radial neighbours, # of neighbours relative to curvature
-      let k = Math.max( 1, n * ( prd( ((i+1)/n)+rs, rs ) - prd( (i/n)+rs, rs ) ) );
+      let k = Math.max( 1, n * ( prd( ((i+2)/n)+rs, rs ) - prd( ((i+1)/n)+rs, rs ) ) );
       for( let l = 1; l <= k; l++ ) {
         let x = Math.round( i + l * 2 * Math.PI * (i+rs) / phi );
         if ( x < n ) {
@@ -252,6 +252,31 @@ class AlgorithmicGraph extends Hypergraph  {
     let bh2 = this.blackhole( n, rs ).map( e => e.map( x => x + Math.round( 4 * n / 5 ) ));
 
     let edges = [ ...new Set( [ ...bh1, ...bh2 ] ) ];
+    return edges;
+  }
+
+  /**
+  * Einstein-Rosen Bridge (Experimental)
+  * @param {number} n Number of vertices of one side
+  * @param {number} rs Schwarzschild radius
+  * @return {number[][]} Edges
+  */
+  erb( n, rs ) {
+    let bh1 = this.blackhole( n, rs );
+    let bh2 = this.blackhole( n, rs ).map( e => e.map( x => x + n ) );
+
+    let edges = [ ...new Set( [ ...bh1, ...bh2 ] ) ];
+
+    // Create the bridge
+    let nlinks = Math.max( 4, rs / 10 );
+    for( let i = 0; i < nlinks; i++ ) {
+      let v = Math.floor( Math.random() * nlinks );
+      let u = Math.floor( Math.random() * nlinks ) + n;
+
+      let [ a,b ] = Math.random() > 0.5 ? [v,u] : [u,v];
+      edges.push( [ a,b ] );
+    }
+
     return edges;
   }
 
@@ -412,6 +437,9 @@ class AlgorithmicGraph extends Hypergraph  {
           break;
         case "blackhole2":
           this.initial.push( ...this.blackhole2( parseInt(params[0]), parseFloat(params[1]) ) );
+          break;
+        case "erb":
+          this.initial.push( ...this.erb( parseInt(params[0]), parseFloat(params[1]) ) );
           break;
         case "random":
           this.initial.push( ...this.random( parseInt(params[0]), parseInt(params[1]), parseInt(params[2]) ) );
