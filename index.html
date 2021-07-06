@@ -247,7 +247,7 @@ $(document).ready(function() {
         hypergraph.clearHighlight( i+1 );
         hypergraph.setHighlight( result , i+1, surface, background );
         if ( result.r.length > 0 ) {
-          $(x+"-result").text( '['+result.r.toString()+']' );
+          $(x+"-result").text( '['+result.r.join("|")+']' );
           $(x+"-result-label").show();
         }
         $(x+"-text").removeClass("text-disabled");
@@ -541,6 +541,8 @@ $(document).ready(function() {
         <tr><td>sphere(n)</td></tr>
         <tr><td>random(n,dim,nedges)</td></tr>
         <tr><td>complete(n)</td></tr>
+        <tr><td>blackhole(n,rs)</td></tr>
+        <tr><td>blackhole2(n,rs)</td></tr>
       <tbody>
     </table>
   </div>
@@ -552,6 +554,7 @@ $(document).ready(function() {
       </thead>
       <tbody>
         <tr><td>geodesic(v,u,[dir],[rev],[all])</td></tr>
+        <tr><td>curv(v,u)</td></tr>
         <tr><td>nball(v,radius,[dir],[rev])</td></tr>
         <tr><td>nsphere(v,radius,[dir],[rev])</td></tr>
         <tr><td>random(v,steps)</td></tr>
