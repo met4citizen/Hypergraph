@@ -151,12 +151,13 @@ class HypergraphRewritingSystem {
 			this.findMatches( this.spatial );
 			if ( this.matches.length === 0 ) break;
 
-			// Shuffle matches
-			for (let i = this.matches.length - 1; i > 0; i--) {
-				const j = Math.floor(Math.random() * (i + 1));
-				[this.matches[i], this.matches[j]] = [this.matches[j], this.matches[i]];
-			}
-			if ( this.eventordering !== 'random' ) {
+			if ( this.eventordering === 'random' ) {
+				// Random order, shuffle matches
+				for (let i = this.matches.length - 1; i > 0; i--) {
+					const j = Math.floor(Math.random() * (i + 1));
+					[this.matches[i], this.matches[j]] = [this.matches[j], this.matches[i]];
+				}
+			} else {
 				this.matches.forEach( match => {
 					const hit = this.mapper( this.spatial, this.algorithmic.rules[ match.r ].lhs , match.m );
 					match.order = hit.map( e => this.causal.L.get( e.join(",")) ).sort( (a,b) => b - a );
@@ -179,6 +180,7 @@ class HypergraphRewritingSystem {
 					});
 				}
 			}
+
 			// Rule ordering
 			if ( this.algorithmic.rules.length > 1 ) {
 				if ( this.ruleordering === 'index' ) {
