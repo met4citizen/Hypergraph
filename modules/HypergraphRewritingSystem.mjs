@@ -158,9 +158,8 @@ class HypergraphRewritingSystem {
 			}
 			if ( this.eventordering !== 'random' ) {
 				this.matches.forEach( match => {
-					// TODO: Check the cause for this fix
-					match.order = match.m.map( v => v > 0 ? this.causal.L.get( v )[0] : [] ).sort( (a,b) => b - a);
-					// match.order = match.m.map( v => this.causal.L.get( v )[0] ).sort( (a,b) => b - a);
+					const hit = this.mapper( this.spatial, this.algorithmic.rules[ match.r ].lhs , match.m );
+					match.order = hit.map( e => this.causal.L.get( e.join(",")) ).sort( (a,b) => b - a );
 				});
 				if ( this.eventordering === 'ascending' ) {
 					this.matches.sort( (a,b) => {
