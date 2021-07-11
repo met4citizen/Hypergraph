@@ -47,6 +47,21 @@ class HypergraphRewritingSystem {
 	}
 
 	/**
+	* Test whether an edge matches the given pattern.
+	* @param {Hyperedge} edge Hyperedge to test
+	* @param {Hyperedge} p Pattern to test against
+	* @return {Hyperedge} True if edge matches the pattern
+	*/
+	isMatch( edge, p ) {
+		if ( edge.length !== p.length ) return false;
+		for( let i=0; i<p.length; i++) {
+			let x = p.indexOf( p[i] );
+			if ( x !== i && edge[x] !== edge[i] ) return false;
+		}
+		return true;
+	}
+
+	/**
 	* Find possible mappings between rule pattern 'lhs' and the hypergraph.
 	* @param {Hypergraph} graph Hypergraph
 	*/
@@ -57,15 +72,15 @@ class HypergraphRewritingSystem {
 		if ( this.algorithmic.rules.length == 0 ) return;
 
 		// Check each edge for hit
-		for( let e of graph.E.values() ) {
-			let edge = e.edge;
+		for( let f of graph.F.values() ) {
+			let edge = graph.E.get( f[0] );
 
 			// Go through all the rules
 			for( let i=0; i < this.algorithmic.rules.length; i++ ) {
 				let rule = this.algorithmic.rules[i];
 
-				// Next rule if the lengths don't match
-				if ( edge.length !== rule.lhs[0].length ) continue;
+				// Next rule, if the current edge doesn't match the rule
+				if ( !this.isMatch( edge, rule.lhs[0] ) ) continue;
 
 				// Map based on this edge
 				let maxnum = Math.max( ...rule.lhs.flat() );
@@ -81,18 +96,23 @@ class HypergraphRewritingSystem {
 					mapsNext = [];
 
 					// Iterate all mapping hypotheses
-					for( let k = maps.length - 1; k >= 0; k-- ) {
+					for( let k = maps.length-1; k >= 0; k-- ) {
 						let edges = graph.find( this.mapper( graph, [ pattern ], maps[k] )[0] );
-						for (let l = edges.length - 1; l >= 0; l-- ) {
-							let map = [ ...maps[k] ];
+						for (let l = edges.length-1; l >= 0; l-- ) {
+							if ( !this.isMatch( edges[l], pattern ) ) continue;
+							let map = maps[k];
 							for(let n = pattern.length - 1; n >= 0; n-- ) map[ pattern[n] ] = edges[l][n];
-							mapsNext.push( map );
+							mapsNext.push( [ ...map ] );
 						}
 					}
 				}
+
 				// Replicate according to the final results
-				for( let k = mapsNext.length - 1; k >= 0; k-- ) {
-					this.matches.push( ...new Array( graph.count( this.mapper( graph, rule.lhs, mapsNext[k] ) ) ).fill().map( () => { return { r: i, m: mapsNext[k] }; } ) );
+				for( let k = mapsNext.length-1; k >= 0; k-- ) {
+					let hits = graph.hits( this.mapper( graph, rule.lhs, mapsNext[k] ) );
+					this.matches.push( ...new Array( hits.length ).fill().map( (x,h) => {
+						return { r: i, hit: hits[h], m: mapsNext[k] };
+					}) );
 				}
 			}
 		}
@@ -105,29 +125,19 @@ class HypergraphRewritingSystem {
 	* @param {Hypergraph} causal Causal hypergraph
 	*/
 	processMatches( spatial, causal ) {
-		// Remove overlapping parts from the rules
-		let rulesNol = [];
-		for( let i=0; i < this.algorithmic.rules.length; i++ ) {
-			const lhs = this.algorithmic.rules[i].lhs.filter( p => !this.algorithmic.rules[i].rhs.map(x => x.join(",") ).includes( p.join(",") ) );
-			const rhs = this.algorithmic.rules[i].rhs.filter( p => !this.algorithmic.rules[i].lhs.map(x => x.join(",") ).includes( p.join(",") ) );
-			rulesNol.push( { lhs: lhs, rhs: rhs } );
-		}
 
-		// Process all maps in sequence
 		for( let i=0; i < this.matches.length; i++ ) {
 
-			const hit = this.mapper( spatial, this.algorithmic.rules[ this.matches[i].r ].lhs , this.matches[i].m );
-			if ( spatial.count( hit ) ) {
+			// If the hit still exists, rewrite it
+			let hit = this.matches[i].hit;
+			if ( hit.every( x => spatial.E.has( x ) ) ) {
 
-				// Rewrite spatial graph
-				const del = this.mapper( spatial, rulesNol[ this.matches[i].r ].lhs , this.matches[i].m );
-				const add = this.mapper( spatial, rulesNol[ this.matches[i].r ].rhs, this.matches[i].m );
-				spatial.rewrite( del, add );
+				let del = this.mapper( spatial, this.algorithmic.rules[ this.matches[i].r ].lhs, this.matches[i].m );
+				let add = this.mapper( spatial, this.algorithmic.rules[ this.matches[i].r ].rhs, this.matches[i].m );
+				let mods = [ ...new Set( [ ...del.flat(), ...add.flat() ] ) ];
 
-				// Add event to causal graph
-				const match = this.matches[i].m;
-				const modified = [ ...new Set( add.flat() ) ].sort();
-				causal.rewrite( hit, del, add, this.step );
+				let addes = spatial.rewrite( hit, add );
+				causal.rewrite( hit, addes, mods, this.step );
 
 				// Break when limit reached
 				if ( ++this.eventcnt >= this.maxevents ) break;
@@ -151,34 +161,57 @@ class HypergraphRewritingSystem {
 			this.findMatches( this.spatial );
 			if ( this.matches.length === 0 ) break;
 
-			if ( this.eventordering === 'random' ) {
-				// Random order, shuffle matches
-				for (let i = this.matches.length - 1; i > 0; i--) {
-					const j = Math.floor(Math.random() * (i + 1));
-					[this.matches[i], this.matches[j]] = [this.matches[j], this.matches[i]];
-				}
-			} else {
+			// Shuffle matches
+			for (let i = this.matches.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1));
+				[this.matches[i], this.matches[j]] = [this.matches[j], this.matches[i]];
+			}
+
+			// Sort matches
+			if ( this.eventordering === 'ascending' ) {
+				// Sort based on causal events in ascending order
 				this.matches.forEach( match => {
-					const hit = this.mapper( this.spatial, this.algorithmic.rules[ match.r ].lhs , match.m );
-					match.order = hit.map( e => this.causal.L.get( e.join(",")) ).sort( (a,b) => b - a );
+					match.order = match.hit.map( e => this.causal.L.get( e ).v ).sort();
 				});
-				if ( this.eventordering === 'ascending' ) {
-					this.matches.sort( (a,b) => {
-						const minlen = a.order.length < b.order.length ? a.order.length : b.order.length;
-						for(let i = 0; i < minlen; i++ ) {
-							if ( a.order[i] !== b.order[i] ) return b.order[i] - a.order[i];
-						}
-						return b.order.length - a.order.length;
+				this.matches.sort( (a,b) => {
+					const len = Math.min( a.order.length, b.order.length );
+					for(let i = 0; i < len; i++ ) {
+						if ( a.order[i] !== b.order[i] ) return a.order[i] - b.order[i];
+					}
+					return a.order.length - b.order.length;
+				});
+			} else if ( this.eventordering === 'descending' ) {
+				// Sort based on causal events in descending order
+				this.matches.forEach( match => {
+					match.order = match.hit.map( e => this.causal.L.get( e ).v ).sort().reverse();
+				});
+				this.matches.sort( (a,b) => {
+					const len = Math.min( a.order.length, b.order.length );
+					for(let i = 0; i < len; i++ ) {
+						if ( a.order[i] !== b.order[i] ) return b.order[i] - a.order[i];
+					}
+					return b.order.length - a.order.length;
+				});
+			} else if ( this.eventordering === 'wolfram' ) {
+				// Sort based on Wolfram model and its standard event ordering
+				this.matches.forEach( match => {
+					let events = match.hit.map( e => {
+						let l = this.causal.L.get( e );
+						return 1000 * l.v + l.idx;
 					});
-				} else if ( this.eventordering === 'descending' ) {
-					this.matches.sort( (a,b) => {
-						const minlen = a.order.length < b.order.length ? a.order.length : b.order.length;
-						for(let i = 0; i < minlen; i++ ) {
-							if ( a.order[i] !== b.order[i] ) return a.order[i] - b.order[i];
-						}
-						return a.order.length - b.order.length;
-					});
-				}
+					match.ruleorder = Array.from( Array(events.length).keys() ).sort( (a,b) => events[a] - events[b] );
+					match.eventorder = events.sort().reverse();
+				});
+				this.matches.sort( (a,b) => {
+					const len = Math.min( a.eventorder.length, b.eventorder.length );
+					for(let i = 0; i < len; i++ ) {
+						if ( a.eventorder[i] !== b.eventorder[i] ) return a.eventorder[i] - b.eventorder[i];
+					}
+					for(let i = 0; i < len; i++ ) {
+						if ( a.ruleorder[i] !== b.ruleorder[i] ) return a.ruleorder[i] - b.ruleorder[i];
+					}
+					return a.r - b.r;
+				});
 			}
 
 			// Rule ordering
@@ -256,16 +289,11 @@ class HypergraphRewritingSystem {
 		this.finishedfn = finishedfn;
 
 		// Add initial edges
-		this.spatial.rewrite( [], this.algorithmic.initial );
+		let addes =  this.spatial.rewrite( [], this.algorithmic.initial );
 
 		// Add point zero in causal graph
-		this.causal.rewrite( [], [], this.algorithmic.initial, this.step );
-
-		// Add initial edges to causal graph
-		this.algorithmic.initial.forEach( e => {
-			this.step++;
-			this.causal.rewrite( [e], [], [e], this.step );
-		});
+		let mods = [ ...new Set( this.algorithmic.initial.flat() ) ];
+		this.causal.rewrite( [], addes, mods, ++this.step );
 
 		// Start rewriting process
 		setTimeout( this.rewrite, this.rewritedelay );

@@ -1,6 +1,8 @@
-import { BufferGeometry, BufferAttribute, MeshBasicMaterial, Mesh, DoubleSide, Vector3 } from 'https://unpkg.com/three@0.127.0/build/three.module.js'
-import { ConvexGeometry } from 'https://unpkg.com/three@0.127.0/examples/jsm/geometries/ConvexGeometry.js';
-import { GLTFExporter } from 'https://unpkg.com/three@0.127.0/examples/jsm/exporters/GLTFExporter.js';
+import { BufferGeometry, BufferAttribute, MeshBasicMaterial, Mesh, DoubleSide, Vector3 } from 'https://unpkg.com/three@0.130.1/build/three.module.js'
+import { ConvexGeometry } from './ConvexGeometry.mjs';
+// import { GLTFExporter } from 'https://unpkg.com/three@0.127.0/examples/jsm/exporters/GLTFExporter.js';
+
+import "https://unpkg.com/3d-force-graph@1.70.5";
 
 import { HypergraphRewritingSystem } from "./HypergraphRewritingSystem.mjs";
 import { SpriteText } from "./SpriteText.mjs";
@@ -510,6 +512,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.linkCurveRotation( 'rotation' )
 			.linkDirectionalArrowLength(0)
 			.d3VelocityDecay( 0.4 )
+			.d3AlphaDecay( 1 - Math.pow( 0.001, 1/40 ) ) // exponent = 1 / # iterations to cool
 			.nodeThreeObject( null );
 			// Set forces
 			this.graph3d.d3Force("link").iterations( 2 );
@@ -540,6 +543,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.linkDirectionalArrowLength( 20 )
 			.linkDirectionalArrowRelPos(1)
 			.d3VelocityDecay( 0.4 )
+			.d3AlphaDecay( 1 - Math.pow( 0.001, 1/40 ) ) // exponent = 1 / # iterations to cool
 			.nodeThreeObject( null );
 			// Set forces
 			this.graph3d.d3Force("link").iterations( 1 );
@@ -549,8 +553,10 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			});
 			this.graph3d.d3Force("center").strength( 0.1 );
 			this.graph3d.d3Force("charge").strength( -200 ).distanceMin( 1 );
+
 			// First additions
 			while( this.pos < 10 && this.tick() );
+
 			this.graph3d.cameraPosition( { x: 0, y: 0, z: 500 }, { x: 0, y: 0, z: 0 } );
 			break;
 
@@ -574,7 +580,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				return false;
 			}
 			if ( this.data.events[ this.pos ].hasOwnProperty('a') ) {
-				this.add( this.data.events[ this.pos ], nodes, links, final );
+				this.add( this.data.events[ this.pos ], nodes, links );
 			} else if ( this.data.events[ this.pos ].hasOwnProperty('x') ) {
 				this.remove( this.data.events[ this.pos ], nodes, links );
 			}
@@ -773,6 +779,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 	* @param {string} fileName Filename
 	* @param {string} contentType Content type
 	*/
+/*
 	static download(content, fileName, contentType) {
 		const a = document.createElement("a");
 		const file = new Blob([content], { type: contentType });
@@ -780,11 +787,13 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 		a.download = fileName;
 		a.click();
 	}
+*/
 
 	/**
 	* Export 3D model in GLB/GLTF format.
 	* @param {boolean} binary If TRUE use BLB format, otherwise use GLTF.
 	*/
+/*
 	export( binary = true ) {
 		// Instantiate a exporter
 		const exporter = new GLTFExporter();
@@ -800,6 +809,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 		}, options);
 
 	}
+*/
 
 	/**
 	* Report status.

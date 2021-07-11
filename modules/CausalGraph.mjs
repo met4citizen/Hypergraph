@@ -12,8 +12,8 @@ class CausalGraph extends Hypergraph {
 	*/
 	constructor() {
 		super();
-		this.L = new Map(); // Map from spatial edge to causal vertex
-		this.K = new Map(); // Worldlines from undirected spatial edge to causal vertex
+		this.L = new Map(); // Map from spatial edge id to causal vertex
+		this.K = new Map(); // Worldlines from undirected spatial vertex to causal vertices
 		this.maxstep = 0; // Record max step
 	}
 
@@ -34,9 +34,9 @@ class CausalGraph extends Hypergraph {
 	* @return {number[][]} Array of pairs of numbers.
 	*/
 	static pairs( arr ) {
-		const result = [];
-		for ( let i = 0; i < (arr.length - 1); i++ ) result.push( [ arr[i], arr[i+1] ] );
-		return result;
+		const r = [];
+		for ( let i = 0; i < arr.length - 1; i++ ) r.push( [ arr[i], arr[i+1] ] );
+		return r;
 	}
 
 	/**
@@ -52,39 +52,33 @@ class CausalGraph extends Hypergraph {
 
 	/**
 	* Rewrite event.
-	* @param {Hyperedge[]} hit Hyperedges hit
-	* @param {Hyperedge[]} del Hyperedges to delete
-	* @param {Hyperedge[]} add Hyperedges to add
+	* @param {number[]} hit Hyperedge ids to be deleted
+	* @param {number[]} add Hyperedge ids to be added
+	* @param {number[]} mods Modified vertices
 	* @param {number} step Rewriting step number
 	*/
-	rewrite( hit, del, add, step ) {
+	rewrite( hit, add, mods, step ) {
+
 		// Add new vertex
-		const v2 = ++this.maxv;
-		const modified = [ ...new Set( [ ...del.flat(), ...add.flat() ] ) ].sort();
-		this.V.set( v2, { in: [], out: [], step: step, mods: modified });
+		const v = ++this.maxv;
+		this.V.set( v, { in: [], out: [], step: step, mods: mods });
 		if ( this.maxstep < step ) this.maxstep = step;
 
 		// Add causal edges, if missing
 		for( let i = hit.length - 1; i >= 0; i-- ) {
-			const v1 = this.L.get( hit[i].join(",") );
-			if ( typeof v1 === 'undefined' ) continue; // Ignore first instance
-			if ( v1 === v2 ) continue; // Ignore self-loops
-			const e = [ v1, v2 ];
-			const key = e.join(",");
-			if ( !this.E.has( key ) ) {
-				this.add( e, { level: step } );
+			const l = this.L.get( hit[i] );
+			if ( typeof l === 'undefined' ) continue; // Ignore first instance
+			if ( l.v === v ) continue; // Ignore self-loops
+			const edge = [ l.v, v ];
+			// Transitive reduction
+			if ( !this.F.has( edge.join(",") ) ) {
+				this.add( edge, { level: step } );
 			}
 		}
 
 		// Update leafs
-		add.forEach( e => this.L.set( e.join(","), v2) );
-		modified.forEach( v => {
-			if ( this.K.has( v ) ) {
-				this.K.get( v ).push( v2 );
-			} else {
-				this.K.set( v, [ v2 ] );
-			}
-		});
+		add.forEach( (e,i) => this.L.set( e, { v: v, idx: i } ) );
+		mods.forEach( u => this.K.has( u ) ? this.K.get( u ).push( v ) : this.K.set( u, [ v ] ) );
 
 	}
 

@@ -24,90 +24,134 @@ class SpatialGraph extends Hypergraph {
 	}
 
 	/**
-	* Delete/add hyperedges.
-	* @param {Hyperedge[]} del Hyperedges to delete
+	* Delete and add hyperedges.
+	* @param {number[]} del Hyperedge ids to delete
 	* @param {Hyperedge[]} add Hyperedges to add
-	* @param {Object} [event={}] Optional event properties
+	* @return {number[]} Arrays of hyperedge ids that were added
 	*/
 	rewrite( del, add ) {
 		// Process all edges to delete
-		for( let i=0; i < del.length; i++ ) {
-			// Decrease/remove edge
-			this.delete( del[i] );
+		for( const e of del ) {
 			// Remove search patterns
-			for( let j = del[i].length - 1; j >= 0; j-- ) {
-				const pattern = del[i].map( (x,k) => ( k !== j ? "*" : x ) ).join(",");
-				const p = this.P.get( pattern );
-				let idx = p.findIndex( x => (x.length === del[i].length) && (x.every( (y,k) => y === del[i][k])) );
+			let edge = this.E.get( e );
+			for( let j = 0; j < edge.length; j++ ) {
+				const pattern = edge.map( (x,k) => ( k !== j ? "*" : x ) ).join(",");
+				let p = this.P.get( pattern );
+				let idx = p.findIndex( x => (x.length === edge.length) && (x.every( (y,k) => y === edge[k])) );
 				p.splice( idx, 1 );
 				if ( p.length === 0 ) this.P.delete( pattern );
 			}
+
+			// Remove the edge
+			this.delete( e );
 		}
-		// Process all edges
-		for( let i=0; i < add.length; i++ ) {
+
+		// Process all edges to add
+		let es = [];
+		for( const edge of add ) {
 			// Add edge
-			this.add( add[i] );
+			let e = this.add( edge );
+			es.push( e );
+
 			// Add search patterns
-			for( let j = add[i].length - 1; j >= 0; j-- ) {
-				const pattern = add[i].map( (x,k) => ( k === j ? x : "*" ) ).join(",");
+			for( let j = edge.length - 1; j >= 0; j-- ) {
+				const pattern = edge.map( (x,k) => ( k === j ? x : "*" ) ).join(",");
 				const p = this.P.get( pattern );
-				typeof p !== 'undefined' ? p.push( add[i] ) : this.P.set( pattern, [ add[i] ] );
+				typeof p !== 'undefined' ? p.push( edge ) : this.P.set( pattern, [ edge ] );
 			}
 		}
+
+		return es;
 	}
 
 	/**
-	* Count # of possible instances of the given a list of hyperedges.
-	* @param {Hyperedge[]} edge Array of hyperedges
-	* @return {number} Number of possible instances.
+	* Generate all combinations of an array of arrays
+	* @generator
+	* @param {number[][]} arr Array of arrays
+	* @return {number[][]} Arrays of all combinations
 	*/
-	count( edges ) {
-		// Go through all edges
-		const cnts = {};
-		for( let i = edges.length - 1; i >= 0; i-- ) {
-			const key = edges[i].join(",");
-			if ( !this.E.has( key ) ) return 0; // Some edge doesn't exist, return 0
-			// Either we got the same edge again or we init the # occurances
-			cnts.hasOwnProperty( key ) ? cnts[ key ]-- : cnts[ key ] = this.E.get( key ).cnt;
-		}
-		// Return minimum, 0 if negative
-		return Math.max(0, Math.min.apply( null, Object.values( cnts ) ) );
+	*combinations( arr ) {
+  	let [head, ...tail] = arr;
+  	let remainder = tail.length ? this.combinations(tail) : [[]];
+  	for (let r of remainder) for (let h of head) yield [h, ...r];
 	}
 
 	/**
-	* Find edges that match to the given pattern.
+	* Return all possible combinations of the given a list of hyperedges.
+	* @param {Hyperedge[]} edge Array of hyperedges
+	* @return {number[][]} Arrays of hyperedge ids
+	*/
+	hits( edges ) {
+		const h = [];
+		for( let i = 0; i < edges.length; i++ ) {
+			let es = this.F.get( edges[i].join(",") );
+			if ( typeof es === 'undefined' ) return []; // Some edge doesn't exist, return 0
+			h.push( es );
+		}
+
+		// Return all combinations, but filter out those with duplicate edge ids
+		let hits = [];
+		for( let c of this.combinations(h) ) {
+			if ( c.every( (x,i,arr) => arr.indexOf(x) === i ) ) {
+				hits.push( c );
+			}
+		}
+
+		return hits;
+	}
+
+	/**
+	* Find edges that match to the given wild card search pattern.
 	* @param {Hyperedge} pattern Hyperedge search pattern, wild card -1
 	* @return {Hyperedge[]} Matching hyperedges.
 	*/
-	find( pattern ) {
-		// Pattern has no wild cards, so we look for an exact match
-		if ( pattern.every( x => x !== -1 ) ) {
-			return ( this.E.has( pattern.join(",") ) ? [ pattern ] : [] );
-		}
+	find( p ) {
+		let found = [];
 
-		// All wild cards, so we return all edges of the given length
-		if ( pattern.every( x => x === -1 ) ) {
-			const found = [];
-			for( const e of this.E.values() ) {
-				if ( e.edge.length === pattern.length ) found.push( e.edge );
+		if ( p.every( x => x !== -1 ) ) {
+			// Pattern has no wild cards, so we look for an exact match
+			if ( this.F.has( p.join(",") ) ) {
+				found.push( p );
 			}
-			return found;
+		} else if ( p.every( x => x === -1 ) ) {
+			// All wild cards, so we return all edges of the given length
+			for( const f of this.F.values() ) {
+				const edge = this.E.get( f[0] );
+				if ( edge.length === p.length ) found.push( edge );
+			}
+		} else {
+			// Extract individual keys and test that they exist
+			const keys = [];
+			for( let i = 0; i < p.length; i++ ) {
+				if ( p[i] !== -1 ) {
+					let key = p.map( (x,j) => ( j === i ? x : "*" )).join(",");
+					if ( !this.P.has( key ) ) return [];
+					keys.push( key );
+				}
+			}
+
+			// Find edges based on keys
+			// Filter out duplicates. If several keys, get the intersection.
+			let f2 = [], f3;
+			for( const edge of this.P.get( keys[0] ) ) {
+				if ( !f2.includes( edge.join(",") ) ) {
+					found.push( edge );
+					f2.push( edge.join(",") );
+				}
+			};
+			for( let i = 1; i < keys.length; i++ ) {
+				found = [];
+				f3 = [];
+				for( const edge of this.P.get( keys[i] ) ) {
+					if ( f2.includes( edge.join(",") ) ) {
+						found.push( edge );
+						f3.push( edge.join(",") );
+					}
+				}
+				f2 = f3;
+			}
 		}
 
-		// Extract individual keys and test that they exist
-		const keys = [];
-		for( let i = pattern.length-1; i >=0; i-- )
-		if ( pattern[i] !== -1 ) {
-			let key = pattern.map( (x,j) => ( j === i ? x : "*" )).join(",");
-			if ( !this.P.has( key) ) return [];
-			keys.push( key );
-		}
-
-		// Find edges based on keys; if several, get the intersection
-		let found = [ ...this.P.get( keys[0] ) ];
-		for( let i = keys.length-1; i >= 1; i-- ) {
-			found = this.P.get( keys[i] ).filter( x => found.some( y => y.every( (z,k) => z === x[k] ) ) );
-		}
 		return found;
 	}
 
@@ -132,7 +176,7 @@ class SpatialGraph extends Hypergraph {
 	*/
 	geom( center ) {
 		const tree = this.tree( center );
-		const radius = Math.round( tree.length / 2 );
+		const radius = Math.round( tree.length / 3 );
 		const ball = tree.slice( 0, radius + 1 ).flat();
 		const volume = ball.length;
 		const geodesic = this.geodesic( center, tree[ radius ][0] ).flat();

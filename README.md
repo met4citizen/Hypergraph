@@ -61,9 +61,9 @@ Initial graph | Description
 `sphere(n)` | Create a sphere with `n` vertices.
 `random(n,dim,nedges)` | Create a random graph with `n` vertices each with minimum `nedges` edges by springling random points in `dim` dimensions.
 `complete(n)` | Create a complete graph `n` vertices each connected to every other vertex.
-`blackhole(n,rs)` | Create a black hole with `n` vertices and Schwarzschild radius `rs`. (Experimental)
-`blackhole2(n,rs)` | Create a twin black hole both with `n` vertices and Schwarzschild radius `rs`. (Experimental)
-`erb(n,rs)` | Create a Einstein-Rosen Bridge both sides with `n` vertices and Schwarzschild radius `rs`. (Experimental)
+`blackhole(n,rs)` | Create a black hole with `n` vertices and Schwarzschild radius `rs`. (EXPERIMENTAL)
+`blackhole2(n,rs)` | Create a twin black hole both with `n` vertices and Schwarzschild radius `rs`. (EXPERIMENTAL)
+`erb(n,rs)` | Create a Einstein-Rosen Bridge both sides with `n` vertices and Schwarzschild radius `rs`. (EXPERIMENTAL)
 
 The system supports several rules separated with a semicolon `;` or written
 on separate lines. If several rules are specified, the rule order setting
@@ -71,7 +71,7 @@ is used to define whether their relative order matters.
 
 Rule order | Description
 --- | ---
-`NON` | None. Follow event ordering without sorting based on rules. In other words, allow mixing of the rules.
+`NON` | None. Follow event ordering without sorting based on rules. In other words, allow mixing of the rules. (DEFAULT)
 `NDX` | Index order. Regardless of event ordering, always try to apply the event updates in the order in which rules are specified.
 `REV` | Reverse index order. Regardless of event ordering, always try to apply the event updates in the *reverse* order in which rules are specified.
 
@@ -82,13 +82,14 @@ ignored.
 
 Event order | Description
 --- | ---
-`RND` | Random order shuffles all possible update events.
-`ASC` |  Ascending time order sorts update events so that the least recent match based on the past events is applied first.
-`DEC` | Descending time order Sort update event so that the most recent match based on the the past events is applied first.
+`RND` | Random order shuffles all possible update events. (DEFAULT)
+`WM` | Standard event order in the Wolfram Model (LeastRecentEdge + RuleOrdering + RuleIndex). Note: Do not define rule order separately, because it would override event order. (EXPERIMENTAL)
+`ASC` |  Ascending time order sorts update events so that the oldest edge is applied first.
+`DEC` | Descending time order Sort update event so that the newest edge is applied first.
 
 According to the Wolfram model, applying all the matches simultaneously
 gives rise to quantum mechanics. This means that this simulator shows only
-one possible classical evolution of the hypergraph.
+one possible classical evolution branch of the hypergraph.
 
 ## Simulation
 
@@ -96,14 +97,14 @@ Simulator currently supports two modes: `Space` and `Time`.
 
 In `Space` mode the system simulates the evolution of the hypergraph.
 
-In `Time` mode the system builds up the causal graph. On, to be more precise,
-the transitive reduction of the full causal graph. In this view, the nodes
-are updating events and the directed edges their causal relationships.
+In `Time` mode the system builds up the transitive reduction of the causal
+graph. In this view, the nodes are updating events and the directed edges
+their causal relationships.
 
 Media control buttons let you reset the mode, start/pause simulation and
 skip to the end / reheat force engine.
 
-According to the Wolfram Model, the (spatial) hypergraph represents a spacelike
+According to the Wolfram Model, the spatial hypergraph represents a spacelike
 state of the universe with nodes as "atoms of space". In the causal graph,
 the flux of causal edges through spacelike and timelike hypersurfaces is
 related to energy and momentum respectively.
@@ -128,15 +129,14 @@ Command/Examples | Description
 
 ## Notes
 
-The aim of this project for me has been / is to learn some basic concepts and
-ideas related to hypergraphs and hypergraph rewriting.
+The aim of this project for me has been to learn some basic concepts and
+ideas related to hypergraphs and hypergraph rewriting. Whereas the Wolfram
+physics project has been a great inspiration to me, this project is not
+directly associated with it, doesn't use any code from it, and doesn't claim
+to be compatible with the Wolfram Model.
 
-Whereas the Wolfram physics project has been a great inspiration to me,
-this project is not directly associated with it, doesn't use any code from it,
-and doesn't claim to be compatible with the Wolfram model.
-
-As a historical note, the Wolfram Model comes out of the old Greek tradition of
-atomism started by Leucippus (5thC BCE) and his pupil Democritus
+To end with a historical note, the Wolfram Model comes out of the old Greek
+tradition of atomism started by Leucippus (5thC BCE) and his pupil Democritus
 (ca. 460–370 BCE). In the Hellenistic period the idea was revived by Epicurus
 (341–270 BCE) and described by a Roman poet Lucretius (ca. 99–55 BCE).
 Unfortunately, starting from the Early Middle Ages, atomism was mostly

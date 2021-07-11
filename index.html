@@ -26,7 +26,7 @@
   #topleft { top:0; left:0; z-index: 5; }
   #topright { top:0; right:0; text-align: right; }
   #bottomleft { bottom:0; left:0; margin-left: 42px; }
-  #bottomright { bottom:0; right:0; text-align: right; }
+  #bottomright { bottom:0; right:4px; text-align: right; }
   .cheatsheet { bottom:35px; left:0; text-align: left; opacity: 0.9; display:none; }
   #paused { position: fixed; z-index: 2; top:0; left:50%; width: 120px; margin-left: -60px; text-align: center; background-color: transparent; display:none; }
   #paused span { background-color: white; padding: 0 10px; }
@@ -66,7 +66,13 @@
   .nodeLabelGraph3d, .linkLabelGraph3d { display: inline-block; background-color: olive; color: white; font-size: 14px; font-weight: bold; line-height: 20px; padding: 0 4px; height: auto; min-width: 14px; border-radius: 4px; text-align: center; vertical-align: middle; }
 </style>
 
-<script src="https://unpkg.com/3d-force-graph@1.67.4"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.130.1/build/three.module.js"
+  }
+}
+</script>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
 
 <script type="module">
@@ -373,6 +379,7 @@ $(document).ready(function() {
   });
 
   // Export to GLB
+/*
   $("#glb").on("click", function() {
     hypergraph.export( true );
   });
@@ -381,6 +388,7 @@ $(document).ready(function() {
   $("#gltf").on("click", function() {
     hypergraph.export( false );
   });
+*/
 
   // Copy URL link for the current rule to clipboard
   $("#url").on("click", function() {
@@ -396,8 +404,8 @@ $(document).ready(function() {
       + ( ruleorder !== "none" ? "&ruleorder=" + encodeURIComponent(ruleorder) : "" )
       + ( eventorder !== "random" ? "&eventorder=" + encodeURIComponent(eventorder) : "" )
       + ( mode !== "space" ? "&mode=" + encodeURIComponent(mode) : "" )
-      + ( !$("#red-text").hasClass("text-disabled") ? "&red=" + encodeURIComponent(red) : "" )
-      + ( !$("#blue-text").hasClass("text-disabled") ? "&blue=" + encodeURIComponent(blue) : "" );
+      + ( !$("#red-text").hasClass("text-disabled") ? "&red=" + encodeURIComponent(red).replace(/%2C/g,",").replace(/%3B/g,";") : "" )
+      + ( !$("#blue-text").hasClass("text-disabled") ? "&blue=" + encodeURIComponent(blue).replace(/%2C/g,",").replace(/%3B/g,";") : "" );
     var $temp = $("<input>");
     $("body").append($temp);
     $temp.val(url).select();
@@ -418,7 +426,7 @@ $(document).ready(function() {
       $(".ruleordering[data-value='" + ruleorder + "']").addClass("ruleordering-selected");
     }
     let eventorder = getUrlParameter('eventorder');
-    if ( eventorder && ( eventorder === "random" || eventorder === "ascending" || eventorder === "descending" ) ) {
+    if ( eventorder && ( eventorder === "random" || eventorder === "ascending" || eventorder === "descending" || eventorder === "wolfram" ) ) {
       $(".eventordering").removeClass("eventordering-selected");
       $(".eventordering[data-value='" + eventorder + "']").addClass("eventordering-selected");
     }
@@ -457,9 +465,10 @@ $(document).ready(function() {
       <span title="Index order" class="option ruleordering" data-value="index">NDX</span>
       <span title="Reverse index" class="option ruleordering" data-value="indexrev">REV</span>
       <span class="label down">Event order</span>
-      <span title="Randomize events" class="option eventordering eventordering-selected" data-value="random">RND</span>
-      <span title="Least recent" class="option eventordering" data-value="ascending">ASC</span>
-      <span title="Most recent" class="option eventordering" data-value="descending">DEC</span>
+      <span title="Randomize" class="option eventordering eventordering-selected" data-value="random">RND</span>
+      <span title="Wolfram" class="option eventordering" data-value="wolfram">WM</span>
+      <span title="Newest" class="option eventordering" data-value="ascending">ASC</span>
+      <span title="Oldest" class="option eventordering" data-value="descending">DEC</span>
       <span class="label down">Max events</span>
       <span title="Max 500" class="option limit limit-selected" data-value="500">500</span>
       <span title="Max 1000" class="option limit" data-value="1000">1K</span>
@@ -509,7 +518,7 @@ $(document).ready(function() {
     <span class="label up">Docs</span>
     <span title="Source/docs" class="label"><a href="https://github.com/met4citizen/Hypergraph" target="_blank">github</a></span>
     <span class="label up">Mouse</span>
-    <span class="label">left-rot wheel-zoom right-pan</span>
+    <span class="label">left-rotate wheel-zoom right-pan</span>
   </div>
 
   <div id="bottomright" class="controls noselect">
@@ -518,8 +527,8 @@ $(document).ready(function() {
     <span id="blue-result-label" class="label up">Blue</span>
     <span id="blue-result" class="label status"></span>
     <span id="status"></span>
-    <span class="label up">Download</span>
-    <span title="Download GLB" id="glb" class="button">GLB</span>
+    <span class="label up">Share</span>
+    <!-- <span title="Download GLB" id="glb" class="button">GLB</span> -->
     <!-- <span title="Download glTF" id="gltf" class="button">GLTF</span> -->
     <span title="Copy URL" id="url" class="button">URL</span>
   </div>
@@ -530,10 +539,10 @@ $(document).ready(function() {
         <tr><th>Command Cheatsheet</th></tr>
       </thead>
       <tbody>
-        <tr><th>One/two-way rules</th></tr>
+        <tr><th>One/two-way rules:</th></tr>
         <tr><td>(1,2)(1,3)-&gt;(1,2)(1,4)(2,4)(3,4)</td></tr>
         <tr><td>(1,2)(2,3,4)==(1,2)(4,3,2)</td></tr>
-        <tr><th>Initial conditions</th></tr>
+        <tr><th>Initial graph / generator:</th></tr>
         <tr><td>(1,2)(1,3)(1,2,3)</td></tr>
         <tr><td>points(n)</td></tr>
         <tr><td>line(n)</td></tr>

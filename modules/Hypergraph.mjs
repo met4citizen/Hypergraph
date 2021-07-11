@@ -6,12 +6,7 @@
 class Hypergraph {
 
 	/**
-	* Vertex.
 	* @typedef {number} Vertex
-	*/
-
-	/**
-	* Hyperedge.
 	* @typedef {Vertex[]} Hyperedge
 	*/
 
@@ -21,9 +16,11 @@ class Hypergraph {
 	*/
 	constructor() {
 		this.V = new Map(); // Vertices
-		this.E = new Map(); // Hyperedges
+		this.E = new Map(); // Hyperedge ids
 		this.maxv = -1; // Current maximum vertex number
+		this.maxe = -1; // Current maximum edge number
 		this.events = []; // Event log of additions and deletions used for animation
+		this.F = new Map(); // Search patterns for edges
 	}
 
 	/**
@@ -33,7 +30,9 @@ class Hypergraph {
 		this.V.clear();
 		this.E.clear();
 		this.maxv = -1;
+		this.maxe = -1;
 		this.events.length = 0;
+		this.F.clear();
 	}
 
 	/**
@@ -61,8 +60,18 @@ class Hypergraph {
 	/**
 	* Add a new edge.
 	* @param {Hyperedge} edge Hyperedge to be added
+	* @return {number} Id of the added edge
 	*/
 	add( edge, props = {} ) {
+		// Add new edge
+		const e = ++this.maxe;
+		this.E.set( e, edge );
+
+		// Add search pattern
+		const p = edge.join(",");
+		const f = this.F.get( p );
+		typeof f !== 'undefined' ? f.push( e ) : this.F.set( p, [ e ] );
+
 		// Add vertices to adjacency arrays
 		for( let i = edge.length - 1; i >= 0; i-- ) {
 			let v = this.V.get( edge[i] );
@@ -74,30 +83,37 @@ class Hypergraph {
 			if ( i > 0 ) v.in.push( edge[i-1] );
 			if ( i < (edge.length-1) ) v.out.push( edge[i+1] );
 		}
-		// Add edge
-		const key = edge.join(",");
-		const e = this.E.get( key );
-		typeof e !== 'undefined' ? e.cnt++ : this.E.set( key, { cnt: 1, edge: edge } );
+
 		// Add event
 		this.events.push( { a: edge, ...props } );
+
+		return e;
 	}
 
 	/**
 	*  Delete edge.
-	* @param {Hyperedge} edge Hyperedge to be deleted
+	* @param {number} e Hyperedge id to be deleted
 	*/
-	delete( edge, props = {} ) {
+	delete( e, props = {} ) {
 		// Delete vertices
+		let edge = this.E.get( e );
 		for( let i = edge.length - 1; i >= 0; i-- ) {
 			const v = this.V.get( edge[i] );
 			if ( i > 0 ) v.in.splice( v.in.indexOf( edge[i-1] ), 1 );
 			if ( i < (edge.length-1) ) v.out.splice( v.out.indexOf( edge[i+1] ), 1 );
 			if ( v.in.length === 0 && v.out.length === 0) this.V.delete( edge[i] );
 		}
-		// Decrease edge count / delete edge
-		const key = edge.join(",");
-		const e = this.E.get( key );
-		e.cnt === 1 ? this.E.delete( key ) : e.cnt--;
+
+		// Remove search pattern
+		const p = edge.join(",");
+		const f = this.F.get( p );
+		const idx = f.findIndex( x => x === e );
+		f.splice( idx, 1 );
+		if ( f.length === 0 ) this.F.delete( p );
+
+		// Delete edge
+		this.E.delete( e );
+
 		// Add event
 		this.events.push( { x: edge, ...props } );
 	}
@@ -401,9 +417,7 @@ class Hypergraph {
 	* @return {Object} Status of the hypergraph.
 	*/
 	status() {
-		let edges = 0;
-		for( const e of this.E.values() ) edges += e.cnt;
-		return { nodes: this.V.size, edges: edges };
+		return { nodes: this.V.size, edges: this.E.size };
 	}
 
 }

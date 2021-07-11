@@ -82,9 +82,8 @@ class AlgorithmicGraph extends Hypergraph  {
 
 
   /**
-  * Produces a random sprinkling of points into a flat manifold of
-  * given dimension.
-  * @param {number[][]} manifold Dimension
+  * Creates a graph from sprinkled points in n-dimensional euclidean space
+  * @param {number[][]} manifold Array of point coordinates
   * @param {number} distance Distance limit
   * @return {number[][]} Edges
   */
@@ -389,14 +388,29 @@ class AlgorithmicGraph extends Hypergraph  {
       v.lhs.forEach( (w,j) => {
         for( k=0; k < w.length; k++ ) this.rules[i].lhs[j][k] = unique.indexOf( w[k] );
       });
-      v.lhs.sort( (a,b) => Math.min( ...a ) - Math.min( ...b ) );
+      // NOTE: Do not sort LHS, because wolfram Model event ordering depends
+      // on the order of the edges
       if ( v.hasOwnProperty("rhs") ) {
         v.rhs.forEach((w,j) => {
           for( k=0; k < w.length; k++ ) this.rules[i].rhs[j][k] = unique.indexOf( w[k] );
         });
-        v.rhs.sort( (a,b) => Math.min( ...a ) - Math.min( ...b ) );
+        // NOTE: Do not sort RHS, because Wolfram Model event ordering depends
+        // on the order of the edges
       }
     });
+
+    // Change ()->(1,2) to (1,2)
+    for( let i = this.rules.length-1; i>=0; i-- ) {
+      if ( this.rules[i].lhs.length === 0 ) {
+        let j = "";
+        this.rules[i].rhs.forEach( e => {
+          j = j + "(" + e.map( v => v + 1 ).join(",") + ")";
+        });
+        this.commands.push( j );
+        this.rules.splice(i,1);
+      }
+    }
+
 
     // Take user specified rules as a basis for rules
     this.rules.forEach( r => {
@@ -405,9 +419,13 @@ class AlgorithmicGraph extends Hypergraph  {
         this.rulestr = this.rulestr + "(" + e.map( v => v + 1 ).join(",") + ")";
       });
       this.rulestr = this.rulestr + "->";
-      r.rhs.forEach( e => {
-        this.rulestr = this.rulestr + "(" + e.map( v => v + 1 ).join(",") + ")";
-      });
+      if ( r.rhs.length === 0 ) {
+        this.rulestr = this.rulestr + "()";
+      } else {
+        r.rhs.forEach( e => {
+          this.rulestr = this.rulestr + "(" + e.map( v => v + 1 ).join(",") + ")";
+        });
+      }
     });
 
     // Commands
@@ -455,7 +473,7 @@ class AlgorithmicGraph extends Hypergraph  {
       this.rulestr = this.rulestr + c;
     });
 
-    // use first lhs as the initial state, if not specified
+    // Use first lhs as the initial state, if not specified
     // Note: replace all vertices with pattern 1, e.g. (1,2) => (1,1)
     if ( this.rules.length && this.initial.length === 0 ) {
       this.initial.push( ...this.rules[0].lhs.map( e => e.map( x => 1 )) );
@@ -465,7 +483,6 @@ class AlgorithmicGraph extends Hypergraph  {
     this.initial = this.initial.map( e => e.map(String) );
     unique = [ ...new Set( [ ...this.initial.flat() ] ) ];
     this.initial = this.initial.map( e => e.map( x => unique.indexOf( x ) ) );
-    this.initial.sort( (a,b) => Math.min( ...a ) - Math.min( ...b ) );
 
     // Check if there was a valid rule
     if ( this.initial.length === 0 ) {
