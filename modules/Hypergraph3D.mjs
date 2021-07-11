@@ -512,7 +512,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.linkCurveRotation( 'rotation' )
 			.linkDirectionalArrowLength(0)
 			.d3VelocityDecay( 0.4 )
-			.d3AlphaDecay( 1 - Math.pow( 0.001, 1/40 ) ) // exponent = 1 / # iterations to cool
+			.d3AlphaDecay( 1 - Math.pow( 0.001, 1/400 ) ) // exponent = 1 / # iterations to cool
 			.nodeThreeObject( null );
 			// Set forces
 			this.graph3d.d3Force("link").iterations( 2 );
@@ -543,7 +543,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.linkDirectionalArrowLength( 20 )
 			.linkDirectionalArrowRelPos(1)
 			.d3VelocityDecay( 0.4 )
-			.d3AlphaDecay( 1 - Math.pow( 0.001, 1/40 ) ) // exponent = 1 / # iterations to cool
+			.d3AlphaDecay( 1 - Math.pow( 0.001, 1/400 ) ) // exponent = 1 / # iterations to cool
 			.nodeThreeObject( null );
 			// Set forces
 			this.graph3d.d3Force("link").iterations( 1 );
