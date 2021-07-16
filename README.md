@@ -22,8 +22,7 @@ represent fundamental physics visit
 [The Wolfram Physics Project](https://www.wolframphysics.org) website.
 According to their
 [technical documents](https://www.wolframphysics.org/technical-documents/)
-certain models exhibiting the Church-Rosser property ("causal invariance")
-reproduce key features of both relativity and quantum mechanics.
+certain models reproduce key features of both relativity and quantum mechanics.
 
 
 ## Rules
@@ -64,28 +63,28 @@ Initial graph | Description
 `random(n,d,nedges)` | Random graph with `n` vertices so that each vertex is sprinkled randomly in `d` dimensional space and has at least `nedges` connections.
 `complete(n)` | Complete graph with `n` vertices so that each vertex is connected to every other vertex.
 `blackhole(n,rs)` | Black hole with `n` vertices and Schwarzschild radius `rs`. (EXPERIMENTAL)
-`blackhole2(n,rs)` | Twin black hole so that both black holes have `n` vertices and Schwarzschild radius `rs`. (EXPERIMENTAL)
-`erb(n,rs)` | Einstein-Rosen Bridge so that both sides have `n` vertices and Schwarzschild radius `rs`. (EXPERIMENTAL)
+`blackhole2(n,rs)` | Twin black hole so that both black holes have `n` vertices and Schwarzschild radius `rs`. EXPERIMENTAL
+`erb(n,rs)` | Einstein-Rosen Bridge so that both sides have `n` vertices and Schwarzschild radius `rs`. EXPERIMENTAL
 
-During the rewriting process there are often several overlapping matches for
-the left-hand side part of the rule. In these cases event ordering setting
+During the rewriting process there can be overlapping matches for
+the left-hand side part of the rule. In these cases "event order" setting
 is used to decide which of the overlapping matches are replaced and which are
 ignored.
 
 Event order | Description
 --- | ---
 `RND` | Random order shuffles all possible update events/matches. (DEFAULT)
-`WM` | Standard event order in the Wolfram Model (LeastRecentEdge + RuleOrdering + RuleIndex). Note: Do not define rule order separately, because it would override event order. (EXPERIMENTAL)
+`WM` | Standard event order in the Wolfram Model (LeastRecentEdge + RuleOrdering + RuleIndex). Note: Do not define rule order separately, because it would override event order. EXPERIMENTAL
 `ASC` |  Ascending time order sorts update events so that the oldest edge is applied first.
 `DEC` | Descending time order Sort update event so that the newest edge is applied first.
 
 The system supports several rules separated with a semicolon `;` or written
-on separate lines. If several rules are specified, the rule order setting
+on separate lines. If several rules are specified, the "rule order" setting
 is used to define whether their relative order matters.
 
 Rule order | Description
 --- | ---
-`NON` | None. Follow event ordering without sorting based on rules. In other words, allow mixing of the rules. (DEFAULT)
+`NON` | None. Follow event ordering without sorting based on rules. In other words, allow mixing of the rules. DEFAULT
 `NDX` | Index order. Regardless of the event ordering, always try to apply the events in the order in which rules are specified.
 `REV` | Reverse index order.
 
@@ -119,15 +118,15 @@ and using one or more of the following commands:
 Command | Highlighted | Status Bar
 --- | --- | ---
 `geodesic(n1,n2,[dir],[rev],[all])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction<br/>`all` = all shortest paths | Shortest path(s) between two nodes.<br/><br/> | Path distance as the number of edges.
-`curv(n1,n2)` | Two n-dimensional balls of radius one and the shortest path between their centers. | Curvature between the two nodes based on Ollivier-Ricci (1-Wasserstein) distance.
-`nball(center,radius,[dir],[rev])`<br/><br/>nball(0,4) | N-dimensional ball is a set of nodes and edges within a distance `radius` from a given node `center`. | Volume of the n-dimensional ball as the number of edges.
-`nsphere(center,radius,[dir],[rev])` | N-dimensional sphere/hypersurface within a distance `radius` from a given node `center`. | N-dimensional area as the number of nodes.
+`curv(n1,n2)` | Two n-dimensional balls of radius one and the shortest path between their centers. | Curvature based on Ollivier-Ricci (1-Wasserstein) distance.
+`nball(center,radius,[dir],[rev])`<br/><br/>nball(0,4) | N-dimensional ball is a set of nodes and edges within a distance `radius` from a given node `center`. | Volume as the number of edges.
+`nsphere(center,radius,[dir],[rev])` | N-dimensional sphere/hypersurface within a distance `radius` from a given node `center`. | Area as the number of nodes.
 `random(n,distance,[dir],[rev])` | Random walk starting from a specific node with some maximum `distance`. | Path distance as the number of edges.
 `(x,y)(y,z)` | Hypersurfaces matching the given rule-based pattern. With a prefix '-' the matched hypersurfaces are excluded from the results. NOTE: Matching is always done in `SPACE` mode and only projected to `TIME` mode by highlighting world lines of the matched hypersurface. | The number of rule-based matches.
-`space(n1,n2)` | Space-like hypersurface based on a range of nodes. `SPACE` mode only. | N-dimensional volume as the number of nodes.
-`time(t1,t2)` | Time-like hypersurface based on a range of iterations. `TIME` mode only. | N-dimensional volume as the number of nodes.
+`space(n1,n2)` | Space-like hypersurface based on a range of nodes. `SPACE` mode only. | Volume as the number of nodes.
+`time(t1,t2)` | Time-like hypersurface based on a range of iterations. `TIME` mode only. | Volume as the number of nodes.
 `worldline(n1,n2,...)` | Time-like curve of space-like node/nodes. `TIME` mode only. | Distance as the number of edges.
-`lightcone(n,length)` | Lightcone centered at node `n` with size `length`. `TIME` mode only. | Size of the past and future light like cones as the number of edges.
+`lightcone(n,length)` | Lightcone centered at node `n` with size `length`. `TIME` mode only. | Size of the cones as the number of edges.
 
 ## Notes
 
@@ -137,13 +136,13 @@ physics project has been a great inspiration to me, this project is not
 directly associated with it, doesn't use any code from it, and doesn't claim
 to be compatible with the Wolfram Model.
 
-The idea of "atoms of space" is not a new one. It comes out of the old Greek
-tradition of atomism (*atomos*, "uncuttable"), which was started by Leucippus
+The idea of "atoms of space" is not a new one. It already appears in the old
+Greek tradition of atomism (*atomos*, "uncuttable") started by Leucippus
 (5thC BCE) and his pupil Democritus (ca. 460–370 BCE). In the Hellenistic
-period the idea was revived by Epicurus (341–270 BCE) and later described
-by a Roman poet Lucretius (ca. 99–55 BCE). Unfortunately, starting from the
-Early Middle Ages, atomism was mostly forgotten in the Western world until
-Lucretius' *De rerum natura* and other atomist teachings were rediscovered
+period the idea was revived by Epicurus (341–270 BCE) and a Roman poet
+Lucretius (ca. 99–55 BCE). Unfortunately, starting from the Early Middle Ages,
+atomism was mostly forgotten in the Western world until Lucretius'
+*De rerum natura* and other atomist teachings were rediscovered
 in the 14th century.
 
 > “The atoms come together in different order and position, like letters,
