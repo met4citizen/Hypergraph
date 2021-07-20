@@ -38,6 +38,7 @@
   .button-disabled { opacity: 0.2; pointer-events: none; }
   #red { background-color: hotpink; border-color: hotpink; }
   #blue { background-color: deepskyblue; border-color: deepskyblue; }
+  #grad { background-image: linear-gradient(to right, #00b4b4, #00b9a1, #2fbc86, #59bd66, #80bb43, #97af29, #aaa110, #bb9200, #bc7900, #bc5d00, #b93d00, #b40000); border-color: lightgrey; }
   #stop, #reheat, #red-result-label, #blue-result-label { display: none; }
   #cancel { float: right; margin: 0 0 0 10px; padding: 0;}
   .text { display: inline-block; margin: 0 0 0 3px; padding: 0 5px; background-color: transparent; color: black; width: auto; line-height: 16px; font-size: 10px; font-weight: bold; text-align:left; text-transform: lowercase; vertical-align: top; }
@@ -47,7 +48,8 @@
   .option { display: inline-block; margin: 0; padding: 0; width: 32px; height:14px; background-color: transparent; color: black;  border: 1px solid white; border-radius: 3px; font-size: 8px; font-weight: bold; line-height: 14px; text-align: center; vertical-align: middle; cursor: pointer; pointer-events: auto; }
   .limit, .ruleordering, .eventordering { width: 20px; }
   .mode-selected, .ruleordering-selected, .eventordering-selected, .limit-selected,
-  .red-surface-selected, .blue-surface-selected, .background-selected { border: 1px solid grey; }
+  .red-surface-selected, .blue-surface-selected, .background-selected, .grad-lo-selected,
+  .grad-mid-selected, .grad-hi-selected { border: 1px solid grey; }
   .label { display: inline-block; line-height: 16px; font-size: 8px; font-weight: bold; text-align:left; text-transform: uppercase; color: grey; margin: 2px; min-width: 4px; }
   .status { min-width: 38px; }
   .up { position: absolute; transform: translateY(-15px); z-index: -1; }
@@ -93,7 +95,7 @@ const spatialStyles = [
 ];
 
 const causalStyles = [
-  {  nColor: "black", lColor: "grey", nVal: 6, lWidth: 4, bgColor: "white", nRelSize: 2 }, // 0 defaults
+  {  nColor: "black", lColor: "grey", nVal: 6, lWidth: 4, bgColor: "white", nRelSize: 3 }, // 0 defaults
   {  nColor: "purple", lColor: "hotpink", nVal: 10, lWidth: 9, fill: "hotpink", opacity: 0.2 }, // 1 Red
   {  nColor: "blue", lColor: "deepskyblue", nVal: 10, lWidth: 9, fill: "deepskyblue", opacity: 0.2 }, // 2 Blue
   {  nColor: "darkblue", lColor: "darkblue", nVal: 10, lWidth: 9 } // 3 Red + Blue
@@ -182,8 +184,16 @@ $(document).ready(function() {
     $("#csredblue").hide();
   });
 
+  $("#grad-text").on("focusin", function() {
+    $("#csgrad").show();
+  });
+
+  $("#grad-text").on("focusout", function() {
+    $("#csgrad").hide();
+  });
+
   // Open settings dialogs
-  [ "#rule", "#red", "#blue" ].forEach( x => {
+  [ "#rule", "#red", "#blue", "#grad" ].forEach( x => {
     $(x).on("click", function() {
       if ( $(x+"-settings").is(":visible") ) {
         resumeTimeout();
@@ -211,7 +221,7 @@ $(document).ready(function() {
   // Run the given rule
   $("#rule-run").on("click", function() {
     try {
-      $("#red, #blue, #playstop, #finalreheat").addClass('button-disabled');
+      $("#red, #blue, #grad, #playstop, #finalreheat").addClass('button-disabled');
 
       hypergraph.stop();
       $("#progress-bar-fill").css("width", "0");
@@ -277,6 +287,28 @@ $(document).ready(function() {
     });
   });
 
+  // Show/hide grad
+  $("#grad-show").on("click", function() {
+    try {
+      const command = $("#grad-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
+      const lo = $(".grad-lo-selected").length;
+      const mid = $(".grad-mid-selected").length;
+      const hi = $(".grad-hi-selected").length;
+      hypergraph.setField( command, lo, mid, hi );
+      $("#grad-text").removeClass("text-disabled");
+      resumeTimeout();
+    }
+    catch(e) {
+      alert(e);
+    }
+  });
+
+  $("#grad-hide").on("click", function() {
+    hypergraph.clearField();
+    $("#grad-text").addClass("text-disabled");
+    resumeTimeout();
+  });
+
   // Multi-options
   [ "ruleordering", "eventordering", "limit" ].forEach( x => {
     $("."+x).on("click", function(e) {
@@ -286,7 +318,7 @@ $(document).ready(function() {
   });
 
   // Single-options
-  [ "red-surface", "blue-surface", "background" ].forEach( x => {
+  [ "red-surface", "blue-surface", "background", "grad-lo", "grad-mid", "grad-hi" ].forEach( x => {
     $("."+x).on("click", function() {
       if ( $("."+x+"-selected").length ) {
         $("."+x).removeClass(x+"-selected");
@@ -313,8 +345,8 @@ $(document).ready(function() {
     $("#red-result, #blue-result").text("");
     $("#red-result-label, #blue-result-label").hide();
 
-    $("#red, #blue").addClass("button-disabled");
-    $("#red-text, #blue-text").addClass("text-disabled");
+    $("#red, #blue, #grad").addClass("button-disabled");
+    $("#red-text, #blue-text, #grad-text").addClass("text-disabled");
     $("#playstop").removeClass("button-disabled").css("background-color","black");
     $("#play, #final").show();
     $("#stop, #reheat").hide();
@@ -350,7 +382,7 @@ $(document).ready(function() {
   $("#finalreheat").on("click", function() {
     try {
       hypergraph.final();
-      $("#red, #blue").removeClass("button-disabled");
+      $("#red, #blue, #grad").removeClass("button-disabled");
       $("#playstop").addClass("button-disabled").css("background-color","black");;
       $("#play, #reheat").show();
       $("#stop, #final").hide();
@@ -378,18 +410,6 @@ $(document).ready(function() {
     resumeTimeout();
   });
 
-  // Export to GLB
-/*
-  $("#glb").on("click", function() {
-    hypergraph.export( true );
-  });
-
-  // Export to glTF
-  $("#gltf").on("click", function() {
-    hypergraph.export( false );
-  });
-*/
-
   // Copy URL link for the current rule to clipboard
   $("#url").on("click", function() {
     let baseurl = window.location.href.split('?')[0];
@@ -399,13 +419,15 @@ $(document).ready(function() {
     let mode = $(".mode-selected").attr("id");
     let red = $("#red-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
     let blue = $("#blue-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
+    let grad = $("#grad-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
     let url = baseurl
       + "?rule=" + encodeURIComponent(rule).replace(/%2C/g,",").replace(/%3B/g,";")
       + ( ruleorder !== "none" ? "&ruleorder=" + encodeURIComponent(ruleorder) : "" )
       + ( eventorder !== "random" ? "&eventorder=" + encodeURIComponent(eventorder) : "" )
       + ( mode !== "space" ? "&mode=" + encodeURIComponent(mode) : "" )
       + ( !$("#red-text").hasClass("text-disabled") ? "&red=" + encodeURIComponent(red).replace(/%2C/g,",").replace(/%3B/g,";") : "" )
-      + ( !$("#blue-text").hasClass("text-disabled") ? "&blue=" + encodeURIComponent(blue).replace(/%2C/g,",").replace(/%3B/g,";") : "" );
+      + ( !$("#blue-text").hasClass("text-disabled") ? "&blue=" + encodeURIComponent(blue).replace(/%2C/g,",").replace(/%3B/g,";") : "" )
+      + ( !$("#grad-text").hasClass("text-disabled") ? "&grad=" + encodeURIComponent(grad).replace(/%2C/g,",").replace(/%3B/g,";") : "" );
     var $temp = $("<input>");
     $("body").append($temp);
     $temp.val(url).select();
@@ -442,6 +464,10 @@ $(document).ready(function() {
     let blue = getUrlParameter('blue');
     if ( blue ) {
       $("#blue-text").html( $("<p>").html( blue ).text().split(";").join("<br>") );
+    }
+    let grad = getUrlParameter('grad');
+    if ( grad ) {
+      $("#grad-text").html( $("<p>").html( grad ).text().split(";").join("<br>") );
     }
     $("#rule-run").click();
   }
@@ -492,6 +518,16 @@ $(document).ready(function() {
       <span title="Show background" class="option background background-selected">BACK</span>
       <span title="Show hypersurfaces" class="option blue-surface blue-surface-selected">FACES</span>
     </div>
+    <span id="grad" class="button button-disabled">GRAD</span>
+    <span id="grad-text" class="text text-disabled" spellcheck="false">energy</span><br/>
+    <div id="grad-settings" class="settings">
+      <span title="Show field" id ="grad-show" class="button">RUN</span>
+      <span title="Hide field" id ="grad-hide" class="button">HIDE</span>
+      <span class="label down">Filter</span>
+      <span title="Values under 25%" class="option grad-lo grad-lo-selected">LO</span>
+      <span title="Values between 25%-75%" class="option grad-mid grad-mid-selected">MID</span>
+      <span title="Values over 75%" class="option grad-hi grad-hi-selected">HI</span>
+    </div>
   </div>
 
   <div id="topright" class="controls noselect">
@@ -528,8 +564,6 @@ $(document).ready(function() {
     <span id="blue-result" class="label status"></span>
     <span id="status"></span>
     <span class="label up">Share</span>
-    <!-- <span title="Download GLB" id="glb" class="button">GLB</span> -->
-    <!-- <span title="Download glTF" id="gltf" class="button">GLTF</span> -->
     <span title="Copy URL" id="url" class="button">URL</span>
   </div>
 
@@ -573,6 +607,20 @@ $(document).ready(function() {
         <tr><td>time(v,u)</td></tr>
         <tr><td>worldline(v1,v2,...)</td></tr>
         <tr><td>lightcone(v,length)</td></tr>
+      <tbody>
+    </table>
+  </div>
+
+  <div id="csgrad" class="cheatsheet controls">
+    <table>
+      <thead>
+        <tr><th>Scalar Fields Cheatsheet</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>time</td></tr>
+        <tr><td>curvature</td></tr>
+        <tr><td>degree([in],[out])</td></tr>
+        <tr><td>energy</td></tr>
       <tbody>
     </table>
   </div>

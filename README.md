@@ -99,8 +99,8 @@ Simulator currently supports two modes: `Space` and `Time`.
 In `Space` mode the system simulates the evolution of the hypergraph.
 
 In `Time` mode the system builds up the transitive reduction of the causal
-graph. In this view, the nodes are updating events and the directed edges
-their causal relationships.
+graph. In this view nodes represent updating events and directed
+edges their causal relations.
 
 Media buttons let you reset the mode, start/pause simulation and
 skip to the end / reheat force engine.
@@ -127,6 +127,20 @@ Command | Highlighted | Status Bar
 `time(t1,t2)` | Time-like hypersurface based on a range of iterations. `TIME` mode only. | Volume as the number of nodes.
 `worldline(n1,n2,...)` | Time-like curve of space-like node/nodes. `TIME` mode only. | Distance as the number of edges.
 `lightcone(n,length)` | Lightcone centered at node `n` with size `length`. `TIME` mode only. | Size of the cones as the number of edges.
+
+Scalar fields can be highlighted by clicking `GRAD`. Relative intensity of the
+field is represented by different hues of colour from light blue (lowest) to
+green to yellow (mid) to orange to red (highest). The field values are
+calculated for each vertex and the colours for edges represent the mean of
+the values of the vertices it connects.
+
+Command | Scalar field
+--- | ---
+`time` | Vertices from oldest to newest based on vertex ids
+`degree([in],[out])` | Number of incoming and outgoing edges to the vertex.<br/><br/>`in` = only incoming<br/>`out` = only outgoing
+`curvature` | The mean Ollivier-Ricci curvature of the edges the vertex is connected.
+`energy` | Relative causal activity based on path counting.
+
 
 ## Notes
 

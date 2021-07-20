@@ -1,6 +1,5 @@
 import { BufferGeometry, BufferAttribute, MeshBasicMaterial, Mesh, DoubleSide, Vector3 } from 'https://unpkg.com/three@0.130.1/build/three.module.js'
 import { ConvexGeometry } from './ConvexGeometry.mjs';
-// import { GLTFExporter } from 'https://unpkg.com/three@0.127.0/examples/jsm/exporters/GLTFExporter.js';
 
 import "https://unpkg.com/3d-force-graph@1.70.5";
 
@@ -53,6 +52,26 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 	}
 
 	/**
+	* Return colour gradient
+	* @static
+	* @param {number} grad Value from 0 to 1
+	* @return {string} RGB colour
+	*/
+	static colorGradient(grad) {
+		const low = [ 32, 255, 255 ]; // RBG
+		const mid = [ 255, 255, 0 ];
+		const hi = [ 255, 32, 32 ];
+
+    let c1 = grad < 0.5 ? low : mid;
+    let c2 = grad < 0.5 ? mid : hi;
+    let fade = grad < 0.5 ? 2 * grad : 2 * grad - 1;
+
+		let c = c1.map( (x,i) => Math.floor( x + (c2[i] - x) * fade ));
+
+    return 'rgb(' + c.join(",") + ')';
+}
+
+	/**
 	* Check rewriting rule by passing it to algorithmic parser.
 	* @param {string} rulestr Rewriting rule in string format.
 	* @return {string} Rewriting rule in standard string format.
@@ -82,7 +101,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 		const v = [], e = [], p = [], r = [];
 		cmds.forEach( (c,i) => {
 			const func = c[0][0];
-			const params = c[1];
+			const params = (typeof c[1] === 'undefined') ? [] : c[1];
 			let ret;
 
 			switch( func ) {
@@ -335,8 +354,9 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			k.z = k.z / i;
 		}
 
-		// Causal mode (DAG)
+
 		if ( this.data === this.causal ) {
+			// Causal mode (DAG)
 			edge.forEach( n => {
 				if (typeof nodes[n] === 'undefined') {
 					nodes[n] = { id: n, refs: 1, style: 0, ...props,
@@ -345,13 +365,8 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 						z: k.z + Math.sign(k.z) * 10 * Math.random() };
 				}
 			});
-			// Add link
-			links.push( {source: nodes[edge[0]], target: nodes[edge[1]], style: 0, ...props } );
-
 		} else {
-			// Spatial and algorithmic modes
-
-			// Set new nodes near neighbours
+			// Spatial mode
 			edge.forEach( n => {
 				if (typeof nodes[n] === 'undefined') {
 					nodes[n] = {id: n, refs: 1, style: 0, ...props,
@@ -361,69 +376,69 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				}
 			});
 
-			// Add all edge pairs
-			Hypergraph3D.pairs(edge).forEach( p => {
-				let curv = 0.5;
-				if (p[0] !== p[1]) {
-					let idx = links.findIndex(l => l.source.id === p[0] && l.target.id === p[1] && !l.hasOwnProperty("hyperedge") );
-					if (idx === -1) {
-						// first link, keep straight
+		}
+
+		// Add all edge pairs
+		Hypergraph3D.pairs(edge).forEach( p => {
+			let curv = 0.5;
+			if (p[0] !== p[1]) {
+				let idx = links.findIndex(l => l.source.id === p[0] && l.target.id === p[1] && !l.hasOwnProperty("hyperedge") );
+				if (idx === -1) {
+					// first link, keep straight
+					curv = 0;
+				} else {
+					// existing link
+					if (links[idx].curvature == 0) {
+						// second link, switch values
+						links[idx].curvature = 0.5;
+						links[idx].rotations = 2 * Math.PI * Math.random();
 						curv = 0;
-					} else {
-						// existing link
-						if (links[idx].curvature == 0) {
-							// second link, switch values
-							links[idx].curvature = 0.5;
-							links[idx].rotations = 2 * Math.PI * Math.random();
-							curv = 0;
-						}
 					}
 				}
+			}
 
-				// Add link
-				links.push( {source: nodes[p[0]], target: nodes[p[1]], style: 0, curvature: curv,
-					rotation: (curv === 0 ? 0 : 2 * Math.PI * Math.random()), ...props });
+			// Add link
+			links.push( {source: nodes[p[0]], target: nodes[p[1]], style: 0, curvature: curv,
+				rotation: (curv === 0 ? 0 : 2 * Math.PI * Math.random()), ...props });
+		});
 
+		// If hyperedge, fill with triangles and connect the two ends for force effect
+		if ( edge.length > 2 ) {
+			const hyperedge = edge.map( n => nodes[ n ] );
+
+			// Triangulate
+			const coordinates = [];
+			Hypergraph3D.triangulate( hyperedge ).forEach( t => {
+				if ( t[0] !== t[1] && t[0] !== t[2] && t[1] !== t[2] ) {
+					t.forEach( v => coordinates.push( v.x, v.y, v.z ? v.z : 0 ) );
+				} else {
+					// TODO: duplicates i.e. self-loops -> circles?
+				}
 			});
 
-			// If hyperedge, fill with triangles and connect the two ends for force effect
-			if ( edge.length > 2 ) {
-				const hyperedge = edge.map( n => nodes[ n ] );
+			if ( coordinates.length > 0 ) {
+				const geom = new BufferGeometry();
+				const positions = new Float32Array( coordinates );
+				const normals = new Float32Array( coordinates.length );
+				geom.setAttribute( 'position', new BufferAttribute( positions, 3 ) );
+				geom.setAttribute( 'normal', new BufferAttribute( normals, 3 ) );
+				geom.computeVertexNormals();
 
-				// Triangulate
-				const coordinates = [];
-				Hypergraph3D.triangulate( hyperedge ).forEach( t => {
-					if ( t[0] !== t[1] && t[0] !== t[2] && t[1] !== t[2] ) {
-						t.forEach( v => coordinates.push( v.x, v.y, v.z ? v.z : 0 ) );
-					} else {
-						// TODO: duplicates i.e. self-loops -> circles?
-					}
-				});
+				const mesh = new Mesh(geom, this.hyperedgematerial.clone() );
+				this.graph3d.scene().add( mesh);
 
-				if ( coordinates.length > 0 ) {
-					const geom = new BufferGeometry();
-					const positions = new Float32Array( coordinates );
-					const normals = new Float32Array( coordinates.length );
-					geom.setAttribute( 'position', new BufferAttribute( positions, 3 ) );
-					geom.setAttribute( 'normal', new BufferAttribute( normals, 3 ) );
-					geom.computeVertexNormals();
-
-					const mesh = new Mesh(geom, this.hyperedgematerial );
-					this.graph3d.scene().add( mesh);
-
-					// Hyperlink
-					links.push( {
-						source: nodes[ edge[ edge.length-1 ] ],
-						target: nodes[ edge[0] ],
-						hyperedge: hyperedge,
-						meshes: [ mesh ],
-						style: 4, curvature: 0, rotation: 0, ...props } );
-
-				}
+				// Hyperlink
+				links.push( {
+					source: nodes[ edge[ edge.length-1 ] ],
+					target: nodes[ edge[0] ],
+					hyperedge: hyperedge,
+					meshes: [ mesh ],
+					style: 4, curvature: 0, rotation: 0, ...props } );
 
 			}
 
 		}
+
 	}
 
 	/**
@@ -502,11 +517,11 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.nodeLabel( d => `<span class="nodeLabelGraph3d">${ d.id }</span>` )
 			.nodeRelSize( this.spatialStyles[0]["nRelSize"] )
 			.nodeVal( d => (d.big ? 10 : 1 ) * this.spatialStyles[d.style]["nVal"]  )
-			.nodeColor( d => this.spatialStyles[d.style]["nColor"] )
+			.nodeColor( d => (d.hasOwnProperty("grad") && !d.style) ? Hypergraph3D.colorGradient( d.grad ) : this.spatialStyles[d.style]["nColor"] )
 			.nodeVisibility( 'refs' )
 			.linkVisibility( true )
 			.linkWidth( d => this.spatialStyles[d.style]["lWidth"] )
-			.linkColor( d => this.spatialStyles[d.style]["lColor"] )
+			.linkColor( d => (d.source.hasOwnProperty("grad") && d.target.hasOwnProperty("grad") && !d.style) ? Hypergraph3D.colorGradient( (d.source.grad+d.target.grad)/2 ) : this.spatialStyles[d.style]["lColor"] )
 			.linkPositionUpdate( Hypergraph3D.linkPositionUpdate )
 			.linkCurvature( 'curvature' )
 			.linkCurveRotation( 'rotation' )
@@ -532,14 +547,14 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.nodeLabel( d => `<span class="nodeLabelGraph3d">${this.causal.vertexLabel( d.id )}</span>` )
 			.nodeRelSize( this.causalStyles[0]["nRelSize"] )
 			.nodeVal( d => (d.big ? 10 : 1 ) * this.causalStyles[d.style]["nVal"] )
-			.nodeColor( d => this.causalStyles[d.style]["nColor"] )
+			.nodeColor( d => (d.hasOwnProperty("grad") && !d.style) ? Hypergraph3D.colorGradient( d.grad ) : this.causalStyles[d.style]["nColor"] )
 			.nodeVisibility( 'refs' )
 			.linkVisibility( true )
 			.linkWidth( d => this.causalStyles[d.style]["lWidth"] )
-			.linkColor( d => this.causalStyles[d.style]["lColor"] )
+			.linkColor( d => (d.source.hasOwnProperty("grad") && d.target.hasOwnProperty("grad") && !d.style) ? Hypergraph3D.colorGradient( (d.source.grad+d.target.grad)/2 ) : this.causalStyles[d.style]["lColor"] )
 			.linkPositionUpdate( null )
-			.linkCurvature( null )
-			.linkCurveRotation( null )
+			.linkCurvature( 'curvature' )
+			.linkCurveRotation( 'rotation' )
 			.linkDirectionalArrowLength( 20 )
 			.linkDirectionalArrowRelPos(1)
 			.d3VelocityDecay( 0.4 )
@@ -569,10 +584,9 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 	/**
 	* Process events.
 	* @param {number} [steps=1] Number of steps to process
-	* @param {boolean} [final=false] If true, skip to the end
 	* @return {boolean} True there are more events to process.
 	*/
-	tick( steps = 1, final = false ) {
+	tick( steps = 1 ) {
 		let { nodes, links } = this.graph3d.graphData();
 		for( let i = steps; i > 0; i-- ) {
 			if ( this.pos >= this.data.events.length ) {
@@ -774,42 +788,173 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 	}
 
 	/**
-	* Start downloading a file.
-	* @param {Object} content Content
-	* @param {string} fileName Filename
-	* @param {string} contentType Content type
+	* Set gradient colours based on fields
+	* @param {string} fields Fields separated with semicolon
+	* @param {boolean} [lo=true] Show values below 0.25
+	* @param {boolean} [mid=true] Show values between 0.25-0.75
+	* @param {boolean} [hi=true] Show values over 0.75
 	*/
-/*
-	static download(content, fileName, contentType) {
-		const a = document.createElement("a");
-		const file = new Blob([content], { type: contentType });
-		a.href = URL.createObjectURL(file);
-		a.download = fileName;
-		a.click();
+	setField( fields, lo = true, mid = true, hi = true ) {
+		let { nodes, links } = this.graph3d.graphData();
+
+		// Clear gradient
+		nodes.forEach( n => delete n["grad"] );
+		links.filter( x => x.hasOwnProperty("hyperedge") ).forEach( l => {
+			l.meshes.forEach( m => {
+				m.material.color.set( this.spatialStyles[4].fill );
+			});
+		});
+
+		// Change parenthesis types and remove extra ones
+		let str = fields.toLowerCase()
+		.replace( /\{|\[/g , "(" ).replace( /}|]/g , ")" )
+		.replace( /(\()+/g , "(" ).replace( /(\))+/g , ")" )
+		.replace( /(;)+/g , ";" ).replace( /;$/g ,"" );
+
+		// Discard all unsupported characters
+		str = str.replace( /[^-()a-z0-9,.;]+/g , "" );
+
+		const cmds = str.split(";").map( c => [ ...c.split("(").map( p => [ ...p.replace( /[^-a-z0-9,.]+/g, "" ).split(",") ] ) ] );
+
+		const finalGrad = new Map();
+		cmds.forEach( (c,i) => {
+			let tempGrad = new Map();
+			let scaleZero = false;
+
+			const func = c[0][0];
+			const params = (typeof c[1] === 'undefined') ? [] : c[1];
+
+			switch( func ) {
+			case "time":
+				for (const [key, value] of this.data.V.entries()) {
+					tempGrad.set( key, key );
+				}
+				break;
+
+			case "degree":
+				let isIn = params.includes("in");
+				let isOut = params.includes("out");
+				if ( !isIn && !isOut ) {
+					isIn = true;
+					isOut = true;
+				}
+				for (const [key, value] of this.data.V.entries()) {
+					let degree = (isIn ? value.in.length : 0) + (isOut ? value.out.length : 0);
+					tempGrad.set( key, degree );
+				}
+				break;
+
+			case "energy":
+				if ( this.data === this.spatial ) {
+					// Go through all spatial vertices and count cumulative causal edges
+					for (const [key, value] of this.spatial.V.entries() ) {
+						let worldline = this.causal.K.get( key );
+						let paths = this.causal.V.get( worldline[ worldline.length - 1 ] ).paths;
+						tempGrad.set( key, paths );
+					}
+				} else {
+					// Go through all causal vertices and count values relative to step
+					for (const [step, vs] of this.causal.S.entries() ) {
+						vs.sort( (a,b) => this.causal.V.get(a).paths - this.causal.V.get(b).paths );
+						for( let i=0; i < vs.length; i++ ) {
+							tempGrad.set( vs[i], i / vs.length );
+						}
+					}
+				}
+				break;
+
+			case "curvature":
+				for (const [key, value] of this.data.V.entries()) {
+					let curvs = [];
+					let targets = [ ...value.in, ...value.out ];
+					for( let target of targets ) {
+						let orc = this.data.orc( key, target );
+						if ( isNaN(orc) || !isFinite(orc) ) continue;
+						curvs.push( this.data.orc( key, target ) );
+					}
+					if ( curvs.length > 0 ) {
+						let curv = curvs.reduce( (a,b) => a + b, 0 ) / curvs.length;
+						if ( isNaN(curv) || !isFinite(curv) ) continue;
+						tempGrad.set( key, curv );
+					}
+				}
+				scaleZero = true;
+				break;
+
+			default:
+				throw new Error( "Unknown command: " + func );
+			}
+
+			// Min, max and scaling factors
+			let min = Math.min( ...tempGrad.values() );
+			let max = Math.max( ...tempGrad.values() );
+			let scaleNeg = 1, scalePos = 1;
+
+			if ( scaleZero ) {
+				// Scale zero to midpoint
+				let limit = Math.max( Math.abs(min), Math.abs(max) );
+				if ( min < 0 ) scaleNeg = limit / Math.abs(min);
+				if ( max > 0 ) scalePos = limit / Math.abs(max);
+				min = -limit;
+				max = limit;
+			}
+
+			// Normalize and add to final
+			let delta = max - min;
+			for ( const [key, value] of tempGrad.entries() ) {
+				let v = (value > 0 ? scalePos : scaleNeg ) * value;
+				let norm = ( (min===max) ? 0.5 : ( (v - min) / delta ) );
+				if ( finalGrad.has( key ) ) {
+					finalGrad.get( key ).push( norm );
+				} else {
+					finalGrad.set( key, [ norm ] );
+				}
+			}
+
+		});
+
+		// Set gradient as a mean of the normalized value
+		for (const [key, value] of finalGrad.entries()) {
+			let mean = value.reduce( (a,b) => a + b, 0 ) / value.length;
+
+			// Filter
+			if ( (!lo && mean < 0.25) ||
+					 (!hi && mean > 0.75) ||
+					 (!mid && mean >= .25 && mean <= 0.75 ) ) continue;
+
+			if ( typeof nodes[key] !== 'undefined' ) {
+				nodes[key]["grad"] = mean;
+			}
+		}
+
+		// Add hyperedge colours
+		links.filter( x => x.hasOwnProperty("hyperedge") ).forEach( l => {
+			if ( l.hyperedge.every( x => x.hasOwnProperty("grad")) ) {
+				let grads = l.hyperedge.map( x => x.grad );
+				let mean = grads.reduce( (a,b) => a + b, 0 ) / grads.length;
+
+				l.meshes.forEach( m => {
+					m.material.color.set( Hypergraph3D.colorGradient(mean) );
+				});
+			}
+		});
+
+		this.graph3d.graphData( { nodes, links } );
 	}
-*/
 
 	/**
-	* Export 3D model in GLB/GLTF format.
-	* @param {boolean} binary If TRUE use BLB format, otherwise use GLTF.
+	* Clear gradient
 	*/
-/*
-	export( binary = true ) {
-		// Instantiate a exporter
-		const exporter = new GLTFExporter();
-		const options = { onlyVisible: true, binary: binary };
-
-		exporter.parse( this.graph3d.scene(), function (result) {
-			if ( binary ) {
-				Hypergraph3D.download( result, 'hypergraph.glb', "octet/stream" );
-			} else {
-				var output = JSON.stringify(result, null, 2);
-				Hypergraph3D.download( output, 'hypergraph.gltf', 'application/json');
-			}
-		}, options);
-
+	clearField() {
+		let { nodes, links } = this.graph3d.graphData();
+		nodes.forEach( n => delete n["grad"] );
+		links.filter( x => x.hasOwnProperty("hyperedge") ).forEach( l => {
+			l.meshes.forEach( m => {
+				m.material.color.set( this.spatialStyles[4].fill );
+			});
+		});
+		this.graph3d.graphData( { nodes, links } );
 	}
-*/
 
 	/**
 	* Report status.

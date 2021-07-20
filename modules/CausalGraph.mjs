@@ -14,6 +14,7 @@ class CausalGraph extends Hypergraph {
 		super();
 		this.L = new Map(); // Map from spatial edge id to causal vertex
 		this.K = new Map(); // Worldlines from undirected spatial vertex to causal vertices
+		this.S = new Map(); // Map from step number to causal vertices
 		this.maxstep = 0; // Record max step
 	}
 
@@ -24,6 +25,7 @@ class CausalGraph extends Hypergraph {
 		super.clear();
 		this.L.clear();
 		this.K.clear();
+		this.S.clear();
 		this.maxstep = 0;
 	}
 
@@ -61,7 +63,11 @@ class CausalGraph extends Hypergraph {
 
 		// Add new vertex
 		const v = ++this.maxv;
-		this.V.set( v, { in: [], out: [], step: step, mods: mods });
+		const obj = { in: [], out: [], step: step, mods: mods, paths: (v > 0 ? 0 : 1) };
+		this.V.set( v, obj );
+
+		// Add to steps
+		this.S.has( step ) ? this.S.get( step ).push( v ) : this.S.set( step, [ v ] );
 		if ( this.maxstep < step ) this.maxstep = step;
 
 		// Add causal edges, if missing
@@ -69,10 +75,14 @@ class CausalGraph extends Hypergraph {
 			const l = this.L.get( hit[i] );
 			if ( typeof l === 'undefined' ) continue; // Ignore first instance
 			if ( l.v === v ) continue; // Ignore self-loops
+
+			// Transitive reduction and path counting
 			const edge = [ l.v, v ];
-			// Transitive reduction
 			if ( !this.F.has( edge.join(",") ) ) {
+				obj.paths += this.V.get( l.v ).paths; // Path counting
 				this.add( edge, { level: step } );
+			} else {
+				obj.paths += 1;
 			}
 		}
 
@@ -137,6 +147,7 @@ class CausalGraph extends Hypergraph {
 		});
 		return [ ...new Set( vertices ) ];
 	}
+
 
 	/**
 	* Approximate dimension and curvature of a n-dimensional cone.
