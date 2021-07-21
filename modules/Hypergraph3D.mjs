@@ -818,9 +818,22 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			const params = (typeof c[1] === 'undefined') ? [] : c[1];
 
 			switch( func ) {
-			case "time":
-				for (const [key, value] of this.data.V.entries()) {
+			case "created":
+				for (const key of this.data.V.keys()) {
 					tempGrad.set( key, key );
+				}
+				break;
+
+			case "updated":
+
+				if ( this.data === this.spatial ) {
+					for( const [key, value] of this.causal.K.entries() ) {
+						tempGrad.set( key, value[ value.length-1 ] );
+					}
+				} else {
+					for ( const key of this.data.V.keys() ) {
+						tempGrad.set( key, key );
+					}
 				}
 				break;
 
@@ -883,11 +896,13 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				break;
 
 			case "activity":
-				for( const [key, value] of this.causal.K.entries() ) {
-					if ( this.data === this.spatial ) {
-						tempGrad.set( key, value.length );
-					} else {
-						value.forEach( v => {
+				if ( this.data === this.spatial ) {
+					for( const key of this.spatial.V.keys() ) {
+						tempGrad.set( key, this.causal.K.get(key).length );
+					}
+				} else {
+					for( const key of this.spatial.V.keys() ) {
+						this.causal.K.get(key).forEach( v => {
 							if ( tempGrad.has( v ) ) {
 								tempGrad.set( v, tempGrad.get( v ) + 1 );
 							} else {

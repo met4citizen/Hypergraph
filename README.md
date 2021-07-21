@@ -136,14 +136,15 @@ the values of the vertices it connects.
 
 Command | Scalar field
 --- | ---
-`time` | Vertices from oldest to newest based on vertex ids.
-`degree([in],[out])`<br/><br/>`in` = only incoming<br/>`out` = only outgoing | Number of incoming and outgoing edges to the vertex.
-`curvature` | The mean of the Ollivier-Ricci curvature of the vertex's edges.
-`energy` | Energy as the total number of edges rewritten (LHS+RHS).
-`mass` | Mass calculated from energy by using the ratio of the number of edges with old RHS vertices (only existing vertices) over the number of all RHS edges.
-`momentum` | Momentum calculated from energy using the (1 - mass ratio) (see 'mass').
-`action` | Action density as the average number of causal edges.
-`activity` | Sum of the world lines for each vertex.
+`created` | The time of creation from oldest to newest.
+`updated` | The time of last update from oldest to newest. For causal graph this is the same as 'created'.
+`degree([in],[out])`<br/><br/>`in` = indegree<br/>`out` = outdegree | Number of incoming and outgoing edges.
+`curvature` | Ollivier-Ricci curvature calculated as the mean of the vertex's undirected edges.
+`energy` | The average number of updated edges in a tiny light cone.
+`mass` | The part of 'energy' density in which the updated edges connect only pre-existing vertices.
+`momentum` | The part of 'energy' density in which the updated edges connect new vertices.
+`action` | The average number of causal edges in a tiny light cone.
+`activity` | For spatial graph the world line length / For causal graph the occurrences in world lines of the current spatial vertices.
 
 
 ## Notes
