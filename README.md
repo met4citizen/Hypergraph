@@ -119,9 +119,9 @@ Command | Highlighted | Status Bar
 --- | --- | ---
 `geodesic(n1,n2,[dir],[rev],[all])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction<br/>`all` = all shortest paths | Shortest path(s) between two nodes.<br/><br/> | Path distance as the number of edges.
 `curv(n1,n2)` | Two n-dimensional balls of radius one and the shortest path between their centers. | Curvature based on Ollivier-Ricci (1-Wasserstein) distance.
-`nball(center,radius,[dir],[rev])`<br/><br/>nball(0,4) | N-dimensional ball is a set of nodes and edges within a distance `radius` from a given node `center`. | Volume as the number of edges.
-`nsphere(center,radius,[dir],[rev])` | N-dimensional sphere/hypersurface within a distance `radius` from a given node `center`. | Area as the number of nodes.
-`random(n,distance,[dir],[rev])` | Random walk starting from a specific node with some maximum `distance`. | Path distance as the number of edges.
+`nball(center,radius,[dir],[rev])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | N-dimensional ball is a set of nodes and edges within a distance `radius` from a given node `center`. | Volume as the number of edges.
+`nsphere(center,radius,[dir],[rev])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | N-dimensional sphere/hypersurface within a distance `radius` from a given node `center`. | Area as the number of nodes.
+`random(n,distance,[dir],[rev])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | Random walk starting from a specific node with some maximum `distance`. | Path distance as the number of edges.
 `(x,y)(y,z)` | Hypersurfaces matching the given rule-based pattern. With a prefix '-' the matched hypersurfaces are excluded from the results. NOTE: Matching is always done in `SPACE` mode and only projected to `TIME` mode by highlighting world lines of the matched hypersurface. | The number of rule-based matches.
 `space(n1,n2)` | Space-like hypersurface based on a range of nodes. `SPACE` mode only. | Volume as the number of nodes.
 `time(t1,t2)` | Time-like hypersurface based on a range of iterations. `TIME` mode only. | Volume as the number of nodes.
@@ -136,17 +136,21 @@ the values of the vertices it connects.
 
 Command | Scalar field
 --- | ---
-`time` | Vertices from oldest to newest based on vertex ids
-`degree([in],[out])` | Number of incoming and outgoing edges to the vertex.<br/><br/>`in` = only incoming<br/>`out` = only outgoing
-`curvature` | The mean Ollivier-Ricci curvature of the edges the vertex is connected.
-`energy` | Relative causal activity based on path counting.
+`time` | Vertices from oldest to newest based on vertex ids.
+`degree([in],[out])`<br/><br/>`in` = only incoming<br/>`out` = only outgoing | Number of incoming and outgoing edges to the vertex.
+`curvature` | The mean of the Ollivier-Ricci curvature of the vertex's edges.
+`energy` | Energy as the total number of edges rewritten (LHS+RHS).
+`mass` | Mass calculated from energy by using the ratio of the number of edges with old RHS vertices (only existing vertices) over the number of all RHS edges.
+`momentum` | Momentum calculated from energy using the (1 - mass ratio) (see 'mass').
+`action` | Action density as the average number of causal edges.
+`activity` | Sum of the world lines for each vertex.
 
 
 ## Notes
 
 The aim of this project has been to learn some basic concepts and
 ideas related to hypergraphs and hypergraph rewriting. Whereas the Wolfram
-physics project has been a great inspiration to me, this project is not
+physics project has been a great inspiration, this project is not
 directly associated with it, doesn't use any code from it, and doesn't claim
 to be compatible with the Wolfram Model.
 

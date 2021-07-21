@@ -132,12 +132,11 @@ class HypergraphRewritingSystem {
 			let hit = this.matches[i].hit;
 			if ( hit.every( x => spatial.E.has( x ) ) ) {
 
-				let del = this.mapper( spatial, this.algorithmic.rules[ this.matches[i].r ].lhs, this.matches[i].m );
-				let add = this.mapper( spatial, this.algorithmic.rules[ this.matches[i].r ].rhs, this.matches[i].m );
-				let mods = [ ...new Set( [ ...del.flat(), ...add.flat() ] ) ];
+				let lhs = this.mapper( spatial, this.algorithmic.rules[ this.matches[i].r ].lhs, this.matches[i].m );
+				let rhs = this.mapper( spatial, this.algorithmic.rules[ this.matches[i].r ].rhs, this.matches[i].m );
 
-				let addes = spatial.rewrite( hit, add );
-				causal.rewrite( hit, addes, mods, this.step );
+				let add = spatial.rewrite( hit, rhs );
+				causal.rewrite( hit, add, { lhs: lhs, rhs: rhs }, this.step );
 
 				// Break when limit reached
 				if ( ++this.eventcnt >= this.maxevents ) break;
@@ -290,10 +289,7 @@ class HypergraphRewritingSystem {
 
 		// Add initial edges
 		let addes =  this.spatial.rewrite( [], this.algorithmic.initial );
-
-		// Add point zero in causal graph
-		let mods = [ ...new Set( this.algorithmic.initial.flat() ) ];
-		this.causal.rewrite( [], addes, mods, ++this.step );
+		this.causal.rewrite( [], addes, { lhs: [], rhs: this.algorithmic.initial }, ++this.step );
 
 		// Start rewriting process
 		setTimeout( this.rewrite, this.rewritedelay );

@@ -56,14 +56,15 @@ class CausalGraph extends Hypergraph {
 	* Rewrite event.
 	* @param {number[]} hit Hyperedge ids to be deleted
 	* @param {number[]} add Hyperedge ids to be added
-	* @param {number[]} mods Modified vertices
+	* @param {object} update Rule with actual edges { lhs, rhs }
 	* @param {number} step Rewriting step number
 	*/
-	rewrite( hit, add, mods, step ) {
+	rewrite( hit, add, update, step) {
 
 		// Add new vertex
 		const v = ++this.maxv;
-		const obj = { in: [], out: [], step: step, mods: mods, paths: (v > 0 ? 0 : 1) };
+		const mods = [ ...new Set( [ ...update.lhs.flat(), ...update.rhs.flat() ] ) ];
+ 		const obj = { in: [], out: [], step: step, mods: mods, paths: 0 };
 		this.V.set( v, obj );
 
 		// Add to steps
@@ -76,15 +77,25 @@ class CausalGraph extends Hypergraph {
 			if ( typeof l === 'undefined' ) continue; // Ignore first instance
 			if ( l.v === v ) continue; // Ignore self-loops
 
+			// Path counting
+			obj.paths++;
+
 			// Transitive reduction and path counting
 			const edge = [ l.v, v ];
 			if ( !this.F.has( edge.join(",") ) ) {
-				obj.paths += this.V.get( l.v ).paths; // Path counting
 				this.add( edge, { level: step } );
-			} else {
-				obj.paths += 1;
 			}
 		}
+
+		// Calculate energy and mass ratio
+		// Hypothesis 1: energy is the total # of lhs and rhs edges
+		// Hypothesis 2: mass ratio is the # of edges with old rhs vertices
+		//    over the # of all rhs edges ("old" = only existing vertices)
+		obj.energy = update.lhs.length + update.rhs.length;
+		let oldvs = [ ...new Set( update.lhs.flat() ) ];
+		let alledges = update.rhs.length;
+		let oldedges = update.rhs.filter( e => e.every( v => oldvs.includes(v) ) ).length;
+		obj.massratio = alledges ? oldedges / alledges : 0;
 
 		// Update leafs
 		add.forEach( (e,i) => this.L.set( e, { v: v, idx: i } ) );

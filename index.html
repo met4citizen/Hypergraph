@@ -95,7 +95,7 @@ const spatialStyles = [
 ];
 
 const causalStyles = [
-  {  nColor: "black", lColor: "grey", nVal: 6, lWidth: 4, bgColor: "white", nRelSize: 3 }, // 0 defaults
+  {  nColor: "black", lColor: "grey", nVal: 6, lWidth: 6, bgColor: "white", nRelSize: 4 }, // 0 defaults
   {  nColor: "purple", lColor: "hotpink", nVal: 10, lWidth: 9, fill: "hotpink", opacity: 0.2 }, // 1 Red
   {  nColor: "blue", lColor: "deepskyblue", nVal: 10, lWidth: 9, fill: "deepskyblue", opacity: 0.2 }, // 2 Blue
   {  nColor: "darkblue", lColor: "darkblue", nVal: 10, lWidth: 9 } // 3 Red + Blue
@@ -482,7 +482,7 @@ $(document).ready(function() {
 <body>
   <div id="topleft" class="controls noselect">
     <span title="Change rule" id ="rule" class="button">RULE</span>
-    <span id="rule-text" class="text" spellcheck="false">(1,1,2)(2,3,4)->(1,5,4)(2,5,3)(5,5,4)<br>(1,1,1)(1,1,1)</span><br/>
+    <span id="rule-text" class="text" spellcheck="false">(1,2)(1,3)->(1,4)(1,2)(2,4)(3,4)(4,3,2)<br>(1,2,3)(4,2)(5,3)(3,6)->(1,2,3)(4,2)(5,3)(6,3)<br>(1,2,3)(4,2)(3,5)(6,3)->(1,2,3)(4,2)(3,5)(3,6)</span><br/>
     <div id="rule-settings" class="settings">
       <span title="Run rule" id ="rule-run" class="button">RUN</span>
       <span title="Format rule" id ="rule-check" class="button">SCAN</span>
@@ -614,13 +614,17 @@ $(document).ready(function() {
   <div id="csgrad" class="cheatsheet controls">
     <table>
       <thead>
-        <tr><th>Scalar Fields Cheatsheet</th></tr>
+        <tr><th>Scalar Fields</th></tr>
       </thead>
       <tbody>
         <tr><td>time</td></tr>
-        <tr><td>curvature</td></tr>
         <tr><td>degree([in],[out])</td></tr>
+        <tr><td>curvature</td></tr>
         <tr><td>energy</td></tr>
+        <tr><td>mass</td></tr>
+        <tr><td>momentum</td></tr>
+        <tr><td>action</td></tr>
+        <tr><td>activity</td></tr>
       <tbody>
     </table>
   </div>

@@ -675,7 +675,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 		let { nodes, links } = this.graph3d.graphData();
 		this.hypersurface.forEach( (h,i) => {
 			if ( i === 0 ) {
-				// Remove hypersurces
+				// Remove hypersurfaces
 				h.forEach( m => {
 					this.graph3d.scene().remove( m );
 					m.geometry.dispose();
@@ -795,15 +795,8 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 	* @param {boolean} [hi=true] Show values over 0.75
 	*/
 	setField( fields, lo = true, mid = true, hi = true ) {
-		let { nodes, links } = this.graph3d.graphData();
-
-		// Clear gradient
-		nodes.forEach( n => delete n["grad"] );
-		links.filter( x => x.hasOwnProperty("hyperedge") ).forEach( l => {
-			l.meshes.forEach( m => {
-				m.material.color.set( this.spatialStyles[4].fill );
-			});
-		});
+		// Clear field
+		this.clearField();
 
 		// Change parenthesis types and remove extra ones
 		let str = fields.toLowerCase()
@@ -844,21 +837,29 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				}
 				break;
 
-			case "energy":
+			case "energy": case "mass": case "momentum": case "action":
+				function calc(f,v) {
+					switch(f) {
+						case "action": return v.paths;
+						case "energy": return v.energy;
+						case "mass": return v.energy * v.massratio;
+						case "momentum": return v.energy * ( 1 - v.massratio );
+					}
+				};
 				if ( this.data === this.spatial ) {
 					// Go through all spatial vertices and count cumulative causal edges
-					for (const [key, value] of this.spatial.V.entries() ) {
-						let worldline = this.causal.K.get( key );
-						let paths = this.causal.V.get( worldline[ worldline.length - 1 ] ).paths;
-						tempGrad.set( key, paths );
+					for (const key of this.spatial.V.keys() ) {
+						let wl = this.causal.K.get( key );
+						let vs = [ ...new Set( this.causal.nball( wl[ wl.length - 1 ], 1 ).flat() ) ];
+						let e = vs.map( i => calc(func,this.causal.V.get(i)) ).reduce( (a,b) => a + b, 0);
+						tempGrad.set( key, e / vs.length );
 					}
 				} else {
 					// Go through all causal vertices and count values relative to step
-					for (const [step, vs] of this.causal.S.entries() ) {
-						vs.sort( (a,b) => this.causal.V.get(a).paths - this.causal.V.get(b).paths );
-						for( let i=0; i < vs.length; i++ ) {
-							tempGrad.set( vs[i], i / vs.length );
-						}
+					for (const key of this.causal.V.keys() ) {
+						let vs = [ ...new Set( this.causal.nball( key, 1 ).flat() ) ];
+						let e = vs.map( i => calc(func,this.causal.V.get(i)) ).reduce( (a,b) => a + b, 0);
+						tempGrad.set( key, e / vs.length );
 					}
 				}
 				break;
@@ -879,6 +880,22 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 					}
 				}
 				scaleZero = true;
+				break;
+
+			case "activity":
+				for( const [key, value] of this.causal.K.entries() ) {
+					if ( this.data === this.spatial ) {
+						tempGrad.set( key, value.length );
+					} else {
+						value.forEach( v => {
+							if ( tempGrad.has( v ) ) {
+								tempGrad.set( v, tempGrad.get( v ) + 1 );
+							} else {
+								tempGrad.set( v, 1 );
+							}
+						});
+					}
+				}
 				break;
 
 			default:
@@ -912,6 +929,8 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			}
 
 		});
+
+		let { nodes, links } = this.graph3d.graphData();
 
 		// Set gradient as a mean of the normalized value
 		for (const [key, value] of finalGrad.entries()) {
