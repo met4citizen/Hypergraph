@@ -850,13 +850,14 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				}
 				break;
 
-			case "energy": case "mass": case "momentum": case "action":
+			case "energy": case "mass": case "momentum": case "action": case "spin":
 				function calc(f,v) {
 					switch(f) {
 						case "action": return v.paths;
 						case "energy": return v.energy;
 						case "mass": return v.energy * v.massratio;
 						case "momentum": return v.energy * ( 1 - v.massratio );
+						case "spin": return v.spin;
 					}
 				};
 				if ( this.data === this.spatial ) {

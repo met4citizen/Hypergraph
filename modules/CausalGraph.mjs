@@ -96,6 +96,9 @@ class CausalGraph extends Hypergraph {
 		let alledges = update.rhs.length;
 		let oldedges = update.rhs.filter( e => e.every( v => oldvs.includes(v) ) ).length;
 		obj.massratio = alledges ? oldedges / alledges : 0;
+		let rhs = update.rhs.map( e => e.join(",") );
+		let lhsinv = update.lhs.map( e => e.reverse().join(",") );
+		obj.spin = lhsinv.filter( x => rhs.includes( x ) ).length;
 
 		// Update leafs
 		add.forEach( (e,i) => this.L.set( e, { v: v, idx: i } ) );

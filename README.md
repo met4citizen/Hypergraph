@@ -136,15 +136,17 @@ the values of the vertices it connects.
 
 Command | Scalar field
 --- | ---
-`created` | The time of creation from oldest to newest.
-`updated` | The time of last update from oldest to newest. For causal graph this is the same as 'created'.
+`created` | Creation time from oldest to newest.
+`updated` | Last update time from oldest to newest. For causal graph the same as 'created'.
 `degree([in],[out])`<br/><br/>`in` = indegree<br/>`out` = outdegree | Number of incoming and outgoing edges.
-`curvature` | Ollivier-Ricci curvature calculated as the mean of the vertex's undirected edges.
-`energy` | The average number of updated edges in a tiny light cone.
-`mass` | The part of 'energy' density in which the updated edges connect only pre-existing vertices.
-`momentum` | The part of 'energy' density in which the updated edges connect new vertices.
-`action` | The average number of causal edges in a tiny light cone.
+`curvature` | Ollivier-Ricci curvature calculated as the mean of the vertex's edges.
+`energy` | The average number of updated edges in a small light cone.
+`mass` | The part of 'energy' in which the updated edges connect only pre-existing vertices.
+`momentum` | The part of 'energy' in which the updated edges have new vertices.
+`action` | The average number of causal edges in a small light cone.
+`spin` | The average number of flipped edges in a small light cone.
 `activity` | For spatial graph the world line length / For causal graph the occurrences in world lines of the current spatial vertices.
+
 
 
 ## Notes
