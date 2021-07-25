@@ -794,7 +794,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 	* @param {boolean} [mid=true] Show values between 0.25-0.75
 	* @param {boolean} [hi=true] Show values over 0.75
 	*/
-	setField( fields, lo = true, mid = true, hi = true ) {
+	setField( fields, lo = true, mid = true, hi = true, radius = 0 ) {
 		// Clear field
 		this.clearField();
 
@@ -810,43 +810,56 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 		const cmds = str.split(";").map( c => [ ...c.split("(").map( p => [ ...p.replace( /[^-a-z0-9,.]+/g, "" ).split(",") ] ) ] );
 
 		const finalGrad = new Map();
+		const results = [];
+
 		cmds.forEach( (c,i) => {
 			let tempGrad = new Map();
 			let scaleZero = false;
+			let digits = 1;
 
 			const func = c[0][0];
 			const params = (typeof c[1] === 'undefined') ? [] : c[1];
 
 			switch( func ) {
 			case "created":
-				for (const key of this.data.V.keys()) {
-					tempGrad.set( key, key );
+				for ( const [key,value] of this.data.V.entries() ) {
+					let vs = (this.data === this.spatial) ?
+						this.data.tree( key, false, false, [], radius ).flat() :
+						[ ...this.data.tree( key, true, false, [], radius ).flat(),
+							...this.data.tree( key, true, true, [], radius ).flat() ]
+							.filter( x => Math.abs(value.step - this.causal.V.get( x ).step) <= radius );
+					tempGrad.set( key, vs.reduce( (a,b) => a + b, 0 ) / vs.length );
 				}
 				break;
 
 			case "updated":
-
-				if ( this.data === this.spatial ) {
-					for( const [key, value] of this.causal.K.entries() ) {
-						tempGrad.set( key, value[ value.length-1 ] );
-					}
-				} else {
-					for ( const key of this.data.V.keys() ) {
-						tempGrad.set( key, key );
-					}
+				for ( const [key,value] of this.data.V.entries() ) {
+					let vs = (this.data === this.spatial) ?
+						this.data.tree( key, false, false, [], radius ).flat().map( v => {
+							let cvs = this.causal.K.get( v );
+							return cvs[ cvs.length - 1 ];
+						}) :
+						[ ...this.data.tree( key, true, false, [], radius ).flat(),
+							...this.data.tree( key, true, true, [], radius ).flat() ]
+							.filter( x => Math.abs(value.step - this.causal.V.get( x ).step) <= radius );
+					tempGrad.set( key, vs.reduce( (a,b) => a + b, 0 ) / vs.length );
 				}
 				break;
 
-			case "degree":
-				let isIn = params.includes("in");
-				let isOut = params.includes("out");
-				if ( !isIn && !isOut ) {
-					isIn = true;
-					isOut = true;
-				}
-				for (const [key, value] of this.data.V.entries()) {
-					let degree = (isIn ? value.in.length : 0) + (isOut ? value.out.length : 0);
-					tempGrad.set( key, degree );
+			case "degree": case "indegree": case "outdegree":
+				let isIn = (func === "degree" || func === "indegree" );
+				let isOut = (func === "degree" || func === "outdegree" );
+				for ( const [key,value] of this.data.V.entries() ) {
+					let vs = (this.data === this.spatial) ?
+						this.data.tree( key, false, false, [], radius ).flat() :
+						[ ...this.data.tree( key, true, false, [], radius ).flat(),
+							...this.data.tree( key, true, true, [], radius ).flat() ]
+							.filter( x => Math.abs(value.step - this.causal.V.get( x ).step) <= radius );
+					let degrees = vs.map( x => {
+						let v = this.data.V.get( x );
+						return (isIn ? v.in.length : 0) + (isOut ? v.out.length : 0);
+					});
+					tempGrad.set( key, degrees.reduce( (a,b) => a + b, 0 ) / degrees.length );
 				}
 				break;
 
@@ -860,21 +873,17 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 						case "spin": return v.spin;
 					}
 				};
-				if ( this.data === this.spatial ) {
-					// Go through all spatial vertices and count cumulative causal edges
-					for (const key of this.spatial.V.keys() ) {
-						let wl = this.causal.K.get( key );
-						let vs = [ ...new Set( this.causal.nball( wl[ wl.length - 1 ], 1 ).flat() ) ];
-						let e = vs.map( i => calc(func,this.causal.V.get(i)) ).reduce( (a,b) => a + b, 0);
-						tempGrad.set( key, e / vs.length );
-					}
-				} else {
-					// Go through all causal vertices and count values relative to step
-					for (const key of this.causal.V.keys() ) {
-						let vs = [ ...new Set( this.causal.nball( key, 1 ).flat() ) ];
-						let e = vs.map( i => calc(func,this.causal.V.get(i)) ).reduce( (a,b) => a + b, 0);
-						tempGrad.set( key, e / vs.length );
-					}
+				for ( const [key,value] of this.data.V.entries() ) {
+					let vs = (this.data === this.spatial) ?
+						this.data.tree( key, false, false, [], radius ).flat().map( v => {
+							let cvs = this.causal.K.get( v );
+							return cvs[ cvs.length - 1 ];
+						}) :
+						[ ...this.data.tree( key, true, false, [], radius ).flat(),
+							...this.data.tree( key, true, true, [], radius ).flat() ]
+							.filter( x => Math.abs(value.step - this.causal.V.get( x ).step) <= radius );
+					let values = vs.map( i => calc(func,this.causal.V.get(i)) );
+					tempGrad.set( key, values.reduce( (a,b) => a + b, 0 ) / values.length );
 				}
 				break;
 
@@ -894,6 +903,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 					}
 				}
 				scaleZero = true;
+				digits = 2;
 				break;
 
 			case "activity":
@@ -914,6 +924,15 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				}
 				break;
 
+			case "frequency":
+				if ( this.data !== this.spatial ) throw new Error("Frequency is available only in 'Space' mode.");
+				for( const key of this.spatial.V.keys() ) {
+					let wl = this.causal.K.get( key );
+					let spins = wl.map( x => this.causal.V.get(x).spin ).reduce( (a,b) => a+b, 0 );
+					tempGrad.set( key, spins / wl.length );
+				}
+				break;
+
 			default:
 				throw new Error( "Unknown command: " + func );
 			}
@@ -922,6 +941,12 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			let min = Math.min( ...tempGrad.values() );
 			let max = Math.max( ...tempGrad.values() );
 			let scaleNeg = 1, scalePos = 1;
+
+			// Results
+			results.push( [
+				min.toLocaleString(undefined, { maximumFractionDigits: digits, minimumFractionDigits: 0 }),
+				max.toLocaleString(undefined, { maximumFractionDigits: digits, minimumFractionDigits: 0 })
+			].join("<") );
 
 			if ( scaleZero ) {
 				// Scale zero to midpoint
@@ -975,6 +1000,8 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 		});
 
 		this.graph3d.graphData( { nodes, links } );
+
+		return results;
 	}
 
 	/**

@@ -138,14 +138,17 @@ Command | Scalar field
 --- | ---
 `created` | Creation time from oldest to newest.
 `updated` | Last update time from oldest to newest. For causal graph the same as 'created'.
-`degree([in],[out])`<br/><br/>`in` = indegree<br/>`out` = outdegree | Number of incoming and outgoing edges.
+`degree` | Number of incoming and outgoing edges.
+`indegree` | Number of incoming edges.
+`outdegree` | Number of outgoing edges.
 `curvature` | Ollivier-Ricci curvature calculated as the mean of the vertex's edges.
 `energy` | The average number of updated edges in a small light cone.
 `mass` | The part of 'energy' in which the updated edges connect only pre-existing vertices.
 `momentum` | The part of 'energy' in which the updated edges have new vertices.
 `action` | The average number of causal edges in a small light cone.
 `spin` | The average number of flipped edges in a small light cone.
-`activity` | For spatial graph the world line length / For causal graph the occurrences in world lines of the current spatial vertices.
+`activity` | For spatial graph the world line length / For causal graph the crossings of the world lines.
+`frequency` | Aperiodic frequency of spins calculated as the total number of spins divided by the length of the vertex's world line. `SPACE` mode only.
 
 
 

@@ -39,17 +39,18 @@
   #red { background-color: hotpink; border-color: hotpink; }
   #blue { background-color: deepskyblue; border-color: deepskyblue; }
   #grad { background-image: linear-gradient(to right, #00b4b4, #00b9a1, #2fbc86, #59bd66, #80bb43, #97af29, #aaa110, #bb9200, #bc7900, #bc5d00, #b93d00, #b40000); border-color: lightgrey; }
-  #stop, #reheat, #red-result-label, #blue-result-label { display: none; }
+  #stop, #reheat, #red-result-label, #blue-result-label, #grad-result-label { display: none; }
   #cancel { float: right; margin: 0 0 0 10px; padding: 0;}
   .text { display: inline-block; margin: 0 0 0 3px; padding: 0 5px; background-color: transparent; color: black; width: auto; line-height: 16px; font-size: 10px; font-weight: bold; text-align:left; text-transform: lowercase; vertical-align: top; }
   .text-disabled { opacity: 0.2; }
   .text[contenteditable="true"] { min-width: 320px; -webkit-touch-callout: text; -webkit-user-select: text; -khtml-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; opacity: 1; }
   div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
-  .option { display: inline-block; margin: 0; padding: 0; width: 32px; height:14px; background-color: transparent; color: black;  border: 1px solid white; border-radius: 3px; font-size: 8px; font-weight: bold; line-height: 14px; text-align: center; vertical-align: middle; cursor: pointer; pointer-events: auto; }
-  .limit, .ruleordering, .eventordering { width: 20px; }
+  .option { display: inline-block; margin: 0; padding: 0; width: 32px; height:14px; background-color: transparent; color: black;  border: 1px solid transparent; border-radius: 3px; font-size: 8px; font-weight: bold; line-height: 14px; text-align: center; vertical-align: middle; cursor: pointer; pointer-events: auto; }
+  .limit, .ruleordering, .eventordering, .grad-lo, .grad-mid, .grad-hi { width: 20px; }
+  .grad-radius { width: 12px; }
   .mode-selected, .ruleordering-selected, .eventordering-selected, .limit-selected,
   .red-surface-selected, .blue-surface-selected, .background-selected, .grad-lo-selected,
-  .grad-mid-selected, .grad-hi-selected { border: 1px solid grey; }
+  .grad-mid-selected, .grad-hi-selected, .grad-radius-selected { border: 1px solid grey; }
   .label { display: inline-block; line-height: 16px; font-size: 8px; font-weight: bold; text-align:left; text-transform: uppercase; color: grey; margin: 2px; min-width: 4px; }
   .status { min-width: 38px; }
   .up { position: absolute; transform: translateY(-15px); z-index: -1; }
@@ -60,7 +61,10 @@
   thead th { font-size: 8px; font-weight: bold; text-transform: uppercase; padding: 0px 0 1px 5px; }
   tbody th { font-size: 8px; font-weight: bold; color: #333; text-transform: uppercase; padding: 0px 0 1px 5px; }
   td { border: 0; width: 140px; min-width:140px; max-width:140px; padding: 0px 0 1px 10px; vertical-align: top; }
-  td + td, th + th, th + td, td + th { border-left: 1px solid grey;; }
+  td + td, th + th, th + td, td + th { border-left: 1px solid grey; }
+  #grad-settings table { border: 0; background-color: transparent; }
+  #grad-settings td { border: 0; background-color: transparent; width: 50px; min-width: 50px; max-width: 50px; }
+  #grad-settings a { display: inline-block; color: inherit; text-decoration: inherit; pointer-events: auto; }
   #progress { position:absolute; width: 300px; height: 16px; z-index: 15; top: 45%; left: 50%; margin: 0 0 0 -150px; display: none;}
   #progress-bar { display: inline-block; width: 250px; background-color: #e0e0e0; margin: 0; padding: 0; line-height: 16px; height: 16px; border-radius: 3px; }
   #progress-bar-fill { display: inline-block; height: 16px; background-color: #659cef; border-radius: 3px; transition: width 100ms ease-in-out; }
@@ -68,6 +72,7 @@
   .nodeLabelGraph3d, .linkLabelGraph3d { display: inline-block; background-color: olive; color: white; font-size: 14px; font-weight: bold; line-height: 20px; padding: 0 4px; height: auto; min-width: 14px; border-radius: 4px; text-align: center; vertical-align: middle; }
 </style>
 
+<script nomodule>alert("You browser doesn't seem to support modules. Use a modern desktop browser to run Hypergraph 3D.");</script>
 <script type="importmap">
 {
   "imports": {
@@ -184,14 +189,6 @@ $(document).ready(function() {
     $("#csredblue").hide();
   });
 
-  $("#grad-text").on("focusin", function() {
-    $("#csgrad").show();
-  });
-
-  $("#grad-text").on("focusout", function() {
-    $("#csgrad").hide();
-  });
-
   // Open settings dialogs
   [ "#rule", "#red", "#blue", "#grad" ].forEach( x => {
     $(x).on("click", function() {
@@ -287,14 +284,19 @@ $(document).ready(function() {
     });
   });
 
-  // Show/hide grad
+  // Show fields
   $("#grad-show").on("click", function() {
     try {
       const command = $("#grad-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
       const lo = $(".grad-lo-selected").length;
       const mid = $(".grad-mid-selected").length;
       const hi = $(".grad-hi-selected").length;
-      hypergraph.setField( command, lo, mid, hi );
+      const radius = parseInt( $(".grad-radius-selected").data("value") );
+      const result = hypergraph.setField( command, lo, mid, hi, radius );
+      if ( result.length > 0 ) {
+        $("#grad-result").text( '['+result.join("|")+']' );
+        $("#grad-result-label").show();
+      }
       $("#grad-text").removeClass("text-disabled");
       resumeTimeout();
     }
@@ -303,14 +305,25 @@ $(document).ready(function() {
     }
   });
 
+  // Shortcuts
+  $("#grad-settings a").on("click", function(e) {
+    console.log("huuhaa");
+    e.preventDefault();
+    $("#grad-text").html( $(this).data("value") );
+    $("#grad-show").click();
+  });
+
+  // Hide fields
   $("#grad-hide").on("click", function() {
     hypergraph.clearField();
+    $("#grad-result").text("");
+    $("#grad-result-label").hide();
     $("#grad-text").addClass("text-disabled");
     resumeTimeout();
   });
 
   // Multi-options
-  [ "ruleordering", "eventordering", "limit" ].forEach( x => {
+  [ "ruleordering", "eventordering", "limit", "grad-radius" ].forEach( x => {
     $("."+x).on("click", function(e) {
       $("."+x).removeClass(x+"-selected");
       $(this).addClass(x+"-selected");
@@ -342,8 +355,8 @@ $(document).ready(function() {
       str = str + '<span class="label up">'+k+'</span><span class="label status">'+s[k]+'</span>';
     });
     $("#status").html( str );
-    $("#red-result, #blue-result").text("");
-    $("#red-result-label, #blue-result-label").hide();
+    $("#red-result, #blue-result, #grad-result").text("");
+    $("#red-result-label, #blue-result-label, #grad-results-label").hide();
 
     $("#red, #blue, #grad").addClass("button-disabled");
     $("#red-text, #blue-text, #grad-text").addClass("text-disabled");
@@ -521,12 +534,38 @@ $(document).ready(function() {
     <span id="grad" class="button button-disabled">GRAD</span>
     <span id="grad-text" class="text text-disabled" spellcheck="false">energy</span><br/>
     <div id="grad-settings" class="settings">
+      <table>
+        <tr>
+          <td><a href="#" data-value="created">created</a></td>
+          <td><a href="#" data-value="degree">degree</a></td>
+          <td><a href="#" data-value="energy">energy</a></td>
+          <td><a href="#" data-value="curvature">curvature</a></td>
+          <td><a href="#" data-value="action">action</a></td>
+        </tr>
+        <tr>
+          <td><a href="#" data-value="updated">updated</a></td>
+          <td><a href="#" data-value="indegree">indegree</a></td>
+          <td><a href="#" data-value="mass">mass</a></td>
+          <td><a href="#" data-value="spin">spin</a></td>
+          <td><a href="#" data-value="frequency">frequency</a></td>
+        </tr>
+          <td><a href="#" data-value="activity">activity</a></td>
+          <td><a href="#" data-value="outdegree">outdegree</a></td>
+          <td><a href="#" data-value="momentum">momentum</a></td>
+        </tr>
+      </table><br>
       <span title="Show field" id ="grad-show" class="button">RUN</span>
       <span title="Hide field" id ="grad-hide" class="button">HIDE</span>
+      <span class="label down">Radius</span>
+      <span title="Sample points" class="option grad-radius" data-value="0">0</span>
+      <span title="N-ball r=1" class="option grad-radius grad-radius-selected" data-value="1">1</span>
+      <span title="N-ball r=2" class="option grad-radius" data-value="2">2</span>
+      <span title="N-ball r=4" class="option grad-radius" data-value="4">4</span>
+      <span title="N-ball r=8" class="option grad-radius" data-value="8">8</span>
       <span class="label down">Filter</span>
       <span title="Values under 25%" class="option grad-lo grad-lo-selected">LO</span>
       <span title="Values between 25%-75%" class="option grad-mid grad-mid-selected">MID</span>
-      <span title="Values over 75%" class="option grad-hi grad-hi-selected">HI</span>
+      <span title="Values over 75%" class="option grad-hi grad-hi-selected">HI</span><br><br>
     </div>
   </div>
 
@@ -562,6 +601,8 @@ $(document).ready(function() {
     <span id="red-result" class="label status"></span>
     <span id="blue-result-label" class="label up">Blue</span>
     <span id="blue-result" class="label status"></span>
+    <span id="grad-result-label" class="label up">Grad</span>
+    <span id="grad-result" class="label status"></span>
     <span id="status"></span>
     <span class="label up">Share</span>
     <span title="Copy URL" id="url" class="button">URL</span>
@@ -607,26 +648,6 @@ $(document).ready(function() {
         <tr><td>time(v,u)</td></tr>
         <tr><td>worldline(v1,v2,...)</td></tr>
         <tr><td>lightcone(v,length)</td></tr>
-      <tbody>
-    </table>
-  </div>
-
-  <div id="csgrad" class="cheatsheet controls">
-    <table>
-      <thead>
-        <tr><th>Scalar Fields</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>created</td></tr>
-        <tr><td>updated</td></tr>
-        <tr><td>degree([in],[out])</td></tr>
-        <tr><td>curvature</td></tr>
-        <tr><td>energy</td></tr>
-        <tr><td>mass</td></tr>
-        <tr><td>momentum</td></tr>
-        <tr><td>action</td></tr>
-        <tr><td>spin</td></tr>
-        <tr><td>activity</td></tr>
       <tbody>
     </table>
   </div>

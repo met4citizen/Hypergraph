@@ -89,8 +89,8 @@ class CausalGraph extends Hypergraph {
 
 		// Calculate energy and mass ratio
 		// Hypothesis 1: energy is the total # of lhs and rhs edges
-		// Hypothesis 2: mass ratio is the # of edges with old rhs vertices
-		//    over the # of all rhs edges ("old" = only existing vertices)
+		// Hypothesis 2: mass ratio is the # of edges with only existing rhs vertices
+		//    divided by the # of all rhs edges
 		obj.energy = update.lhs.length + update.rhs.length;
 		let oldvs = [ ...new Set( update.lhs.flat() ) ];
 		let alledges = update.rhs.length;
