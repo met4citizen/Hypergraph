@@ -99,6 +99,7 @@ class Hypergraph {
 		let edge = this.E.get( e );
 		for( let i = edge.length - 1; i >= 0; i-- ) {
 			const v = this.V.get( edge[i] );
+			if ( typeof v === 'undefined' ) continue; // Already deleted
 			if ( i > 0 ) v.in.splice( v.in.indexOf( edge[i-1] ), 1 );
 			if ( i < (edge.length-1) ) v.out.splice( v.out.indexOf( edge[i+1] ), 1 );
 			if ( v.in.length === 0 && v.out.length === 0) this.V.delete( edge[i] );
