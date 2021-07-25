@@ -124,6 +124,20 @@ class CausalGraph extends Hypergraph {
 	}
 
 	/**
+	* Small time cone of given radius.
+	* @param {Vertex} v Single point in space and time
+	* @param {number} r Radius in steps
+	* @return {Vertex[]} All points within radius r.
+	*/
+	cone( v, r ) {
+		if ( !this.V.has(v) ) throw new Error("Cone: Vertex not found.");
+		const step = this.V.get( v ).step;
+		return [ ...this.tree( v, true, false, [], r ).flat(),
+			...this.tree( v, true, true, [], r ).flat() ]
+			.filter( x => Math.abs( step - this.V.get( x ).step ) <= r );
+	}
+
+	/**
 	* Light cones.
 	* @param {Vertex} moment Single point in space and time
 	* @param {number} length Size of the cones

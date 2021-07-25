@@ -822,26 +822,22 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 
 			switch( func ) {
 			case "created":
-				for ( const [key,value] of this.data.V.entries() ) {
+				for ( const key of this.data.V.keys() ) {
 					let vs = (this.data === this.spatial) ?
 						this.data.tree( key, false, false, [], radius ).flat() :
-						[ ...this.data.tree( key, true, false, [], radius ).flat(),
-							...this.data.tree( key, true, true, [], radius ).flat() ]
-							.filter( x => Math.abs(value.step - this.causal.V.get( x ).step) <= radius );
+						this.data.cone( key, radius )
 					tempGrad.set( key, vs.reduce( (a,b) => a + b, 0 ) / vs.length );
 				}
 				break;
 
 			case "updated":
-				for ( const [key,value] of this.data.V.entries() ) {
+				for ( const key of this.data.V.keys() ) {
 					let vs = (this.data === this.spatial) ?
 						this.data.tree( key, false, false, [], radius ).flat().map( v => {
 							let cvs = this.causal.K.get( v );
 							return cvs[ cvs.length - 1 ];
 						}) :
-						[ ...this.data.tree( key, true, false, [], radius ).flat(),
-							...this.data.tree( key, true, true, [], radius ).flat() ]
-							.filter( x => Math.abs(value.step - this.causal.V.get( x ).step) <= radius );
+						this.data.cone( key, radius );
 					tempGrad.set( key, vs.reduce( (a,b) => a + b, 0 ) / vs.length );
 				}
 				break;
@@ -849,12 +845,10 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			case "degree": case "indegree": case "outdegree":
 				let isIn = (func === "degree" || func === "indegree" );
 				let isOut = (func === "degree" || func === "outdegree" );
-				for ( const [key,value] of this.data.V.entries() ) {
+				for ( const key of this.data.V.keys() ) {
 					let vs = (this.data === this.spatial) ?
 						this.data.tree( key, false, false, [], radius ).flat() :
-						[ ...this.data.tree( key, true, false, [], radius ).flat(),
-							...this.data.tree( key, true, true, [], radius ).flat() ]
-							.filter( x => Math.abs(value.step - this.causal.V.get( x ).step) <= radius );
+						this.data.cone( key, radius );
 					let degrees = vs.map( x => {
 						let v = this.data.V.get( x );
 						return (isIn ? v.in.length : 0) + (isOut ? v.out.length : 0);
@@ -873,15 +867,13 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 						case "spin": return v.spin;
 					}
 				};
-				for ( const [key,value] of this.data.V.entries() ) {
+				for ( const key of this.data.V.keys() ) {
 					let vs = (this.data === this.spatial) ?
 						this.data.tree( key, false, false, [], radius ).flat().map( v => {
 							let cvs = this.causal.K.get( v );
 							return cvs[ cvs.length - 1 ];
 						}) :
-						[ ...this.data.tree( key, true, false, [], radius ).flat(),
-							...this.data.tree( key, true, true, [], radius ).flat() ]
-							.filter( x => Math.abs(value.step - this.causal.V.get( x ).step) <= radius );
+						this.data.cone( key, radius );
 					let values = vs.map( i => calc(func,this.causal.V.get(i)) );
 					tempGrad.set( key, values.reduce( (a,b) => a + b, 0 ) / values.length );
 				}
@@ -928,8 +920,8 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				if ( this.data !== this.spatial ) throw new Error("Frequency is available only in 'Space' mode.");
 				for( const key of this.spatial.V.keys() ) {
 					let wl = this.causal.K.get( key );
-					let spins = wl.map( x => this.causal.V.get(x).spin ).reduce( (a,b) => a+b, 0 );
-					tempGrad.set( key, spins / wl.length );
+					let spins = wl.map( x => this.causal.V.get(x).spin );
+					tempGrad.set( key, spins.reduce( (a,b) => a+b, 0 ) / spins.length );
 				}
 				break;
 
