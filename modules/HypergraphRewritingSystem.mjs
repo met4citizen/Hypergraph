@@ -54,7 +54,7 @@ class HypergraphRewritingSystem {
 	*/
 	isMatch( edge, p ) {
 		if ( edge.length !== p.length ) return false;
-		for( let i=0; i<p.length; i++) {
+		for( let i=p.length-1; i>=0; i-- ) {
 			let x = p.indexOf( p[i] );
 			if ( x !== i && edge[x] !== edge[i] ) return false;
 		}
