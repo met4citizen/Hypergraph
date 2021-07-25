@@ -22,12 +22,12 @@ represent fundamental physics visit
 [The Wolfram Physics Project](https://www.wolframphysics.org) website.
 According to their
 [technical documents](https://www.wolframphysics.org/technical-documents/)
-certain models reproduce key features of both relativity and quantum mechanics.
+certain models can reproduce key features of both relativity and quantum mechanics.
 
 
 ## Rules
 
-Click `RULE` to modify the rewriting rule and change settings. The settings
+Click `RULE` to modify the rewriting rule or change its settings. The settings
 include different options for rule ordering and event orderings and the number
 of rewriting events. Click `RUN` to start the rewriting process.
 
@@ -43,11 +43,11 @@ pattern `(1,1,2)(2,3,4)` is found on the hypergraph, it is replaced with
 a new subhypergraph in the form of the right-hand side pattern
 `(1,5,4)(2,5,3)(5,5,4)`. The two sides of any one-way rule must be separated
 with an arrow `->`. The separator `==` can be used as a shortcut for a two-way
-setup with the rule and its inverse.
+setup with both the rule and its inverse.
 
 Hyperedge patterns can be described by using numbers and/or
 characters. Several types of parentheses are supported. For example, a rule
-like `[{x,y}{x,z}]->[{x,y}{x,w}{y,w}{z,w}]` is considered valid and can be
+such as `[{x,y}{x,z}]->[{x,y}{x,w}{y,w}{z,w}]` is considered valid and can be
 converted to the default format by clicking `Scan`.
 
 A rule without the right-hand side `(1,1,1)(1,1,1)` is used as the initial
@@ -62,7 +62,7 @@ Initial graph | Description
 `sphere(n)` | Sphere with `n` vertices.
 `random(n,d,nedges)` | Random graph with `n` vertices so that each vertex is sprinkled randomly in `d` dimensional space and has at least `nedges` connections.
 `complete(n)` | Complete graph with `n` vertices so that each vertex is connected to every other vertex.
-`blackhole(n,rs)` | Black hole with `n` vertices and Schwarzschild radius `rs`. (EXPERIMENTAL)
+`blackhole(n,rs)` | Black hole with `n` vertices and Schwarzschild radius `rs`. EXPERIMENTAL
 `blackhole2(n,rs)` | Twin black hole so that both black holes have `n` vertices and Schwarzschild radius `rs`. EXPERIMENTAL
 `erb(n,rs)` | Einstein-Rosen Bridge so that both sides have `n` vertices and Schwarzschild radius `rs`. EXPERIMENTAL
 
@@ -90,7 +90,8 @@ Rule order | Description
 
 According to the Wolfram model, applying all the overlapping matches
 simultaneously gives rise to quantum mechanics. This means that this simulator
-shows only one possible classical evolution of the hypergraph.
+shows only one possible classical evolution of the hypergraph i.e. one branch
+of all the possible histories.
 
 ## Simulation
 
@@ -128,13 +129,15 @@ Command | Highlighted | Status Bar
 `worldline(n1,n2,...)` | Time-like curve of space-like node/nodes. `TIME` mode only. | Distance as the number of edges.
 `lightcone(n,length)` | Lightcone centered at node `n` with size `length`. `TIME` mode only. | Size of the cones as the number of edges.
 
+## Scalar Fields
+
 Scalar fields can be highlighted by clicking `GRAD`. Relative intensity of the
 field is represented by different hues of colour from light blue (lowest) to
-green to yellow (mid) to orange to red (highest). The field values are
+green to yellow (mid) to orange to red (highest). Field values are
 calculated for each vertex and the colours for edges represent the mean of
-the values of the vertices it connects.
+the values of the vertices they connect.
 
-Command | Scalar field
+Scalar Field | Description
 --- | ---
 `created` | Creation time from oldest to newest.
 `updated` | Last update time from oldest to newest. For causal graph the same as 'created'.
@@ -142,15 +145,19 @@ Command | Scalar field
 `indegree` | Number of incoming edges.
 `outdegree` | Number of outgoing edges.
 `curvature` | Ollivier-Ricci curvature calculated as the mean of the vertex's edges.
-`energy` | The average number of updated edges in a small light cone.
-`mass` | The part of 'energy' in which the updated edges connect only pre-existing vertices.
-`momentum` | The part of 'energy' in which the updated edges have new vertices.
-`action` | The average number of causal edges in a small light cone.
-`spin` | The average number of flipped edges in a small light cone.
-`activity` | For spatial graph the world line length / For causal graph the crossings of the world lines.
+`energy` | The average number of updated edges.
+`mass` | The part of 'energy' in which the right hand side edges connect pre-existing vertices.
+`momentum` | The part of 'energy' in which the right hand side edges have new vertices.
+`action` | The average number of causal edges.
+`spin` | The average number of edge direction flips.
+`activity` | For spatial graph the world line length. For causal graph the crossings of the world lines.
 `frequency` | Aperiodic frequency of spins calculated as the total number of spins divided by the length of the vertex's world line. `SPACE` mode only.
 
-
+The setting `Radius` can be used to change sample size. In spatial graphs it
+defines the radius of a n-ball. In causal graphs it defines the length of the
+light cone. The setting `Filter` can be use to show only certain range of
+values: low (<25%), mid (25%-75%), hi (>75%). If several fields are specific,
+the shown intensity represents their average.
 
 ## Notes
 
