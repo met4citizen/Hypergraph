@@ -307,7 +307,6 @@ $(document).ready(function() {
 
   // Shortcuts
   $("#grad-settings a").on("click", function(e) {
-    console.log("huuhaa");
     e.preventDefault();
     $("#grad-text").html( $(this).data("value") );
     $("#grad-show").click();
@@ -536,22 +535,22 @@ $(document).ready(function() {
     <div id="grad-settings" class="settings">
       <table>
         <tr>
-          <td><a href="#created" data-value="created">created</a></td>
-          <td><a href="#degree" data-value="degree">degree</a></td>
-          <td><a href="#energy" data-value="energy">energy</a></td>
-          <td><a href="#curvature" data-value="curvature">curvature</a></td>
-          <td><a href="#action" data-value="action">action</a></td>
+          <td><a href="//created" data-value="created">created</a></td>
+          <td><a href="//degree" data-value="degree">degree</a></td>
+          <td><a href="//energy" data-value="energy">energy</a></td>
+          <td><a href="//curvature" data-value="curvature">curvature</a></td>
+          <td><a href="//action" data-value="action">action</a></td>
         </tr>
         <tr>
-          <td><a href="#updated" data-value="updated">updated</a></td>
-          <td><a href="#indegree" data-value="indegree">indegree</a></td>
-          <td><a href="#mass" data-value="mass">mass</a></td>
-          <td><a href="#spin" data-value="spin">spin</a></td>
-          <td><a href="#frequency" data-value="frequency">frequency</a></td>
+          <td><a href="//updated" data-value="updated">updated</a></td>
+          <td><a href="//indegree" data-value="indegree">indegree</a></td>
+          <td><a href="//mass" data-value="mass">mass</a></td>
+          <td><a href="//spin" data-value="spin">spin</a></td>
+          <td><a href="//frequency" data-value="frequency">frequency</a></td>
         </tr>
-          <td><a href="#activity" data-value="activity">activity</a></td>
-          <td><a href="#outdegree" data-value="outdegree">outdegree</a></td>
-          <td><a href="#momentum" data-value="momentum">momentum</a></td>
+          <td><a href="//activity" data-value="activity">activity</a></td>
+          <td><a href="//outdegree" data-value="outdegree">outdegree</a></td>
+          <td><a href="//momentum" data-value="momentum">momentum</a></td>
         </tr>
       </table><br>
       <span title="Show field" id ="grad-show" class="button">RUN</span>
@@ -614,11 +613,6 @@ $(document).ready(function() {
         <tr><th>Command Cheatsheet</th></tr>
       </thead>
       <tbody>
-        <tr><th>One/two-way rules:</th></tr>
-        <tr><td>(1,2)(1,3)-&gt;(1,2)(1,4)(2,4)(3,4)</td></tr>
-        <tr><td>(1,2)(2,3,4)==(1,2)(4,3,2)</td></tr>
-        <tr><th>Initial graph / generator:</th></tr>
-        <tr><td>(1,2)(1,3)(1,2,3)</td></tr>
         <tr><td>points(n)</td></tr>
         <tr><td>line(n)</td></tr>
         <tr><td>grid(n,dim)</td></tr>
