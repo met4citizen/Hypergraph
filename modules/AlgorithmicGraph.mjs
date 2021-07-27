@@ -339,19 +339,17 @@ class AlgorithmicGraph extends Hypergraph  {
     .replace( /(;)+/g , ";" ).replace( /;$/g ,"" );
 
     // Discard all unsupported characters
-    str = str.replace( /[^()a-z0-9,=;>\.\-]+/g , "" );
+    str = str.replace( /[^()a-z0-9,=;>\.\-\\]+/g , "" );
 
     // Expand equal signs == as two separate reversible rules
     let rulestr = "";
     str.split(";").forEach( s => {
-      if ( s[0] === '(' && ( s.includes("==") || s.includes(">") ) ) {
-        // Rule
+      if ( s[0] === '(' && s.includes("==") ) {
         let b = s.split("==");
-        if ( b.length === 2 ) {
-          rulestr = rulestr + b[0] + ">" + b[1] + ";" + b[1] + ">" + b[0] + ";";
-        } else {
-          rulestr = rulestr + s + ";";
-        }
+        rulestr = rulestr + b[0] + ">" + b[1].replace( /\\.*$/g, "") + ";" + b[1] + ">" + b[0].replace( /\\.*$/g, "") + ";";
+      } else if ( s[0] === '(' && s.includes(">") ) {
+        let b = s.split(">");
+        rulestr = rulestr + b[0] + ">" + b[1].replace( /\\.*$/g, "") + ";";
       } else {
         // Command
         this.commands.push( s.slice() );
@@ -362,6 +360,7 @@ class AlgorithmicGraph extends Hypergraph  {
     rulestr = rulestr.replace( /\-/g, "")
     .replace( /;$/g ,"" ).replace( /\),\(/g , ")(" )
     .replace( /^\(/g , "[{\"lhs\": [[\"" ).replace( /,/g , "\",\"" )
+    .replace( /\)\\\(/g , "\"]],\"neg\": [[\"" )
     .replace( /\);\(/g , "\"]]},{\"lhs\": [[\"" )
     .replace( /\)>\(/g , "\"]],\"rhs\": [[\"" )
     .replace( /\)\(/g , "\"],[\"" ).replace( /\)$/g , "\"]]}]" );
@@ -384,18 +383,22 @@ class AlgorithmicGraph extends Hypergraph  {
     this.rules.forEach( (v,i) => {
       const lhs = v.hasOwnProperty("lhs") ? v.lhs.flat() : [];
       const rhs = v.hasOwnProperty("rhs") ? v.rhs.flat() : [];
-      const unique = [ ...new Set( [ ...lhs, ...rhs ] ) ];
+      const neg = v.hasOwnProperty("neg") ? v.neg.flat() : [];
+      const unique = [ ...new Set( [ ...lhs, ...rhs, ...neg ] ) ];
       v.lhs.forEach( (w,j) => {
         for( k=0; k < w.length; k++ ) this.rules[i].lhs[j][k] = unique.indexOf( w[k] );
       });
-      // NOTE: Do not sort LHS, because wolfram Model event ordering depends
-      // on the order of the edges
       if ( v.hasOwnProperty("rhs") ) {
         v.rhs.forEach((w,j) => {
           for( k=0; k < w.length; k++ ) this.rules[i].rhs[j][k] = unique.indexOf( w[k] );
         });
-        // NOTE: Do not sort RHS, because Wolfram Model event ordering depends
-        // on the order of the edges
+      }
+      // NOTE: Do not sort LHS or RHS, because wolfram Model event ordering depends
+      // on the order of the edges
+      if ( v.hasOwnProperty("neg") ) {
+        v.neg.forEach((w,j) => {
+          for( k=0; k < w.length; k++ ) this.rules[i].neg[j][k] = unique.indexOf( w[k] );
+        });
       }
     });
 
@@ -418,6 +421,12 @@ class AlgorithmicGraph extends Hypergraph  {
       r.lhs.forEach( e => {
         this.rulestr = this.rulestr + "(" + e.map( v => v + 1 ).join(",") + ")";
       });
+      if ( r.hasOwnProperty("neg") && r.neg.length > 0 ) {
+        this.rulestr = this.rulestr + "\\";
+        r.neg.forEach( e => {
+          this.rulestr = this.rulestr + "(" + e.map( v => v + 1 ).join(",") + ")";
+        });
+      }
       this.rulestr = this.rulestr + "->";
       if ( r.rhs.length === 0 ) {
         this.rulestr = this.rulestr + "()";
@@ -439,30 +448,39 @@ class AlgorithmicGraph extends Hypergraph  {
           cmd.forEach( (x,i) => { if ( i > 0 ) this.initial.push( x ); });
           break;
         case "points":
+          if ( params.length < 1 ) throw new Error("Points: Invalid number of parameters.");
           this.initial.push( ...this.points( parseInt(params[0]) ) );
           break;
         case "line":
+          if ( params.length < 1 ) throw new Error("Line: Invalid number of parameters.");
           this.initial.push( ...this.grid( parseInt(params[0]), 1 ) );
           break;
         case "grid": case "ngrid":
+          if ( params.length < 2 ) throw new Error("Grid: Invalid number of parameters.");
           this.initial.push( ...this.grid( parseInt(params[0]), parseInt(params[1]) ) );
           break;
         case "sphere":
+          if ( params.length < 1 ) throw new Error("Sphere: Invalid number of parameters.");
           this.initial.push( ...this.complete( parseInt(params[0]), 1, true ) );
           break;
         case "blackhole":
+          if ( params.length < 2 ) throw new Error("Blackhole: Invalid number of parameters.");
           this.initial.push( ...this.blackhole( parseInt(params[0]), parseFloat(params[1]) ) );
           break;
         case "blackhole2":
+          if ( params.length < 2 ) throw new Error("Blackhole2: Invalid number of parameters.");
           this.initial.push( ...this.blackhole2( parseInt(params[0]), parseFloat(params[1]) ) );
           break;
         case "erb":
+          if ( params.length < 2 ) throw new Error("Erb: Invalid number of parameters.");
           this.initial.push( ...this.erb( parseInt(params[0]), parseFloat(params[1]) ) );
           break;
         case "random":
+          if ( params.length < 3 ) throw new Error("Random: Invalid number of parameters.");
           this.initial.push( ...this.random( parseInt(params[0]), parseInt(params[1]), parseInt(params[2]) ) );
           break;
         case "complete":
+          if ( params.length < 1 ) throw new Error("Complete: Invalid number of parameters.");
           this.initial.push( ...this.complete( parseInt(params[0]) ) );
           break;
         default:

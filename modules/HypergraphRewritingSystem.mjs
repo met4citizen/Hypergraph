@@ -107,12 +107,56 @@ class HypergraphRewritingSystem {
 					}
 				}
 
+				// Filter out hypotheses that match 'neg'
+				if ( rule.hasOwnProperty("neg") ) {
+					let negMaxnum = Math.max( ...rule.lhs.flat(), ...rule.neg.flat() );
+					let maps = mapsNext;
+					mapsNext = [];
+
+					for( let m = maps.length-1; m >= 0; m-- ) {
+						let map0 =  [ ...maps[m], ...new Array( negMaxnum - maxnum ).fill(-1) ];
+						let negMapsNext = [ map0 ];
+
+						for( let j = 0; j < rule.neg.length; j++ ) {
+							let pattern = rule.neg[j];
+							let negMaps = negMapsNext;
+							negMapsNext = [];
+
+							// Iterate all mapping hypotheses
+							for( let k = negMaps.length-1; k >= 0; k-- ) {
+								let edges = graph.find( this.mapper( graph, [ pattern ], negMaps[k] )[0] );
+								for (let l = edges.length-1; l >= 0; l-- ) {
+									if ( !this.isMatch( edges[l], pattern ) ) continue;
+									let map = negMaps[k];
+									for(let n = pattern.length - 1; n >= 0; n-- ) map[ pattern[n] ] = edges[l][n];
+									negMapsNext.push( [ ...map ] );
+								}
+							}
+						}
+
+						let fullrule = [ ...rule.lhs, ...rule.neg ];
+						let ok = true;
+						for( let k = negMapsNext.length-1; k >=0; k-- ) {
+							let hits = graph.hits( this.mapper( graph, fullrule, negMapsNext[k] ) );
+							if ( hits.length ) {
+								ok = false;
+								break;
+							}
+						}
+
+						if ( ok ) {
+							mapsNext.push( [ ...maps[m] ] );
+						}
+					}
+
+				}
+
 				// Replicate according to the final results
 				for( let k = mapsNext.length-1; k >= 0; k-- ) {
 					let hits = graph.hits( this.mapper( graph, rule.lhs, mapsNext[k] ) );
-					this.matches.push( ...new Array( hits.length ).fill().map( (x,h) => {
-						return { r: i, hit: hits[h], m: mapsNext[k] };
-					}) );
+					for( let l = hits.length-1; l >= 0; l-- ) {
+						this.matches.push( { r: i, hit: hits[l], m: mapsNext[k] } );
+					}
 				}
 			}
 		}
