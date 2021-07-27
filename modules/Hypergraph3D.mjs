@@ -106,6 +106,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 
 			switch( func ) {
 			case "geodesic": case "line": case "path":
+				if ( params.length < 2 ) throw new Error("Geodesic: Invalid number of parameters.");
 				p.push( parseInt(params[0]), parseInt(params[1]) );
 				ret = this.data.geodesic( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev"), params.includes("all") ).flat();
 				r.push( ret.length );
@@ -113,6 +114,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				break;
 
 			case "curv":
+				if ( params.length < 2 ) throw new Error("Curv: Invalid number of parameters.");
 				p.push( parseInt(params[0]), parseInt(params[1]) );
 				let curv = this.data.orc( parseInt(params[0]), parseInt(params[1]) );
 				curv = curv.toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 });
@@ -123,6 +125,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				break;
 
 			case "nsphere": case "sphere":
+				if ( params.length < 2 ) throw new Error("Nsphere: Invalid number of parameters.");
 				p.push( parseInt(params[0]) );
 				ret = this.data.nsphere( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
 				r.push( ret.length );
@@ -130,6 +133,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				break;
 
 			case "nball": case "ball": case "tree":
+				if ( params.length < 2 ) throw new Error("Nball: Invalid number of parameters.");
 				p.push( parseInt(params[0]) );
 				ret = this.data.nball( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
 				r.push( ret.length );
@@ -138,6 +142,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				break;
 
 			case "random": case "walk":
+				if ( params.length < 2 ) throw new Error("Random: Invalid number of parameters.");
 				p.push( parseInt(params[0]) );
 				ret = this.data.random( parseInt(params[0]), parseInt(params[1]), params.includes("dir"), params.includes("rev") );
 				r.push( ret.length );
@@ -145,6 +150,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				break;
 
 			case "worldline": case "timeline":
+				if ( params.length < 1 ) throw new Error("Worldline: Invalid number of parameters.");
 				if ( this.data !== this.causal ) throw new Error("Worldline is only available in 'Time' mode.");
 				ret = this.data.worldline( [ ...params.map( x => parseInt(x) ) ] );
 				r.push( ret.length );
@@ -155,8 +161,9 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 				break;
 
 			case "lightcone":
-				p.push( parseInt(params[0]) );
 				if ( this.data !== this.causal ) throw new Error("Lightcones only available in 'Time' mode.");
+				if ( params.length < 2 ) throw new Error("Lightcone: Invalid number of parameters.");
+				p.push( parseInt(params[0]) );
 				ret = this.data.lightcone( parseInt(params[0]), parseInt(params[1]) );
 				r.push( ret["past"].length + ret["future"].length );
 				e.push( [ ...ret["past"], ...ret["future"] ] );
@@ -166,6 +173,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 
 			case "space":
 				if ( this.data !== this.spatial ) throw new Error("Space only available in 'Space' mode.");
+				if ( params.length < 2 ) throw new Error("Space: Invalid number of parameters.");
 				ret = this.data.space( parseInt(params[0]), parseInt(params[1]) );
 				r.push( ret.length );
 				v.push( ret );
@@ -173,6 +181,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 
 			case "time":
 				if ( this.data !== this.causal ) throw new Error("Time only available in 'Time' mode.");
+				if ( params.length < 2 ) throw new Error("Time: Invalid number of parameters.");
 				ret = this.data.time( parseInt(params[0]), parseInt(params[1]) );
 				r.push( ret.length );
 				v.push( ret );
@@ -526,7 +535,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.linkCurvature( 'curvature' )
 			.linkCurveRotation( 'rotation' )
 			.linkDirectionalArrowLength(0)
-			.d3VelocityDecay( 0.4 )
+			.d3VelocityDecay( 0.3 )
 			.d3AlphaDecay( 1 - Math.pow( 0.001, 1/400 ) ) // exponent = 1 / # iterations to cool
 			.nodeThreeObject( null );
 			// Set forces
@@ -557,7 +566,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.linkCurveRotation( 'rotation' )
 			.linkDirectionalArrowLength( 20 )
 			.linkDirectionalArrowRelPos(1)
-			.d3VelocityDecay( 0.4 )
+			.d3VelocityDecay( 0.3 )
 			.d3AlphaDecay( 1 - Math.pow( 0.001, 1/400 ) ) // exponent = 1 / # iterations to cool
 			.nodeThreeObject( null );
 			// Set forces
