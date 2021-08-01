@@ -4,9 +4,6 @@
   <title>Hypergraph 3D</title>
 
   <meta charset="utf-8">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
   <meta content='width=device-width, height=device-height, minimum-scale=1, initial-scale=1.0' name='viewport'>
 
   <link rel="icon" type="image/png" href="favicon.png">
@@ -32,8 +29,9 @@
   #paused span { background-color: white; padding: 0 10px; }
   #logo { margin: 3px; padding: 3px; position: fixed; z-index: 3; opacity: 0.7; bottom: 0; left: 0; width: 32px; height: 32px; }
   .button { display: inline-block; margin: 1px 0 1px 0; padding: 0; background-color: black; color: white; width: 32px; height: 14px; border: 1px solid black; border-radius: 3px; font-size: 8px; font-weight: bold; line-height:14px; text-align: center; vertical-align: middle; cursor: pointer; pointer-events: auto; }
-  #distance { margin: 16px 0 0 0; width: 100%; }
-  #distance-range { width: 96%; cursor: pointer; pointer-events: auto; }
+  #dynamics { margin: 16px -16px 0 0; width: 100% !important; padding:0; }
+  input[type=range] { width: 100%; margin: 0; }
+  #distance-range, #decay-range { cursor: pointer; pointer-events: auto; }
   .button:active { opacity: 0.2; }
   .button-disabled { opacity: 0.2; pointer-events: none; }
   #red { background-color: hotpink; border-color: hotpink; }
@@ -46,11 +44,11 @@
   .text[contenteditable="true"] { min-width: 320px; -webkit-touch-callout: text; -webkit-user-select: text; -khtml-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; opacity: 1; }
   div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
   .option { display: inline-block; margin: 0; padding: 0; width: 32px; height:14px; background-color: transparent; color: black;  border: 1px solid transparent; border-radius: 3px; font-size: 8px; font-weight: bold; line-height: 14px; text-align: center; vertical-align: middle; cursor: pointer; pointer-events: auto; }
-  .limit, .ruleordering, .eventordering, .grad-lo, .grad-mid, .grad-hi { width: 20px; }
+  .limit, .ruleordering, .eventordering, .grad-lo, .grad-mid, .grad-hi, .qm { width: 20px; }
   .grad-radius { width: 12px; }
   .mode-selected, .ruleordering-selected, .eventordering-selected, .limit-selected,
   .red-surface-selected, .blue-surface-selected, .background-selected, .grad-lo-selected,
-  .grad-mid-selected, .grad-hi-selected, .grad-radius-selected { border: 1px solid grey; }
+  .grad-mid-selected, .grad-hi-selected, .grad-radius-selected, .qm-selected { border: 1px solid grey; }
   .label { display: inline-block; line-height: 16px; font-size: 8px; font-weight: bold; text-align:left; text-transform: uppercase; color: grey; margin: 2px; min-width: 4px; }
   .status { min-width: 38px; }
   .up { position: absolute; transform: translateY(-15px); z-index: -1; }
@@ -160,6 +158,27 @@ $(document).ready(function() {
   hypergraph.graph3d.controls().addEventListener( 'start', resume );
   hypergraph.graph3d.controls().addEventListener( 'end', resumeTimeout );
 
+  // Dynamics
+  function updateDynamics() {
+    let distance = parseInt( $("#distance-range").val(), 10 );
+    let decay = parseInt( $("#decay-range").val(), 10 );
+    if ( hypergraph.data == hypergraph.spatial ) {
+      hypergraph.graph3d
+        .dagLevelDistance( distance / 10 )
+			  .d3AlphaDecay( 1 - Math.pow( 0.001, 1/decay ) );
+      hypergraph.graph3d.d3Force("link").distance( distance / 10 );
+
+    } else {
+      let maxstep = 5 * hypergraph.causal.maxstep;
+      let maxvalue = 10000 * ( Math.sqrt(maxstep) / maxstep );
+      hypergraph.graph3d
+        .dagLevelDistance( ( Math.sqrt( distance ) / 100 ) * maxvalue )
+			  .d3AlphaDecay( 1 - Math.pow( 0.001, 1/decay ) );
+      hypergraph.graph3d.d3Force("link").distance( ( Math.sqrt( distance ) / 100 ) * maxvalue );
+    }
+    resumeTimeout();
+  }
+
   // Window resize event, resume and update graph dimensions
   $(window).on('resize', function(){
     hypergraph.size( $(this).width(), $(this).height() );
@@ -225,12 +244,13 @@ $(document).ready(function() {
       $("#progress").show();
 
       // Run rules
-      var rulestr = $("#rule-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
-      var ruleordering = $(".ruleordering-selected").data("value");
-      var eventordering = $(".eventordering-selected").data("value");
-      var maxevents = parseInt( $(".limit-selected").data("value") );
+      let rulestr = $("#rule-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
+      let ruleordering = $(".ruleordering-selected").data("value");
+      let eventordering = $(".eventordering-selected").data("value");
+      let qm = $(".qm-selected").length;
+      let maxevents = parseInt( $(".limit-selected").data("value") );
 
-      hypergraph.run( rulestr, ruleordering, eventordering, maxevents, function(e) {
+      hypergraph.run( rulestr, ruleordering, eventordering, qm, maxevents, function(e) {
         $("#progress-bar-fill").css("width", Math.min(100, Math.round( 100 * e / maxevents))+"%" );
       }, function() {
         $("#progress").hide();
@@ -330,7 +350,7 @@ $(document).ready(function() {
   });
 
   // Single-options
-  [ "red-surface", "blue-surface", "background", "grad-lo", "grad-mid", "grad-hi" ].forEach( x => {
+  [ "red-surface", "blue-surface", "background", "grad-lo", "grad-mid", "grad-hi", "qm" ].forEach( x => {
     $("."+x).on("click", function() {
       if ( $("."+x+"-selected").length ) {
         $("."+x).removeClass(x+"-selected");
@@ -340,13 +360,32 @@ $(document).ready(function() {
     });
   });
 
+  // Mode specific settings
+  let decay = new Map();
+  let distance = new Map();
+  let cameraz = new Map();
+
   // Mode/reset
   $("#space, #time").on("click", function(e) {
+    let mode = $(".mode-selected").data("value");
+    distance.set(mode,parseInt( $("#distance-range").val(), 10 ));
+    decay.set(mode,parseInt( $("#decay-range").val(), 10 ));
+    cameraz.set(mode,parseInt(hypergraph.graph3d.cameraPosition().z,10));
+
     $(".mode").removeClass("mode-selected");
     $(this).addClass("mode-selected");
 
-    var mode = $(this).data("value");
+    mode = $(this).data("value");
+
     hypergraph.reset( mode );
+
+    $("#distance-range").val( distance.get( mode ) || 200 );
+    $("#decay-range").val( decay.get( mode ) || 200 );
+
+    let z = cameraz.get(mode) || 750;
+    hypergraph.graph3d.cameraPosition( { x: 0, y: 0, z: z }, { x: 0, y: 0, z: 0 } );
+
+    updateDynamics();
 
     var s = hypergraph.status();
     var str = "";
@@ -363,9 +402,6 @@ $(document).ready(function() {
     $("#play, #final").show();
     $("#stop, #reheat").hide();
 
-    $("#distance-range").val(200);
-    $("#distance-range").change();
-
     resumeTimeout();
 
   });
@@ -377,6 +413,7 @@ $(document).ready(function() {
         hypergraph.play( 250, () => { $("#finalreheat").click(); } );
         $("#playstop").css("background-color","darkred");
         $("#play, #stop").toggle();
+        updateDynamics();
         resume();
       } else {
         hypergraph.stop();
@@ -405,21 +442,9 @@ $(document).ready(function() {
     }
   });
 
-  // Set distance
-  $(document).on('input change keyup', '#distance-range', function() {
-    let value = parseInt( $(this).val(), 10 );
-    if ( hypergraph.data == hypergraph.spatial ) {
-      hypergraph.graph3d
-        .dagLevelDistance( value / 10 )
-        .d3Force("link").distance( value / 10 );
-    } else {
-      let maxstep = 5 * hypergraph.causal.maxstep;
-      let maxvalue = 10000 * ( Math.sqrt(maxstep) / maxstep );
-      hypergraph.graph3d
-        .dagLevelDistance( ( Math.sqrt( value ) / 100 ) * maxvalue )
-        .d3Force("link").distance( ( Math.sqrt( value ) / 100 ) * maxvalue );
-    }
-    resumeTimeout();
+  // Changed distance/decay
+  $(document).on('input change keyup', '#distance-range,#decay-range', function() {
+    updateDynamics();
   });
 
   // Copy URL link for the current rule to clipboard
@@ -428,6 +453,7 @@ $(document).ready(function() {
     let rule = $("#rule-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
     let ruleorder = $(".ruleordering-selected").data("value");
     let eventorder = $(".eventordering-selected").data("value");
+    let qm = $(".qm-selected").length;
     let mode = $(".mode-selected").attr("id");
     let red = $("#red-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
     let blue = $("#blue-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
@@ -436,6 +462,7 @@ $(document).ready(function() {
       + "?rule=" + encodeURIComponent(rule).replace(/%2C/g,",").replace(/%3B/g,";")
       + ( ruleorder !== "none" ? "&ruleorder=" + encodeURIComponent(ruleorder) : "" )
       + ( eventorder !== "random" ? "&eventorder=" + encodeURIComponent(eventorder) : "" )
+      + ( qm ? "" : "&qm=0")
       + ( mode !== "space" ? "&mode=" + encodeURIComponent(mode) : "" )
       + ( !$("#red-text").hasClass("text-disabled") ? "&red=" + encodeURIComponent(red).replace(/%2C/g,",").replace(/%3B/g,";") : "" )
       + ( !$("#blue-text").hasClass("text-disabled") ? "&blue=" + encodeURIComponent(blue).replace(/%2C/g,",").replace(/%3B/g,";") : "" )
@@ -463,6 +490,12 @@ $(document).ready(function() {
     if ( eventorder && ( eventorder === "random" || eventorder === "ascending" || eventorder === "descending" || eventorder === "wolfram" ) ) {
       $(".eventordering").removeClass("eventordering-selected");
       $(".eventordering[data-value='" + eventorder + "']").addClass("eventordering-selected");
+    }
+    let qm = getUrlParameter('qm');
+    if ( qm === "0" ) {
+      $(".qm").removeClass("qm-selected");
+    } else {
+      $(".qm").addClass("qm-selected");
     }
     let mode = getUrlParameter('mode');
     if ( mode && ( mode === "space" || mode === "time" ) ) {
@@ -507,6 +540,8 @@ $(document).ready(function() {
       <span title="Wolfram" class="option eventordering" data-value="wolfram">WM</span>
       <span title="Newest" class="option eventordering" data-value="ascending">ASC</span>
       <span title="Oldest" class="option eventordering" data-value="descending">DEC</span>
+      <span class="label down">Opt</span>
+      <span title="Simulate QM" class="option qm qm-selected">QM</span>
       <span class="label down">Max events</span>
       <span title="Max 500" class="option limit limit-selected" data-value="500">500</span>
       <span title="Max 1000" class="option limit" data-value="1000">1K</span>
@@ -582,9 +617,10 @@ $(document).ready(function() {
       <svg id="reheat" viewBox="0 0 32 14"><path fill="white" d="M16.1 10.2c-2 0-3-1-3.1-3S14 4 15.7 3.9c1.8-.1 2.1 1.1 2.1 1.1L16.7 6.3h4V2.5l-1.3 1C18.4 2.4 17.5 2 16 2C13 2 11 4 11 7S12.9 11.8 16 12c3.1-.3 4.2-2 4.5-4h-2.1c-.3 1.2-1 2-2.3 2.2z"/></svg>
       <svg id="final" viewBox="0 0 32 14"><polygon fill="white" points="12,3 12,11 18,7"/><polygon fill="white" points="18,3 20,3 20,11 18,11" /></svg>
     </span>
-    <div id="distance">
-      <span class="label down">Force</span>
-      <input id="distance-range" type="range" value="1" min="1" max="1000">
+    <div id="dynamics">
+      <input id="distance-range" type="range" value="200" min="1" max="1000"><br>
+      <span class="label down">Force/decay</span>
+      <input id="decay-range" type="range" value="200" min="10" max="1000"><br>
     </div>
   </div>
 
