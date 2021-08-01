@@ -452,15 +452,29 @@ class AlgorithmicGraph extends Hypergraph  {
       }
     });
 
-    // Change ()->(1,2) to (1,2)
+    // Change ()->(1,2) to (1,2) and remove duplicates
     for( let i = this.rules.length-1; i>=0; i-- ) {
-      if ( this.rules[i].lhs.length === 0 ) {
+      let rule = this.rules[i];
+      if ( rule.lhs.length === 0 ) {
         let j = "";
-        this.rules[i].rhs.forEach( e => {
+        rule.rhs.forEach( e => {
           j = j + "(" + e.map( v => v + 1 ).join(",") + ")";
         });
         this.commands.push( j );
         this.rules.splice(i,1);
+        continue;
+      }
+      for( let j = i-1; j >=0; j-- ) {
+        let rule2 = this.rules[j];
+        if ( rule2.lhs.length === rule.lhs.length &&
+             rule2.rhs.length === rule.rhs.length &&
+             ( ( !rule2.hasOwnProperty("neg") && !rule.hasOwnProperty("neg") ) ||
+             ( rule2.neg.every( (x,k) => x.join(",") === rule.neg[k].join(",") ) ) ) &&
+             rule2.lhs.every( (x,k) => x.join(",") === rule.lhs[k].join(",") ) &&
+             rule2.rhs.every( (x,k) => x.join(",") === rule.rhs[k].join(",") ) ) {
+          this.rules.splice(i,1);
+          break;
+        }
       }
     }
 
