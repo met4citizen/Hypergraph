@@ -189,10 +189,10 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 
 			case "": // pattern matching
 				this.algorithmic.setRule( str.split(";")[i] + "->()" );
-				this.findMatches( this.spatial );
+				this.findMatches();
 				r.push( this.matches.length );
 				for( let j=0; j < this.matches.length; j++ ) {
-					const hit = this.mapper( this.spatial, this.algorithmic.rules[ this.matches[j].r ].lhs , this.matches[j].m );
+					const hit = this.mapper( this.algorithmic.rules[ this.matches[j].r ].lhs , this.matches[j].m );
 					if ( this.data === this.spatial ) {
 						// Space mode
 						e.push( hit );
@@ -209,10 +209,10 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 
 			case "-": // pattern matching, EXCLUDE
 				this.algorithmic.setRule( str.split(";")[i].substr(1) + "->()" );
-				this.findMatches( this.spatial );
+				this.findMatches();
 				r.push( this.matches.length );
 				for( let j=0; j < this.matches.length; j++ ) {
-					const hit = this.mapper( this.spatial, this.algorithmic.rules[ this.matches[j].r ].lhs , this.matches[j].m );
+					const hit = this.mapper( this.algorithmic.rules[ this.matches[j].r ].lhs , this.matches[j].m );
 					const hitflat = [ ...new Set( hit.flat() ) ];
 
 					if ( this.data === this.spatial ) {
@@ -535,16 +535,15 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.linkCurvature( 'curvature' )
 			.linkCurveRotation( 'rotation' )
 			.linkDirectionalArrowLength(0)
-			.d3VelocityDecay( 0.3 )
-			.d3AlphaDecay( 1 - Math.pow( 0.001, 1/400 ) ) // exponent = 1 / # iterations to cool
+			.d3VelocityDecay( 0.4 )
+			.d3AlphaDecay( 0.01 )
 			.nodeThreeObject( null );
 			// Set forces
-			this.graph3d.d3Force("link").iterations( 2 );
+			this.graph3d.d3Force("link").iterations( 15 );
 			this.graph3d.d3Force("center").strength( 1 );
 			this.graph3d.d3Force("charge").strength( -60 ).distanceMin( 2 );
 			// First additions
 			while( this.pos < this.algorithmic.initial.length && this.tick() );
-			this.graph3d.cameraPosition( { x: 0, y: 0, z: 500 }, { x: 0, y: 0, z: 0 } );
 			break;
 
 		case "causal":
@@ -567,10 +566,10 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			.linkDirectionalArrowLength( 20 )
 			.linkDirectionalArrowRelPos(1)
 			.d3VelocityDecay( 0.3 )
-			.d3AlphaDecay( 1 - Math.pow( 0.001, 1/400 ) ) // exponent = 1 / # iterations to cool
+			.d3AlphaDecay( 0.01 )
 			.nodeThreeObject( null );
 			// Set forces
-			this.graph3d.d3Force("link").iterations( 1 );
+			this.graph3d.d3Force("link").iterations( 2 );
 			this.graph3d.d3Force("link").strength( l => {
 				let refs = 2 * (Math.min(l.source.refs, l.target.refs) + 1);
 				return 1 / refs;
@@ -578,10 +577,8 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			this.graph3d.d3Force("center").strength( 0.1 );
 			this.graph3d.d3Force("charge").strength( -200 ).distanceMin( 1 );
 
-			// First additions
-			while( this.pos < 10 && this.tick() );
-
-			this.graph3d.cameraPosition( { x: 0, y: 0, z: 500 }, { x: 0, y: 0, z: 0 } );
+			// Initial state
+			this.tick(10);
 			break;
 
 		default:
@@ -670,10 +667,9 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 	*/
 	final() {
 		this.stop();
-		// More iterations for spatial graph
-		if ( this.data === this.spatial ) {
-			this.graph3d.d3Force("link").iterations( 8 );
-		}
+		this.graph3d
+			.d3VelocityDecay( 0.5 )
+			.d3AlphaDecay( 0.01 );
 		this.tick( this.data.events.length );
 	}
 
