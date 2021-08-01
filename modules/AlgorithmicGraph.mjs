@@ -20,6 +20,18 @@ class AlgorithmicGraph extends Hypergraph  {
   }
 
   /**
+  * Clear the AlgorithmicGraph for reuse.
+  */
+  clear() {
+    super.clear();
+    this.rulestr = ""; // user-specified rewriting rules
+
+    this.commands = []; // commands
+    this.rules = []; // rewriting rules
+    this.initial = []; // initial graph
+  }
+
+  /**
   * Return vertex label.
   * @param {Vertex} v Vertex
   * @return {string} Vertex label.
@@ -339,17 +351,17 @@ class AlgorithmicGraph extends Hypergraph  {
     .replace( /(;)+/g , ";" ).replace( /;$/g ,"" );
 
     // Discard all unsupported characters
-    str = str.replace( /[^()a-z0-9,=;>\.\-\\]+/g , "" );
+    str = str.replace( /[^()a-z0-9,=;>\.\-\\\/]+/g , "" );
 
     // Expand equal signs == as two separate reversible rules
     let rulestr = "";
     str.split(";").forEach( s => {
       if ( s[0] === '(' && s.includes("==") ) {
         let b = s.split("==");
-        rulestr = rulestr + b[0] + ">" + b[1].replace( /\\.*$/g, "") + ";" + b[1] + ">" + b[0].replace( /\\.*$/g, "") + ";";
+        rulestr = rulestr + b[0] + ">" + b[1].replace( /[\\\/].*$/g, "") + ";" + b[1] + ">" + b[0].replace( /[\\\/].*$/g, "") + ";";
       } else if ( s[0] === '(' && s.includes(">") ) {
         let b = s.split(">");
-        rulestr = rulestr + b[0] + ">" + b[1].replace( /\\.*$/g, "") + ";";
+        rulestr = rulestr + b[0] + ">" + b[1].replace( /[\\\/].*$/g, "") + ";";
       } else {
         // Command
         this.commands.push( s.slice() );
@@ -361,6 +373,7 @@ class AlgorithmicGraph extends Hypergraph  {
     .replace( /;$/g ,"" ).replace( /\),\(/g , ")(" )
     .replace( /^\(/g , "[{\"lhs\": [[\"" ).replace( /,/g , "\",\"" )
     .replace( /\)\\\(/g , "\"]],\"neg\": [[\"" )
+    .replace( /\)\/\(/g , "\"]],\"opt\": [[\"" )
     .replace( /\);\(/g , "\"]]},{\"lhs\": [[\"" )
     .replace( /\)>\(/g , "\"]],\"rhs\": [[\"" )
     .replace( /\)\(/g , "\"],[\"" ).replace( /\)$/g , "\"]]}]" );
@@ -376,6 +389,43 @@ class AlgorithmicGraph extends Hypergraph  {
     }
     catch( e ) {
       throw new SyntaxError("Invalid rule format.");
+    }
+
+
+    // Process symmetries
+    for( let i = this.rules.length-1; i>=0; i-- ) {
+      let rule = this.rules[i];
+      if ( rule.hasOwnProperty("opt") ) {
+        rule.opt = rule.opt.flat();
+        if ( rule.opt.includes("sym") && rule.hasOwnProperty("lhs") ) {
+          let revs = [...Array(rule.lhs.length).keys()].filter( x => {
+            if ( rule.lhs[x].length <= 1 ) return false;
+            return rule.lhs[x].join(",") !== rule.lhs[x].slice().reverse().join(",");
+          });
+          let combs = AlgorithmicGraph.perm([false,true],revs.length).slice(1);
+          for( let c of combs ) {
+            const newrule = {};
+            newrule["lhs"] = rule.lhs.map( p => p.slice() );
+            if ( rule.hasOwnProperty("rhs") ) newrule["rhs"] = rule.rhs.map( p => [ ...p ] );
+            if ( rule.hasOwnProperty("neg") ) newrule["neg"] = rule.neg.map( p => [ ...p ] );
+            if ( rule.hasOwnProperty("opt") ) newrule["opt"] = rule.opt.slice();
+            for( let j=0; j<revs.length; j++ ) {
+              if ( c[j] ) {
+                let edge = newrule.lhs[revs[j]];
+                let origedge = edge.slice();
+                edge.reverse();
+                let both = [ origedge.join(","), edge.join(",") ];
+                for( let k=0; k<newrule.rhs.length; k++ ) {
+                  if ( both.includes( newrule.rhs[k].join(",") ) ) {
+                    newrule.rhs[k].reverse();
+                  }
+                }
+              }
+            }
+            this.rules.splice(i+1,0,newrule);
+          }
+        }
+      }
     }
 
     // Normalize each rule and sort
@@ -425,6 +475,12 @@ class AlgorithmicGraph extends Hypergraph  {
         this.rulestr = this.rulestr + "\\";
         r.neg.forEach( e => {
           this.rulestr = this.rulestr + "(" + e.map( v => v + 1 ).join(",") + ")";
+        });
+      }
+      if ( r.hasOwnProperty("opt") && r.opt.length > 0 ) {
+        this.rulestr = this.rulestr + "\/";
+        r.opt.forEach( o => {
+          this.rulestr = this.rulestr + "(" + o + ")";
         });
       }
       this.rulestr = this.rulestr + "->";
