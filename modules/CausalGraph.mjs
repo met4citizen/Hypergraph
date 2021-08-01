@@ -15,7 +15,7 @@ class CausalGraph extends Hypergraph {
 		this.L = new Map(); // Map from spatial edge id to causal vertex
 		this.K = new Map(); // Worldlines from undirected spatial vertex to causal vertices
 		this.S = new Map(); // Map from step number to causal vertices
-		this.maxstep = 0; // Record max step
+		this.maxstep = -1; // Record max step
 	}
 
 	/**
@@ -26,7 +26,7 @@ class CausalGraph extends Hypergraph {
 		this.L.clear();
 		this.K.clear();
 		this.S.clear();
-		this.maxstep = 0;
+		this.maxstep = -1;
 	}
 
 	/**
@@ -97,7 +97,7 @@ class CausalGraph extends Hypergraph {
 		let oldedges = update.rhs.filter( e => e.every( v => oldvs.includes(v) ) ).length;
 		obj.massratio = alledges ? oldedges / alledges : 0;
 		let rhs = update.rhs.map( e => e.join(",") );
-		let lhsinv = update.lhs.map( e => e.reverse().join(",") );
+		let lhsinv = update.lhs.map( e => e.slice().reverse().join(",") );
 		obj.spin = lhsinv.filter( x => rhs.includes( x ) ).length;
 
 		// Update leafs
