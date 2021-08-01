@@ -28,7 +28,7 @@ certain models can reproduce key features of both relativity and quantum mechani
 ## Rules
 
 Click `RULE` to modify the rewriting rule or change its settings. The settings
-include different options for rule ordering and event orderings and the number
+include different options for rule ordering, event ordering and the max number
 of rewriting events. Click `RUN` to start the rewriting process.
 
 An example of a hypergraph rewriting rule:
@@ -38,12 +38,12 @@ An example of a hypergraph rewriting rule:
 (1,1,1)(1,1,1)
 ```
 
-In this case, wherever a subhypergraph in the form of the left-hand side
+In the above case, wherever a subhypergraph in the form of the left-hand side
 pattern `(1,1,2)(2,3,4)` is found on the hypergraph, it is replaced with
 a new subhypergraph in the form of the right-hand side pattern
 `(1,5,4)(2,5,3)(5,5,4)`. The two sides of any one-way rule must be separated
 with an arrow `->`. The separator `==` can be used as a shortcut for a two-way
-setup with both the rule and its inverse.
+setup, which includes both the rule and its inverse.
 
 Hyperedge patterns can be described by using numbers and/or
 characters. Several types of parentheses are supported. For example, a rule
@@ -88,11 +88,6 @@ Rule order | Description
 `NDX` | Index order. Regardless of the event ordering, always try to apply the events in the order in which rules are specified.
 `REV` | Reverse index order.
 
-According to the Wolfram model, applying all the overlapping matches
-simultaneously gives rise to quantum mechanics. This means that this simulator
-shows only one possible classical evolution of the hypergraph i.e. one branch
-of all the possible histories.
-
 ## Simulation
 
 Simulator currently supports two modes: `Space` and `Time`.
@@ -110,6 +105,24 @@ According to the Wolfram Model, the spatial hypergraph represents a spacelike
 state of the universe with nodes as "atoms of space". The flux of causal edges
 through spacelike and timelike hypersurfaces is related to energy and momentum
 respectively.
+
+## Quantum Mechanics
+
+The left hand side patterns often produce many overlapping matches. According
+to the Wolfram model, applying them all gives rise to quantum mechanics with
+many possible branches of histories.
+
+This simulator follows only one (classical) branch, because following
+them all would be computationally hard. However, if the rule option `QM`
+is selected, the simulator tries to maximize the rewrites by ignoring the edges
+that are both removed and added with a single update. In some cases this
+allows more overlapping matches to be applied in one single step.
+
+In order to simulate interference, the left hand side of the rule can have
+a filter with the `\` option. For example, a rule `(1)(1,2)\(2)->(1)(1,2)(2)`)
+is only applied, if no match is found for `(2)`. With the `QM` option set,
+this check is made just before each update.
+
 
 ## Highlighting
 
