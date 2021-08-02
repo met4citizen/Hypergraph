@@ -541,7 +541,7 @@ class Hypergraph3D extends HypergraphRewritingSystem {
 			// Set forces
 			this.graph3d.d3Force("link").iterations( 15 );
 			this.graph3d.d3Force("center").strength( 1 );
-			this.graph3d.d3Force("charge").strength( -60 ).distanceMin( 2 );
+			this.graph3d.d3Force("charge").strength( -100 ).distanceMin( 3 );
 			// First additions
 			while( this.pos < this.algorithmic.initial.length && this.tick() );
 			break;
