@@ -398,9 +398,11 @@ class AlgorithmicGraph extends Hypergraph  {
       if ( rule.hasOwnProperty("opt") ) {
         rule.opt = rule.opt.flat();
         if ( rule.opt.includes("sym") && rule.hasOwnProperty("lhs") ) {
-          let revs = [...Array(rule.lhs.length).keys()].filter( x => {
-            if ( rule.lhs[x].length <= 1 ) return false;
-            return rule.lhs[x].join(",") !== rule.lhs[x].slice().reverse().join(",");
+          let lhsneg = [ ...rule.lhs ]
+          if ( rule.hasOwnProperty("neg") ) lhsneg = [ ...lhsneg, ...rule.neg ];
+          let revs = [...Array(lhsneg.length).keys()].filter( x => {
+            if ( lhsneg[x].length <= 1 ) return false;
+            return lhsneg[x].join(",") !== lhsneg[x].slice().reverse().join(",");
           });
           let combs = AlgorithmicGraph.perm([false,true],revs.length).slice(1);
           for( let c of combs ) {
@@ -409,9 +411,11 @@ class AlgorithmicGraph extends Hypergraph  {
             if ( rule.hasOwnProperty("rhs") ) newrule["rhs"] = rule.rhs.map( p => [ ...p ] );
             if ( rule.hasOwnProperty("neg") ) newrule["neg"] = rule.neg.map( p => [ ...p ] );
             if ( rule.hasOwnProperty("opt") ) newrule["opt"] = rule.opt.slice();
+            let newlhsneg = [ ...newrule.lhs ]
+            if ( rule.hasOwnProperty("neg") ) newlhsneg = [ ...newlhsneg, ...newrule.neg ];
             for( let j=0; j<revs.length; j++ ) {
               if ( c[j] ) {
-                let edge = newrule.lhs[revs[j]];
+                let edge = newlhsneg[revs[j]];
                 let origedge = edge.slice();
                 edge.reverse();
                 let both = [ origedge.join(","), edge.join(",") ];
