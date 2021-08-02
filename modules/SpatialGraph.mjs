@@ -33,17 +33,19 @@ class SpatialGraph extends Hypergraph {
 		// Process all edges to delete
 		for( const e of del ) {
 			// Remove search patterns
-			let edge = this.E.get( e );
-			for( let j = 0; j < edge.length; j++ ) {
-				const pattern = edge.map( (x,k) => ( k !== j ? "*" : x ) ).join(",");
-				let p = this.P.get( pattern );
-				let idx = p.findIndex( x => (x.length === edge.length) && (x.every( (y,k) => y === edge[k])) );
-				p.splice( idx, 1 );
-				if ( p.length === 0 ) this.P.delete( pattern );
-			}
+			if ( this.E.has( e ) ) {
+				let edge = this.E.get( e );
+				for( let j = 0; j < edge.length; j++ ) {
+					const pattern = edge.map( (x,k) => ( k !== j ? "*" : x ) ).join(",");
+					let p = this.P.get( pattern );
+					let idx = p.findIndex( x => (x.length === edge.length) && (x.every( (y,k) => y === edge[k])) );
+					p.splice( idx, 1 );
+					if ( p.length === 0 ) this.P.delete( pattern );
+				}
 
-			// Remove the edge
-			this.delete( e );
+				// Remove the edge
+				this.delete( e );
+			}
 		}
 
 		// Process all edges to add

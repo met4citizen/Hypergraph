@@ -1,6 +1,7 @@
 import { SpatialGraph } from "./SpatialGraph.mjs";
 import { CausalGraph } from "./CausalGraph.mjs";
 import { AlgorithmicGraph } from "./AlgorithmicGraph.mjs";
+import { SparseGraph } from "./SparseGraph.mjs";
 
 /**
 * @class Hypergraph Rewriting System.
@@ -21,6 +22,7 @@ class HypergraphRewritingSystem {
 		this.spatial = new SpatialGraph(); // Spatial hypergraph
 		this.causal = new CausalGraph(); // Causal graph
 		this.algorithmic = new AlgorithmicGraph(); // Algorithmic graph
+		this.sparse = new SparseGraph();
 
 		this.step = -1;
 		this.eventcnt = 0;
@@ -43,6 +45,7 @@ class HypergraphRewritingSystem {
 		this.spatial.clear();
 		this.causal.clear();
 		this.algorithmic.clear();
+		this.sparse.clear();
 
 		this.step = -1;
 		this.eventcnt = 0;
@@ -85,12 +88,13 @@ class HypergraphRewritingSystem {
 
 	/**
 	* Test whether neg pattern exists.
+	* @param {SpatialGraph} spatial Spatial or sparse graph to look for.
 	* @param {number[][]} lhs LHS pattern
 	* @param {number[][]} neg Neg pattern
 	* @param {number[]} map
-	* @return {boolean} True if neg exists.
+	* @return {number} Number of hits.
 	*/
-	isNeg( lhs, neg, map ) {
+	isNeg( spatial, lhs, neg, map ) {
 		let maxnum = Math.max( ...lhs.flat() );
 		let negMaxnum = Math.max( ...lhs.flat(), ...neg.flat() );
 		let map0 =  [ ...map, ...new Array( negMaxnum - maxnum ).fill(-1) ];
@@ -103,7 +107,7 @@ class HypergraphRewritingSystem {
 
 			// Iterate all mapping hypotheses
 			for( let k = maps.length-1; k >= 0; k-- ) {
-				let edges = this.spatial.find( this.mapper( [ pattern ], maps[k] )[0] );
+				let edges = spatial.find( this.mapper( [ pattern ], maps[k] )[0] );
 				for (let l = edges.length-1; l >= 0; l-- ) {
 					if ( !this.isMatch( edges[l], pattern ) ) continue;
 					let map = maps[k];
@@ -114,12 +118,13 @@ class HypergraphRewritingSystem {
 		}
 
 		let fullrule = [ ...lhs, ...neg ];
+		let cnt = 0;
 		for( let k = mapsNext.length-1; k >=0; k-- ) {
-			let hits = this.spatial.hits( this.mapper( fullrule, mapsNext[k] ) );
-			if ( hits.length ) return true;
+			let hits = spatial.hits( this.mapper( fullrule, mapsNext[k] ) );
+			cnt += hits.length;
 		}
 
-		return false;
+		return cnt;
 	}
 
 	/**
@@ -169,7 +174,7 @@ class HypergraphRewritingSystem {
 
 				// Filter out hypotheses that match 'neg', for QM we do this later
 				if ( rule.hasOwnProperty("neg") ) {
-					mapsNext = mapsNext.filter( map => !this.isNeg( rule.lhs, rule.neg, map ) );
+					mapsNext = mapsNext.filter( map => !this.isNeg( this.spatial, rule.lhs, rule.neg, map ) );
 				}
 
 				// Replicate according to the final results
@@ -198,37 +203,70 @@ class HypergraphRewritingSystem {
 				obj["hitmask"] = rule.lhs.map( p => !rule.rhs.map(x => x.join(",") ).includes( p.join(",") ) )
 				obj["lhs"] = rule.lhs.filter( (_,j) => obj["hitmask"][j] );
 				obj["rhs"] = rule.rhs.filter( p => !rule.lhs.map(x => x.join(",") ).includes( p.join(",") ) );
-				rulesNol[i] = obj;
+				rulesNol.push( obj );
 			}
+
+			// If rules have negs, handle interference
+			if ( this.algorithmic.rules.some( x => x.hasOwnProperty("neg") ) ) {
+				// Build up a sparse graph
+				this.sparse.clear();
+				for( let i=0; i < this.matches.length; i++ ) {
+					let match = this.matches[i];
+					let rule = rulesNol[ match.r ];
+					let map = [ ...match.m, ...new Array(10).fill(-1) ];
+					let rhs = this.mapper( rule.rhs, map );
+					let hits = match.hit.slice();
+
+					hits.forEach( (h,j) => {
+						this.sparse.addMatch( this.spatial.E.get(h), h );
+					});
+
+					rhs.forEach( (r,j) => {
+						this.sparse.addMatch( r );
+					});
+
+					// TODO: Negs
+
+				}
+
+				// Test for negs and remove overlapping matches
+				for( let i=this.matches.length-1; i >= 0; i-- ) {
+					let match = this.matches[i];
+					let rulefull = this.algorithmic.rules[ match.r ];
+
+					if ( !rulefull.hasOwnProperty("neg") ) continue;
+					if ( this.isNeg( this.sparse, rulefull.lhs, rulefull.neg, match.m ) <= 1 ) continue;
+
+					this.matches.splice(i,1);
+				}
+			}
+
 		}
 
 		for( let i=0; i < this.matches.length; i++ ) {
 
 			let match = this.matches[i];
-			let rulefull = this.algorithmic.rules[ match.r ];
 			let hitfull = match.hit;
 
 			// If the hit still exists, rewrite it
 			if ( hitfull.every( x => this.spatial.E.has( x ) ) ) {
 
-				// In QM sim we test for neg
-				if ( this.qm && rulefull.hasOwnProperty("neg") &&
-							this.isNeg( rulefull.lhs, rulefull.neg, match.m ) ) continue;
-
-				let rule = this.qm ? rulesNol[ match.r ] : rulefull;
+				let rule = this.qm ? rulesNol[ match.r ] : this.algorithmic.rules[ match.r ];
 				let hit = this.qm ? hitfull.filter( (x,j) => rule.hitmask[j] ) : hitfull;
 				let lhs = this.mapper( rule.lhs, match.m );
 				let rhs = this.mapper( rule.rhs, match.m );
 
 				// Rewrite
 				let add = this.spatial.rewrite( hit, rhs );
-				this.causal.rewrite( hit, add, { lhs: lhs, rhs: rhs }, this.step );
+				this.causal.rewrite( hitfull, add, { lhs: lhs, rhs: rhs }, this.step );
 
 				// Break when limit reached
 				if ( ++this.eventcnt >= this.maxevents ) break;
 			}
 
 		}
+
+		if ( this.qm ) this.sparse.clear();
 
 	}
 
