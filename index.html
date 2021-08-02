@@ -28,7 +28,7 @@
   #paused { position: fixed; z-index: 2; top:0; left:50%; width: 120px; margin-left: -60px; text-align: center; background-color: transparent; display:none; }
   #paused span { background-color: white; padding: 0 10px; }
   #logo { margin: 3px; padding: 3px; position: fixed; z-index: 3; opacity: 0.7; bottom: 0; left: 0; width: 32px; height: 32px; }
-  .button { display: inline-block; margin: 1px 0 1px 0; padding: 0; background-color: black; color: white; width: 32px; height: 14px; border: 1px solid black; border-radius: 3px; font-size: 8px; font-weight: bold; line-height:14px; text-align: center; vertical-align: middle; cursor: pointer; pointer-events: auto; }
+  .button { display: inline-block; margin: 1px 0; padding: 0; background-color: black; color: white; width: 32px; height: 14px; border: 1px solid black; border-radius: 3px; font-size: 8px; font-weight: bold; line-height:14px; text-align: center; vertical-align: middle; cursor: pointer; pointer-events: auto; }
   #dynamics { margin: 16px -16px 0 0; width: 100% !important; padding:0; }
   input[type=range] { width: 100%; margin: 0; }
   #distance-range, #decay-range { cursor: pointer; pointer-events: auto; }
@@ -380,7 +380,7 @@ $(document).ready(function() {
     hypergraph.reset( mode );
 
     $("#distance-range").val( distance.get( mode ) || 200 );
-    $("#decay-range").val( decay.get( mode ) || 200 );
+    $("#decay-range").val( decay.get( mode ) || 150 );
 
     let z = cameraz.get(mode) || 750;
     hypergraph.graph3d.cameraPosition( { x: 0, y: 0, z: z }, { x: 0, y: 0, z: 0 } );
@@ -620,7 +620,7 @@ $(document).ready(function() {
     <div id="dynamics">
       <input id="distance-range" type="range" value="200" min="1" max="1000"><br>
       <span class="label down">Force/decay</span>
-      <input id="decay-range" type="range" value="200" min="10" max="1000"><br>
+      <input id="decay-range" type="range" value="150" min="10" max="1000"><br>
     </div>
   </div>
 
