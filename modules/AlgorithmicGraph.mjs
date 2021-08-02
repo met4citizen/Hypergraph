@@ -472,8 +472,8 @@ class AlgorithmicGraph extends Hypergraph  {
         let rule2 = this.rules[j];
         if ( rule2.lhs.length === rule.lhs.length &&
              rule2.rhs.length === rule.rhs.length &&
-             ( ( !rule2.hasOwnProperty("neg") && !rule.hasOwnProperty("neg") ) ||
-             ( rule2.neg.every( (x,k) => x.join(",") === rule.neg[k].join(",") ) ) ) &&
+             ( !rule2.hasOwnProperty("neg") || !rule.hasOwnProperty("neg") ||
+             rule2.neg.every( (x,k) => x.join(",") === rule.neg[k].join(",") ) ) &&
              rule2.lhs.every( (x,k) => x.join(",") === rule.lhs[k].join(",") ) &&
              rule2.rhs.every( (x,k) => x.join(",") === rule.rhs[k].join(",") ) ) {
           this.rules.splice(i,1);
