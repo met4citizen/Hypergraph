@@ -531,6 +531,8 @@ $(document).ready(function() {
     <div id="rule-settings" class="settings">
       <span title="Run rule" id ="rule-run" class="button">RUN</span>
       <span title="Format rule" id ="rule-check" class="button">SCAN</span>
+      <span class="label down">Opt</span>
+      <span title="Simulate QM" class="option qm qm-selected">QM</span>
       <span class="label down">Rule order</span>
       <span title="Allow mixing rules" class="option ruleordering ruleordering-selected" data-value="none">NON</span>
       <span title="Index order" class="option ruleordering" data-value="index">NDX</span>
@@ -540,8 +542,7 @@ $(document).ready(function() {
       <span title="Wolfram" class="option eventordering" data-value="wolfram">WM</span>
       <span title="Newest" class="option eventordering" data-value="ascending">ASC</span>
       <span title="Oldest" class="option eventordering" data-value="descending">DEC</span>
-      <span class="label down">Opt</span>
-      <span title="Simulate QM" class="option qm qm-selected">QM</span>
+
       <span class="label down">Max events</span>
       <span title="Max 500" class="option limit limit-selected" data-value="500">500</span>
       <span title="Max 1000" class="option limit" data-value="1000">1K</span>
@@ -655,6 +656,7 @@ $(document).ready(function() {
         <tr><td>sphere(n)</td></tr>
         <tr><td>random(n,dim,nedges)</td></tr>
         <tr><td>complete(n)</td></tr>
+        <tr><td>rule('rule',n)</td></tr>
         <tr><td>blackhole(n,rs)</td></tr>
         <tr><td>blackhole2(n,rs)</td></tr>
         <tr><td>erb(n,rs)</td></tr>

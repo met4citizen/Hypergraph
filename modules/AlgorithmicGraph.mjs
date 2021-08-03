@@ -1,4 +1,5 @@
 import { Hypergraph } from "./Hypergraph.mjs";
+import { HypergraphRewritingSystem } from "./HypergraphRewritingSystem.mjs";
 
 /**
 * @class Graph representing the space of all algorithms.
@@ -118,8 +119,8 @@ class AlgorithmicGraph extends Hypergraph  {
   * @return {number[][]} Edges
   */
   points( n ) {
-    if ( (n < 10) || (n > 10000) )
-      throw new Error("[Points] Number of points must be between 10-10000.");
+    if ( (n < 1) || (n > 10000) )
+      throw new Error("[Points] Number of points must be between 1-10000.");
 
     let edges = [];
     for( let i=0; i<n; i++) {
@@ -331,6 +332,41 @@ class AlgorithmicGraph extends Hypergraph  {
   }
 
   /**
+  * Produces initial graph from rule.
+  * @param {string} rule Number of vertices.
+  * @param {number} n Maximum number of events.
+  * @return {number[][]} Edges
+  */
+  rule( rule, n ) {
+    if ( (n < 10) || (n > 1000) )
+      throw new Error("[Rule] Max # of events must be between 10-1000.");
+
+    let h = new HypergraphRewritingSystem();
+
+    // Set parameters
+		h.algorithmic.setRule( rule );
+		h.maxevents = n;
+
+		// Add initial edges
+		let add =  h.spatial.rewrite( [], h.algorithmic.initial );
+		h.causal.rewrite( [], add, { lhs: [], rhs: h.algorithmic.initial }, ++h.step );
+
+    // Run simulation
+    do {
+			h.step++;
+			h.findMatches();
+			if ( h.matches.length === 0 ) break;
+			for (let i = h.matches.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1));
+				[h.matches[i], h.matches[j]] = [h.matches[j], h.matches[i]];
+			}
+			h.processMatches();
+		} while( h.eventcnt < h.maxevents );
+
+    return [ ...h.spatial.E.values() ];
+  }
+
+  /**
   * Parse rule/command from a string.
   * @param {string} str Rule/command string
   */
@@ -348,10 +384,11 @@ class AlgorithmicGraph extends Hypergraph  {
     str = str.toLowerCase()
     .replace( /\{|\[/g , "(" ).replace( /}|]/g , ")" )
     .replace( /(\()+/g , "(" ).replace( /(\))+/g , ")" )
-    .replace( /(;)+/g , ";" ).replace( /;$/g ,"" );
+    .replace( /(;)+/g , ";" ).replace( /;$/g ,"" )
+    .replace( /\"/g, "'");
 
     // Discard all unsupported characters
-    str = str.replace( /[^()a-z0-9,=;>\.\-\\\/]+/g , "" );
+    str = str.replace( /[^()a-z0-9,=;>\.\-\\\/']+/g , "" );
 
     // Expand equal signs == as two separate reversible rules
     let rulestr = "";
@@ -513,49 +550,61 @@ class AlgorithmicGraph extends Hypergraph  {
 
     // Commands
     this.commands.forEach( c => {
-      const cmd = c.split("(").map( p => [ ...p.replace( /[^-a-z0-9,\.]+/g, "" ).split(",") ] );
-      const func = cmd[0][0];
-			const params = cmd[1];
+      let x = c.match( /^([^(]+)/ );
+      let func = x ? x[1].trim() : "";
+      x = c.match( /\((.*)\)/s );
+      let parantheses = x ? x[1].trim() : "";
+      x = parantheses.match( /'([^']+)'/g );
+      let quotes = x ? x.map( s => s.slice(1, -1) ) : [];
+      let params = parantheses.replace( /'([^']+)'/g, "''" ).split(",").map( p => {
+        p = p.trim();
+        return (p === "''") ? quotes.shift() : p;
+      });
 
       switch( func ) {
         case "": // initial graph
-          cmd.forEach( (x,i) => { if ( i > 0 ) this.initial.push( x ); });
+          let edges = c.split("(").map( p => [ ...p.replace( /[^-a-z0-9,\.]+/g, "" ).split(",") ] ).slice(1);
+          this.initial.push( ...edges );
+          break;
+        case "rule":
+          if ( params.length < 2 ) throw new Error("Rule: Invalid number of parameters.");
+          this.initial.push( ...this.rule( params[0] || "", parseInt(params[1]) || 10 ) );
           break;
         case "points":
           if ( params.length < 1 ) throw new Error("Points: Invalid number of parameters.");
-          this.initial.push( ...this.points( parseInt(params[0]) ) );
+          this.initial.push( ...this.points( parseInt(params[0]) || 1 ) );
           break;
         case "line":
           if ( params.length < 1 ) throw new Error("Line: Invalid number of parameters.");
-          this.initial.push( ...this.grid( parseInt(params[0]), 1 ) );
+          this.initial.push( ...this.grid( parseInt(params[0]) || 1, 1 ) );
           break;
         case "grid": case "ngrid":
           if ( params.length < 2 ) throw new Error("Grid: Invalid number of parameters.");
-          this.initial.push( ...this.grid( parseInt(params[0]), parseInt(params[1]) ) );
+          this.initial.push( ...this.grid( parseInt(params[0]) || 1, parseInt(params[1]) || 1 ) );
           break;
         case "sphere":
           if ( params.length < 1 ) throw new Error("Sphere: Invalid number of parameters.");
-          this.initial.push( ...this.complete( parseInt(params[0]), 1, true ) );
+          this.initial.push( ...this.complete( parseInt(params[0]) || 10, 1, true ) );
           break;
         case "blackhole":
           if ( params.length < 2 ) throw new Error("Blackhole: Invalid number of parameters.");
-          this.initial.push( ...this.blackhole( parseInt(params[0]), parseFloat(params[1]) ) );
+          this.initial.push( ...this.blackhole( parseInt(params[0]) || 100, parseFloat(params[1]) || 1.0 ) );
           break;
         case "blackhole2":
           if ( params.length < 2 ) throw new Error("Blackhole2: Invalid number of parameters.");
-          this.initial.push( ...this.blackhole2( parseInt(params[0]), parseFloat(params[1]) ) );
+          this.initial.push( ...this.blackhole2( parseInt(params[0]) || 100, parseFloat(params[1]) || 1.0 ) );
           break;
         case "erb":
           if ( params.length < 2 ) throw new Error("Erb: Invalid number of parameters.");
-          this.initial.push( ...this.erb( parseInt(params[0]), parseFloat(params[1]) ) );
+          this.initial.push( ...this.erb( parseInt(params[0]) || 100, parseFloat(params[1]) || 1.0 ) );
           break;
         case "random":
           if ( params.length < 3 ) throw new Error("Random: Invalid number of parameters.");
-          this.initial.push( ...this.random( parseInt(params[0]), parseInt(params[1]), parseInt(params[2]) ) );
+          this.initial.push( ...this.random( parseInt(params[0]) || 10, parseInt(params[1]) || 3, parseInt(params[2]) || 3 ) );
           break;
         case "complete":
           if ( params.length < 1 ) throw new Error("Complete: Invalid number of parameters.");
-          this.initial.push( ...this.complete( parseInt(params[0]) ) );
+          this.initial.push( ...this.complete( parseInt(params[0]) || 10 ) );
           break;
         default:
           throw new Error( "Unknown command: " + func );

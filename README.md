@@ -62,6 +62,7 @@ Initial graph | Description
 `sphere(n)` | Sphere with `n` vertices.
 `random(n,d,nedges)` | Random graph with `n` vertices so that each vertex is sprinkled randomly in `d` dimensional space and has at least `nedges` connections.
 `complete(n)` | Complete graph with `n` vertices so that each vertex is connected to every other vertex.
+`rule('rule',n)` | Run rewriting rule `rule` for maximum `n` events using default rule and event orders.
 `blackhole(n,rs)` | Black hole with `n` vertices and Schwarzschild radius `rs`. EXPERIMENTAL
 `blackhole2(n,rs)` | Twin black hole so that both black holes have `n` vertices and Schwarzschild radius `rs`. EXPERIMENTAL
 `erb(n,rs)` | Einstein-Rosen Bridge so that both sides have `n` vertices and Schwarzschild radius `rs`. EXPERIMENTAL
@@ -108,20 +109,23 @@ respectively.
 
 ## Quantum Mechanics
 
-The left hand side patterns often produce many overlapping matches. According
+The left hand side pattern often produces many overlapping matches. According
 to the Wolfram model, applying them all gives rise to quantum mechanics with
-many possible branches of histories.
+many possible sequencings i.e. many possible branches of histories.
 
 This simulator follows only one (classical) branch, because following
-them all would be computationally hard. However, if the rule option `QM`
-is selected, the simulator tries to maximize the rewrites by ignoring the edges
+them all would be computationally hard. However, with rule option `QM`
+selected, simulator tries to maximize the rewrites by ignoring the edges
 that are both removed and added with a single update. In some cases this
 allows more overlapping matches to be applied in one single step.
 
 In order to simulate interference, the left hand side of the rule can have
 a filter with the `\` option. For example, a rule `(1)(1,2)\(2)->(1)(1,2)(2)`)
 is only applied, if no match is found for `(2)`. With the `QM` option set,
-this check is made just before each update.
+this check is made relative to all possible branches.
+
+Note: Using the `QM` option changes the structure of the causal graph closer
+to so called multiway causal graph.
 
 
 ## Highlighting
