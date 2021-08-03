@@ -21,14 +21,13 @@ class SparseGraph extends SpatialGraph {
 
 	/**
 	* Add a match.
-	* @param {Object} match
+	* @param {Hyperedge} edge
+  * @param {number} [e=null] Edge id
 	*/
 	addMatch( edge, e = null ) {
     // Check if this edge is already covered
     if ( e && this.E.has(e) ) return;
     if ( !e && this.F.has(e) && this.F.get(e).length > 4 ) return;
-    let s = edge.map( v => v === -1 ? "*" : v).join(",");
-    if ( !e && this.P.has(s) && this.P.get(s).length > 4 ) return;
 
     e = e || --this.maxe;
     edge = edge.map( v => v === -1 ? --this.maxe : v );
