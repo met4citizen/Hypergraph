@@ -19,19 +19,17 @@
   html{ width:100%; height:100%; font-size: 10px; font-family: Verdana, Geneva, sans-serif; letter-spacing: -0.3px; }
   body{ width: 100%; height: 100%; margin: 0; padding: 0; background-color: white; color: black; line-height:1.5rem;  overflow: hidden; cursor: crosshair; text-align: left; }
   div.controls { margin: 2px; padding: 2px; position: fixed; z-index: 3; opacity: 0.7; cursor: default; pointer-events: none; }
+  span { display: inline-block; vertical-align: top; }
   a { cursor: pointer; pointer-events: auto; }
+  hr { display: block; height: 1px; border: 0; border-top: 1px solid #ccc; margin: 4px 0; padding: 0; }
   #topleft { top:0; left:0; z-index: 5; }
   #topright { top:0; right:0; text-align: right; }
   #bottomleft { bottom:0; left:0; margin-left: 42px; }
   #bottomright { bottom:0; right:4px; text-align: right; }
-  .cheatsheet { bottom:35px; left:0; text-align: left; opacity: 0.9; display:none; }
   #paused { position: fixed; z-index: 2; top:0; left:50%; width: 120px; margin-left: -60px; text-align: center; background-color: transparent; display:none; }
   #paused span { background-color: white; padding: 0 10px; }
   #logo { margin: 3px; padding: 3px; position: fixed; z-index: 3; opacity: 0.7; bottom: 0; left: 0; width: 32px; height: 32px; }
   .button { display: inline-block; margin: 1px 0; padding: 0; background-color: black; color: white; width: 32px; height: 14px; border: 1px solid black; border-radius: 3px; font-size: 8px; font-weight: bold; line-height:14px; text-align: center; vertical-align: middle; cursor: pointer; pointer-events: auto; }
-  #dynamics { margin: 16px -16px 0 0; width: 100% !important; padding:0; }
-  input[type=range] { width: 100%; margin: 0; }
-  #distance-range, #decay-range { cursor: pointer; pointer-events: auto; }
   .button:active { opacity: 0.2; }
   .button-disabled { opacity: 0.2; pointer-events: none; }
   #red { background-color: hotpink; border-color: hotpink; }
@@ -42,28 +40,26 @@
   .text { display: inline-block; margin: 0 0 0 3px; padding: 0 5px; background-color: transparent; color: black; width: auto; line-height: 16px; font-size: 10px; font-weight: bold; text-align:left; text-transform: lowercase; vertical-align: top; }
   .text-disabled { opacity: 0.2; }
   .text[contenteditable="true"] { min-width: 320px; -webkit-touch-callout: text; -webkit-user-select: text; -khtml-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; opacity: 1; }
-  div.settings { margin:5px 0 20px 46px; padding:0; display: none; }
-  .option { display: inline-block; margin: 0; padding: 0; width: 32px; height:14px; background-color: transparent; color: black;  border: 1px solid transparent; border-radius: 3px; font-size: 8px; font-weight: bold; line-height: 14px; text-align: center; vertical-align: middle; cursor: pointer; pointer-events: auto; }
-  .limit, .ruleordering, .eventordering, .grad-lo, .grad-mid, .grad-hi, .qm { width: 20px; }
-  .grad-radius { width: 12px; }
-  .mode-selected, .ruleordering-selected, .eventordering-selected, .limit-selected,
-  .red-surface-selected, .blue-surface-selected, .background-selected, .grad-lo-selected,
-  .grad-mid-selected, .grad-hi-selected, .grad-radius-selected, .qm-selected { border: 1px solid grey; }
+  div.settings { margin:4px 0 15px 46px; padding:0; display: none; }
+  div.settings a { display: inline-block; color: inherit; text-decoration: inherit; pointer-events: auto; }
+  #rule-opt { display: block; margin:0 0 4px 46px; padding:0; pointer-events: none; white-space: nowrap; clear:both; }
+  #rule-opt span { display: inline-block; margin: 0 1px; padding: 0 2px; height:12px; background-color: transparent; color: grey; border: 1px solid grey; border-radius: 3px; font-size: 7px; font-weight: bold; line-height: 12px; text-align: center; vertical-align: middle; }
+  #observer { display:block; text-align: left; margin: 16px 0 0 0; width: 140px; padding:0; line-height: 10px; }
+  input[type=range] { width: 100%; margin: 0; }
+  #distance-range, #decay-range { cursor: pointer; pointer-events: auto; }
+  #filter { display: none; margin: 0 0 4px 0; padding: 0; }
+  .option { display: inline-block; margin: 0; padding: 0 1px; height:14px; background-color: transparent; color: black;  border: 1px solid transparent; border-radius: 3px; font-size: 8px; font-weight: bold; line-height: 14px; text-align: center; vertical-align: middle; cursor: pointer; pointer-events: auto; }
+  .mode { width: 30px }
+  .selected { border: 1px solid grey; }
   .label { display: inline-block; line-height: 16px; font-size: 8px; font-weight: bold; text-align:left; text-transform: uppercase; color: grey; margin: 2px; min-width: 4px; }
   .status { min-width: 38px; }
-  .up { position: absolute; transform: translateY(-15px); z-index: -1; }
+  #grad-result { min-width: 80px; }
+  .up { position: absolute; transform: translateY(-17px); z-index: -1; }
   .down { position: absolute; transform: translateY(15px); z-index: -1; }
   .up:before, .down:before { content: "|"; }
-  table { border: 1px solid grey; margin-top: 10px; border-collapse: collapse; background-color: white; color: grey; font-family: arial; line-height:1.3rem; }
-  thead { background-color: grey; color: white; }
-  thead th { font-size: 8px; font-weight: bold; text-transform: uppercase; padding: 0px 0 1px 5px; }
-  tbody th { font-size: 8px; font-weight: bold; color: #333; text-transform: uppercase; padding: 0px 0 1px 5px; }
-  td { border: 0; width: 140px; min-width:140px; max-width:140px; padding: 0px 0 1px 10px; vertical-align: top; }
-  td + td, th + th, th + td, td + th { border-left: 1px solid grey; }
-  #grad-settings table { border: 0; background-color: transparent; }
-  #grad-settings td { border: 0; background-color: transparent; width: 50px; min-width: 50px; max-width: 50px; }
-  #grad-settings a { display: inline-block; color: inherit; text-decoration: inherit; pointer-events: auto; }
-  #progress { position:absolute; width: 300px; height: 16px; z-index: 15; top: 45%; left: 50%; margin: 0 0 0 -150px; display: none;}
+  #progress { position:absolute; width: 300px; height: 76px; z-index: 15; top: 40%; left: 50%; margin: 0 0 0 -150px; padding: 5px 10px; background-color: white; border: 1px solid lightgrey; box-shadow: 6px 6px 4px 1px rgba(128, 128, 128, .2); display: none; }
+  #progress span.status { min-width: 46px; }
+  span.status:nth-child(2) { min-width: 36px !important; }
   #progress-bar { display: inline-block; width: 250px; background-color: #e0e0e0; margin: 0; padding: 0; line-height: 16px; height: 16px; border-radius: 3px; }
   #progress-bar-fill { display: inline-block; height: 16px; background-color: #659cef; border-radius: 3px; transition: width 100ms ease-in-out; }
   .noselect { -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
@@ -82,35 +78,7 @@
 
 <script type="module">
 
-import {Hypergraph3D} from "./modules/Hypergraph3D.mjs";
-
-// Hypergraph object and define colors, sizes and widths for different graph styles
-// Note: use CSS to define node label style .nodeLabelGraph3d
-const hypergraph = new Hypergraph3D();
-window.hgraph = hypergraph; // TODO: REMOVE THIS AFTER DEBUGGING
-
-const spatialStyles = [
-  {  nColor: "black", lColor: "grey", nVal: 4, lWidth: 3, bgColor: "white", nRelSize: 3 }, // 0 defaults
-  {  nColor: "purple", lColor: "hotpink", nVal: 10, lWidth: 6, fill: "hotpink", opacity: 0.2 }, // 1 Red
-  {  nColor: "blue", lColor: "deepskyblue", nVal: 10, lWidth: 6, fill: "deepskyblue", opacity: 0.2 }, // 2 Blue
-  {  nColor: "darkblue", lColor: "darkblue", nVal: 10, lWidth: 6 }, // 3 Red + Blue
-  {  nColor: "lightgrey", lColor: "lightgrey", fill: "#A0D0D6", opacity: 0.3, nVal: 4, lWidth: 0 } // 4 Multiedge
-];
-
-const causalStyles = [
-  {  nColor: "black", lColor: "grey", nVal: 6, lWidth: 6, bgColor: "white", nRelSize: 4 }, // 0 defaults
-  {  nColor: "purple", lColor: "hotpink", nVal: 10, lWidth: 9, fill: "hotpink", opacity: 0.2 }, // 1 Red
-  {  nColor: "blue", lColor: "deepskyblue", nVal: 10, lWidth: 9, fill: "deepskyblue", opacity: 0.2 }, // 2 Blue
-  {  nColor: "darkblue", lColor: "darkblue", nVal: 10, lWidth: 9 } // 3 Red + Blue
-];
-
-const algorithmicStyles = [
-  {  nColor: "black", lColor: "grey", nVal: 2, lWidth: 1, bgColor: "white", nRelSize: 3 }, // 0 defaults
-  {  nColor: "purple", lColor: "hotpink", nVal: 10, lWidth: 5, fill: "hotpink", opacity: 0.2 }, // 1 Red
-  {  nColor: "blue", lColor: "deepskyblue", nVal: 10, lWidth: 5, fill: "deepskyblue", opacity: 0.2 }, // 2 Blue
-  {  nColor: "darkblue", lColor: "darkblue", nVal: 10, lWidth: 5 }, // 3 Red + Blue
-  {  nColor: "lightgrey", lColor: "lightgrey", fill: "#A0D0D6", opacity: 0.3, nVal: 6, lWidth: 0 } // 4 Multiedge
-];
+import { Simulator } from "./modules/Simulator.mjs";
 
 function getUrlParameter(name) {
     name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
@@ -121,9 +89,11 @@ function getUrlParameter(name) {
 
 $(document).ready(function() {
 
-  // Setup graph element
-  const element = document.getElementById("3d-graph");
-  hypergraph.setup( element, spatialStyles, causalStyles, algorithmicStyles );
+  // Hypergraph object and define colors, sizes and widths for different graph styles
+  // Note: use CSS to define node label style .nodeLabelGraph3d
+  const e = document.getElementById("3d-graph");
+  const sim = new Simulator(e);
+  window.sim = sim; // TODO: REMOVE THIS AFTER DEBUGGING
 
   // Monitor inactivity
   let idleTimer = null;
@@ -131,13 +101,13 @@ $(document).ready(function() {
 
   // Pause rendering cycle
   function pause() {
-    hypergraph.graph3d.pauseAnimation();
+    sim.G.FG.pauseAnimation();
     $("#paused").show();
   }
 
   // Resume rendering cycle
   function resume() {
-    hypergraph.graph3d.resumeAnimation();
+    sim.G.FG.resumeAnimation();
     $(".text").prop("contenteditable","false").blur();
     $(".settings, #paused").hide();
     $("#topleft").css("pointer-events","none");
@@ -155,33 +125,21 @@ $(document).ready(function() {
   }
 
   // Resume when controls active
-  hypergraph.graph3d.controls().addEventListener( 'start', resume );
-  hypergraph.graph3d.controls().addEventListener( 'end', resumeTimeout );
+  sim.G.FG.controls().addEventListener( 'start', resume );
+  sim.G.FG.controls().addEventListener( 'end', resumeTimeout );
 
   // Dynamics
-  function updateDynamics() {
+  function force() {
     let distance = parseInt( $("#distance-range").val(), 10 );
     let decay = parseInt( $("#decay-range").val(), 10 );
-    if ( hypergraph.data == hypergraph.spatial ) {
-      hypergraph.graph3d
-        .dagLevelDistance( distance / 10 )
-			  .d3AlphaDecay( 1 - Math.pow( 0.001, 1/decay ) );
-      hypergraph.graph3d.d3Force("link").distance( distance / 10 );
-
-    } else {
-      let maxstep = 5 * hypergraph.causal.maxstep;
-      let maxvalue = 10000 * ( Math.sqrt(maxstep) / maxstep );
-      hypergraph.graph3d
-        .dagLevelDistance( ( Math.sqrt( distance ) / 100 ) * maxvalue )
-			  .d3AlphaDecay( 1 - Math.pow( 0.001, 1/decay ) );
-      hypergraph.graph3d.d3Force("link").distance( ( Math.sqrt( distance ) / 100 ) * maxvalue );
-    }
+    sim.G.force( distance, decay );
+    sim.G.refresh();
     resumeTimeout();
   }
 
   // Window resize event, resume and update graph dimensions
   $(window).on('resize', function(){
-    hypergraph.size( $(this).width(), $(this).height() );
+    sim.G.size( $(this).width(), $(this).height() );
     resumeTimeout();
   });
 
@@ -189,23 +147,6 @@ $(document).ready(function() {
   document.querySelector('.text').addEventListener('paste', function (event) {
     event.preventDefault();
     document.execCommand('inserttext', false, event.clipboardData.getData('text/plain'));
-  });
-
-  // Cheatsheets
-  $("#rule-text").on("focusin", function() {
-    $("#csrule").show();
-  });
-
-  $("#rule-text").on("focusout", function() {
-    $("#csrule").hide();
-  });
-
-  $("#red-text, #blue-text").on("focusin", function() {
-    $("#csredblue").show();
-  });
-
-  $("#red-text, #blue-text").on("focusout", function() {
-    $("#csredblue").hide();
   });
 
   // Open settings dialogs
@@ -226,80 +167,147 @@ $(document).ready(function() {
   $("#rule-check").on("click", function() {
     try {
       var rulestr = $("#rule-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
-      var validated = hypergraph.validateRule( rulestr );
+      var validated = sim.validateRule( rulestr );
       $("#rule-text").html( validated );
     }
     catch (e) {
-      alert(e);
+      if (e instanceof RangeError || e instanceof TypeError) {
+        console.log(e.stack);
+        alert(e);
+      } else {
+        console.log(e.stack);
+        alert("Unknown error, sorry for this.");
+      }
     }
   });
 
   // Run the given rule
   $("#rule-run").on("click", function() {
     try {
-      $("#red, #blue, #grad, #playstop, #finalreheat").addClass('button-disabled');
+      // parameters
+      let r = $("#rule-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
+      let i = $(".interactions.selected").toArray().reduce( (a,x) => a | $(x).data("value"), 0 );
+      let e = $(".evolution.selected").data("value");
 
-      hypergraph.stop();
+      $("#playstop, #finalreheat").addClass('button-disabled');
+
+      sim.stop();
       $("#progress-bar-fill").css("width", "0");
       $("#progress").show();
 
       // Run rules
-      let rulestr = $("#rule-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
-      let ruleordering = $(".ruleordering-selected").data("value");
-      let eventordering = $(".eventordering-selected").data("value");
-      let qm = $(".qm-selected").length;
-      let maxevents = parseInt( $(".limit-selected").data("value") );
+      let opt = {
+        interactions: i,
+        evolution: e,
+        noduplicates: Boolean($(".noduplicates.selected").length),
+        deduplicate: Boolean($(".deduplicate.selected").length),
+        wolfram: Boolean($(".wolfram.selected").length),
+        rulendx: Boolean($(".rulendx.selected").length)
+      };
 
-      hypergraph.run( rulestr, ruleordering, eventordering, qm, maxevents, function(e) {
-        $("#progress-bar-fill").css("width", Math.min(100, Math.round( 100 * e / maxevents))+"%" );
+      // Show options
+      $(".filter").removeClass("selected").first().addClass("selected");
+      if ( e === 1 ) {
+        $("#filter").css('display','none');
+      } else {
+        $("#filter").css('display','inline-block');
+        if ( e === 0 || e === 4 ) {
+          $(".filter[data-value='4']").show();
+          $(".filter[data-value='8']").show();
+        } else {
+          $(".filter[data-value='4']").hide();
+          $(".filter[data-value='8']").hide();
+        }
+      }
+
+      sim.run( r, opt, function(o) {
+        $("#progress-bar-fill").css("width", Math.min(100, Math.round( 100 * o.progress) )+"%" );
+        let status = "";
+        Object.keys(o).forEach( k => {
+          if ( k !== 'progress' ) {
+            status += '<span class="label down">'+k
+                      +'</span><span class="label status">'+o[k]+'</span>';
+          }
+        });
+  			$("#progress-status").html( status );
       }, function() {
+        // Rule-opt
+        let selected = [
+          ...$(".evolution.selected").toArray(),
+          ...$(".interactions.selected").toArray(),
+          ...$(".noduplicates.selected").toArray(),
+          ...$(".deduplicate.selected").toArray(),
+          ...$(".wolfram.selected").toArray(),
+          ...$(".rulendx.selected").toArray()
+        ];
+        let opt = "";
+        selected.forEach( x => {
+          opt += "<span>" + $(x).data("label") + "</span>";
+        });
+        $("#rule-opt").html( opt );
+
         $("#progress").hide();
         $("#playstop, #finalreheat").removeClass('button-disabled').css("background-color","black");
-        $(".mode-selected").click();
+        $(".mode.selected").click();
       });
+
     }
     catch (e) {
       $("#progress").hide();
-      alert(e);
+      if (e instanceof RangeError || e instanceof TypeError) {
+        console.log(e.stack);
+        alert(e);
+      } else {
+        console.log(e.stack);
+        alert("Unknown error, sorry for this.");
+      }
     }
   });
 
   // Cancel running the rule
   $("#cancel").on("click", function() {
-    hypergraph.cancel();
+    sim.cancel();
   });
 
   // Show/hide red/blue subgraph
   [ "#red", "#blue" ].forEach( (x,i) => {
     $(x+"-show").on("click", function() {
       try {
-        const command = $(x+"-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
-        const surface = $("."+x.substring(1)+"-surface-selected").length;
-        const background = $(".background-selected").length;
-        const result = hypergraph.execute( command );
-        hypergraph.clearHighlight( i+1 );
-        hypergraph.setHighlight( result , i+1, surface, background );
-        if ( result.r.length > 0 ) {
-          $(x+"-result").text( '['+result.r.join("|")+']' );
-          $(x+"-result-label").show();
-        }
+        const cmd = $(x+"-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
+        const style = i+1;
+        const element = $(x+"-result")[0];
+        const surface = $("."+x.substring(1)+"-surface.selected").length;
+        const background = $(".background.selected").length;
+        sim.setHighlight( cmd, style, element, surface, background );
+        $(x+"-result-label").show();
         $(x+"-text").removeClass("text-disabled");
         resumeTimeout();
       }
       catch(e) {
-        alert(e);
+        if (e instanceof RangeError || e instanceof TypeError) {
+          console.log(e.stack);
+          alert(e);
+        } else {
+          console.log(e.stack);
+          alert("Unknown error, sorry for this.");
+        }
       }
     });
     $(x+"-hide").on("click", function() {
       try {
-        hypergraph.clearHighlight( i+1 );
-        $(x+"-result").text("");
+        sim.clearHighlight( i+1 );
         $(x+"-result-label").hide();
         $(x+"-text").addClass("text-disabled");
         resumeTimeout();
       }
       catch(e) {
-        alert(e);
+        if (e instanceof RangeError || e instanceof TypeError) {
+          console.log(e.stack);
+          alert(e);
+        } else {
+          console.log(e.stack);
+          alert("Unknown error, sorry for this.");
+        }
       }
     });
   });
@@ -308,24 +316,23 @@ $(document).ready(function() {
   $("#grad-show").on("click", function() {
     try {
       const command = $("#grad-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
-      const lo = $(".grad-lo-selected").length;
-      const mid = $(".grad-mid-selected").length;
-      const hi = $(".grad-hi-selected").length;
-      const radius = parseInt( $(".grad-radius-selected").data("value") );
-      const result = hypergraph.setField( command, lo, mid, hi, radius );
-      if ( result.length > 0 ) {
-        $("#grad-result").text( '['+result.join("|")+']' );
-        $("#grad-result-label").show();
-      }
+      const element = $("#grad-result")[0];
+      sim.setField( command, element );
+      $("#grad-result-label").show();
       $("#grad-text").removeClass("text-disabled");
       resumeTimeout();
     }
     catch(e) {
-      alert(e);
+      if (e instanceof RangeError || e instanceof TypeError) {
+        console.log(e.stack);
+        alert(e);
+      } else {
+        console.log(e.stack);
+        alert("Unknown error, sorry for this.");
+      }
     }
   });
 
-  // Shortcuts
   $("#grad-settings a").on("click", function(e) {
     e.preventDefault();
     $("#grad-text").html( $(this).data("value") );
@@ -334,139 +341,173 @@ $(document).ready(function() {
 
   // Hide fields
   $("#grad-hide").on("click", function() {
-    hypergraph.clearField();
-    $("#grad-result").text("");
+    sim.clearField();
     $("#grad-result-label").hide();
     $("#grad-text").addClass("text-disabled");
     resumeTimeout();
   });
 
-  // Multi-options
-  [ "ruleordering", "eventordering", "limit", "grad-radius" ].forEach( x => {
-    $("."+x).on("click", function(e) {
-      $("."+x).removeClass(x+"-selected");
-      $(this).addClass(x+"-selected");
-    });
+  // Branches
+  $(".evolution").on("click", function(e) {
+    $(".evolution").removeClass("selected");
+    $(this).addClass("selected");
   });
 
   // Single-options
-  [ "red-surface", "blue-surface", "background", "grad-lo", "grad-mid", "grad-hi", "qm" ].forEach( x => {
-    $("."+x).on("click", function() {
-      if ( $("."+x+"-selected").length ) {
-        $("."+x).removeClass(x+"-selected");
-      } else {
-        $("."+x).addClass(x+"-selected");
-      }
-    });
+  [ "interactions","noduplicates","deduplicate","wolfram","rulendx","background","red-surface","blue-surface" ].forEach( x => {
+    $("."+x).on("click", function() { $(this).toggleClass("selected"); } );
   });
 
-  // Mode specific settings
+  // Mode specific settings and defaults
   let decay = new Map();
   let distance = new Map();
   let cameraz = new Map();
 
+  distance.set("space",20);
+  decay.set("space",70);
+  cameraz.set("space", 750 );
+
+  distance.set("time",10);
+  decay.set("time",50);
+  cameraz.set("time", 750 );
+
+  $("#distance-range").val( distance.get( "space" ) );
+  $("#decay-range").val( decay.get("space") );
+
   // Mode/reset
-  $("#space, #time").on("click", function(e) {
-    let mode = $(".mode-selected").data("value");
+  $(".mode").on("click", function(e) {
+    // Save current settings
+    let mode = $(".mode.selected").data("value");
     distance.set(mode,parseInt( $("#distance-range").val(), 10 ));
     decay.set(mode,parseInt( $("#decay-range").val(), 10 ));
-    cameraz.set(mode,parseInt(hypergraph.graph3d.cameraPosition().z,10));
+    cameraz.set(mode,parseInt(sim.G.FG.cameraPosition().z,10));
 
-    $(".mode").removeClass("mode-selected");
-    $(this).addClass("mode-selected");
+    $(".mode").removeClass("selected");
+    $(this).addClass("selected");
 
+    // Reset graph
     mode = $(this).data("value");
+    let element = $("#status")[0];
+    sim.resetView( mode, element );
 
-    hypergraph.reset( mode );
+    // Show current
+    if ( $(".filter.selected").length === 0 ) {
+      $(".filter").first().addClass("selected");
+    }
+    let rfn = (a,x) => a | $(x).data("value");
+    let f = $(".filter.selected").toArray().reduce( rfn, 0 );
+    sim.showBranches( f );
 
-    $("#distance-range").val( distance.get( mode ) || 200 );
-    $("#decay-range").val( decay.get( mode ) || 150 );
-
+    // Restore previous settings
+    $("#distance-range").val( distance.get( mode ) || 20 );
+    $("#decay-range").val( decay.get( mode ) || 20 );
     let z = cameraz.get(mode) || 750;
-    hypergraph.graph3d.cameraPosition( { x: 0, y: 0, z: z }, { x: 0, y: 0, z: 0 } );
+    sim.G.FG.cameraPosition( { x: 0, y: 0, z: z }, { x: 0, y: 0, z: 0 } );
 
-    updateDynamics();
-
-    var s = hypergraph.status();
-    var str = "";
-    Object.keys(s).forEach( k => {
-      str = str + '<span class="label up">'+k+'</span><span class="label status">'+s[k]+'</span>';
-    });
-    $("#status").html( str );
-    $("#red-result, #blue-result, #grad-result").text("");
-    $("#red-result-label, #blue-result-label, #grad-result-label").hide();
-
-    $("#red, #blue, #grad").addClass("button-disabled");
-    $("#red-text, #blue-text, #grad-text").addClass("text-disabled");
     $("#playstop").removeClass("button-disabled").css("background-color","black");
     $("#play, #final").show();
     $("#stop, #reheat").hide();
-
     resumeTimeout();
+  });
 
+
+  // Filter
+  $(".filter").on("click", function(e) {
+    $(this).toggleClass("selected");
+    if ( $(".filter.selected").length === 0 ) {
+      $(this).toggleClass("selected");
+    }
+    if ( $(this).data("value") === 0 ) {
+      if ( $(this).hasClass("selected") ) {
+        $(".filter").removeClass("selected").first().addClass("selected");
+      }
+    } else if ( $(this).data("value") === -1 ) {
+      if ( $(this).hasClass("selected") ) {
+        $(".filter").removeClass("selected").first().next().addClass("selected");
+      }
+    } else {
+      $(".filter").first().removeClass("selected").next().removeClass("selected");
+    }
+    let rfn = (a,x) => a | $(x).data("value");
+    let f = $(".filter.selected").toArray().reduce( rfn, 0 );
+    sim.showBranches( f );
+    resumeTimeout();
   });
 
   // Play / stop animation
   $("#playstop").on("click", function() {
     try {
       if ( $("#play").is(":visible") ) {
-        hypergraph.play( 250, () => { $("#finalreheat").click(); } );
+        sim.play( function() { $("#finalreheat").click(); } );
         $("#playstop").css("background-color","darkred");
         $("#play, #stop").toggle();
-        updateDynamics();
+        force();
         resume();
       } else {
-        hypergraph.stop();
+        sim.stop();
         $("#playstop").css("background-color","black");
         $("#play, #stop").toggle();
         resumeTimeout();
       }
     }
     catch(e) {
-      alert(e);
+      if (e instanceof RangeError || e instanceof TypeError) {
+        console.log(e.stack);
+        alert(e);
+      } else {
+        console.log(e.stack);
+        alert("Unknown error, sorry for this.");
+      }
     }
   });
 
   // Final state
   $("#finalreheat").on("click", function() {
     try {
-      hypergraph.final();
-      $("#red, #blue, #grad").removeClass("button-disabled");
+      sim.final();
       $("#playstop").addClass("button-disabled").css("background-color","black");;
       $("#play, #reheat").show();
       $("#stop, #final").hide();
       resumeTimeout();
     }
     catch(e) {
-      alert(e);
+      if (e instanceof RangeError || e instanceof TypeError) {
+        console.log(e.stack);
+        alert(e);
+      } else {
+        console.log(e.stack);
+        alert("Unknown error, sorry for this.");
+      }
     }
   });
 
   // Changed distance/decay
   $(document).on('input change keyup', '#distance-range,#decay-range', function() {
-    updateDynamics();
+    force();
   });
 
   // Copy URL link for the current rule to clipboard
   $("#url").on("click", function() {
-    let baseurl = window.location.href.split('?')[0];
-    let rule = $("#rule-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
-    let ruleorder = $(".ruleordering-selected").data("value");
-    let eventorder = $(".eventordering-selected").data("value");
-    let qm = $(".qm-selected").length;
-    let mode = $(".mode-selected").attr("id");
-    let red = $("#red-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
-    let blue = $("#blue-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
-    let grad = $("#grad-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
-    let url = baseurl
-      + "?rule=" + encodeURIComponent(rule).replace(/%2C/g,",").replace(/%3B/g,";")
-      + ( ruleorder !== "none" ? "&ruleorder=" + encodeURIComponent(ruleorder) : "" )
-      + ( eventorder !== "random" ? "&eventorder=" + encodeURIComponent(eventorder) : "" )
-      + ( qm ? "" : "&qm=0")
+    let rfn = (a,x) => a | $(x).data("value");
+    let i = $(".interactions.selected").toArray().reduce( rfn, 0 );
+    let e = $(".evolution.selected").data("value");
+    let mode = $(".mode.selected").data("value");
+    let f = $(".filter.selected").toArray().reduce( rfn, 0 );
+
+    let tfn = (s) => encodeURIComponent($(s)[0].innerText.split("\n").join(";").replace(/;$/g,"")).replace(/%2C/g,",").replace(/%3B/g,";");
+    let url = window.location.href.split('?')[0]
+      + "?rule=" + tfn("#rule-text")
+      + ( i !== 1 ? "&i=" + encodeURIComponent(i) : "" )
+      + ( e !== 1 ? "&e=" + encodeURIComponent(e) : "" )
       + ( mode !== "space" ? "&mode=" + encodeURIComponent(mode) : "" )
-      + ( !$("#red-text").hasClass("text-disabled") ? "&red=" + encodeURIComponent(red).replace(/%2C/g,",").replace(/%3B/g,";") : "" )
-      + ( !$("#blue-text").hasClass("text-disabled") ? "&blue=" + encodeURIComponent(blue).replace(/%2C/g,",").replace(/%3B/g,";") : "" )
-      + ( !$("#grad-text").hasClass("text-disabled") ? "&grad=" + encodeURIComponent(grad).replace(/%2C/g,",").replace(/%3B/g,";") : "" );
+      + ( f !== 0 ? "&f=" + encodeURIComponent(f) : "" )
+      + ( Boolean($(".noduplicates.selected").length) ? "&nd=1" : "" )
+      + ( Boolean($(".deduplicate.selected").length) ? "&dd=1" : "" )
+      + ( Boolean($(".wolfram.selected").length) ? "&wm=1" : "" )
+      + ( Boolean($(".rulendx.selected").length) ? "&ro=1" : "" )
+      + ( !$("#red-text").hasClass("text-disabled") ? "&red=" + tfn("#red-text") : "" )
+      + ( !$("#blue-text").hasClass("text-disabled") ? "&blue=" + tfn("#blue-text") : "" )
+      + ( !$("#grad-text").hasClass("text-disabled") ? "&grad=" + tfn("#grad-text") : "" );
     var $temp = $("<input>");
     $("body").append($temp);
     $temp.val(url).select();
@@ -477,44 +518,50 @@ $(document).ready(function() {
 
   // Specify the initial rule and settings and run it
   function firstrun() {
-    let rule = getUrlParameter('rule');
-    if ( rule ) {
-      $("#rule-text").html( rule.split(";").join("<br>") );
+    let tfn = (s,p,d) => {
+      let v = getUrlParameter(p);
+      $(s).html($("<p>").html(v||d).text().split(";").join("<br>") );
     }
-    let ruleorder = getUrlParameter('ruleorder');
-    if ( ruleorder && ( ruleorder === "none" || ruleorder === "index" || ruleorder === "indexrev" ) ) {
-      $(".ruleordering").removeClass("ruleordering-selected");
-      $(".ruleordering[data-value='" + ruleorder + "']").addClass("ruleordering-selected");
+    tfn("#rule-text","rule","(1,2)(1,3)->(1,2)(1,4)(2,4)(3,4)");
+    tfn("#red-text","red","nball(0,2)");
+    tfn("#blue-text","blue","geodesic(0,100)");
+    tfn("#grad-text","grad","branch");
+
+    let ofn = (p,d,s) => parseInt(getUrlParameter(p)||d) ? $("."+s).addClass("selected") :$("."+s).removeClass("selected");
+    ofn("nd",0,"noduplicates");
+    ofn("dd",0,"deduplicate");
+    ofn("wm",0,"wolfram");
+    ofn("ro",0,"rulendx");
+
+    let i = parseInt( getUrlParameter('i') || "1" );
+    $(".interactions").each( function() {
+      let val = $(this).data("value");
+      if ( i & $(this).data("value") ) {
+        $(this).addClass("selected");
+      } else {
+        $(this).removeClass("selected");
+      }
+    });
+    let e = getUrlParameter('e') || "1";
+    if ( $(".evolution[data-value='" + e + "']").length ) {
+      $(".evolution").removeClass("selected");
+      $(".evolution[data-value='" + e + "']").addClass("selected");
     }
-    let eventorder = getUrlParameter('eventorder');
-    if ( eventorder && ( eventorder === "random" || eventorder === "ascending" || eventorder === "descending" || eventorder === "wolfram" ) ) {
-      $(".eventordering").removeClass("eventordering-selected");
-      $(".eventordering[data-value='" + eventorder + "']").addClass("eventordering-selected");
-    }
-    let qm = getUrlParameter('qm');
-    if ( qm === "0" ) {
-      $(".qm").removeClass("qm-selected");
-    } else {
-      $(".qm").addClass("qm-selected");
-    }
-    let mode = getUrlParameter('mode');
-    if ( mode && ( mode === "space" || mode === "time" ) ) {
-      $(".mode").removeClass("mode-selected");
-      $("#"+mode).addClass("mode-selected");
-    }
-    let red = getUrlParameter('red');
-    if ( red ) {
-      $("#red-text").html( $("<p>").html( red ).text().split(";").join("<br>") );
-    }
-    let blue = getUrlParameter('blue');
-    if ( blue ) {
-      $("#blue-text").html( $("<p>").html( blue ).text().split(";").join("<br>") );
-    }
-    let grad = getUrlParameter('grad');
-    if ( grad ) {
-      $("#grad-text").html( $("<p>").html( grad ).text().split(";").join("<br>") );
-    }
+    let mode = getUrlParameter('mode') || "space";
+    $("#"+mode+".mode").click();
     $("#rule-run").click();
+    let f = parseInt( getUrlParameter('f') || "0" );
+    $(".filter").each( function() {
+      let val = $(this).data("value");
+      if ( (f === val) || ( f>0 && (f & val) ) ) {
+        $(this).addClass("selected");
+      } else {
+        $(this).removeClass("selected");
+      }
+    });
+    if ( getUrlParameter("red") ) $("#red-show").click();
+    if ( getUrlParameter("blue") ) $("#blue-show").click();
+    if ( getUrlParameter("grad") ) $("#grad-show").click();
   }
 
   // Autorun the first time
@@ -527,88 +574,69 @@ $(document).ready(function() {
 <body>
   <div id="topleft" class="controls noselect">
     <span title="Change rule" id ="rule" class="button">RULE</span>
-    <span id="rule-text" class="text" spellcheck="false">(1,2)(1,3)->(1,4)(1,2)(2,4)(3,4)(4,3,2)<br>(1,2,3)(4,2)(5,3)(3,6)->(1,2,3)(4,2)(5,3)(6,3)<br>(1,2,3)(4,2)(3,5)(6,3)->(1,2,3)(4,2)(3,5)(3,6)</span><br/>
+    <span id="rule-text" class="text" spellcheck="false"></span><br/>
     <div id="rule-settings" class="settings">
       <span title="Run rule" id ="rule-run" class="button">RUN</span>
-      <span title="Format rule" id ="rule-check" class="button">SCAN</span>
-      <span class="label down">Opt</span>
-      <span title="Simulate QM" class="option qm qm-selected">QM</span>
-      <span class="label down">Rule order</span>
-      <span title="Allow mixing rules" class="option ruleordering ruleordering-selected" data-value="none">NON</span>
-      <span title="Index order" class="option ruleordering" data-value="index">NDX</span>
-      <span title="Reverse index" class="option ruleordering" data-value="indexrev">REV</span>
-      <span class="label down">Event order</span>
-      <span title="Randomize" class="option eventordering eventordering-selected" data-value="random">RND</span>
-      <span title="Wolfram" class="option eventordering" data-value="wolfram">WM</span>
-      <span title="Newest" class="option eventordering" data-value="ascending">ASC</span>
-      <span title="Oldest" class="option eventordering" data-value="descending">DEC</span>
-
-      <span class="label down">Max events</span>
-      <span title="Max 500" class="option limit limit-selected" data-value="500">500</span>
-      <span title="Max 1000" class="option limit" data-value="1000">1K</span>
-      <span title="Max 2000" class="option limit" data-value="2000">2K</span>
+      <span title="Validate rule" id ="rule-check" class="button">SCAN</span>&nbsp;
+      <span class="label down">Evolution</span>
+      <span title="Singleway" class="option evolution selected" data-value="1" data-label="SINGLE">1</span>
+      <span title="2-way" class="option evolution" data-value="2" data-label="2-WAY">2</span>
+      <span title="4-way" class="option evolution" data-value="4" data-label="4-WAY">4</span>
+      <span title="Full multiway" class="option evolution" data-value="0" data-label="MULTI">MULTI</span>&nbsp;
+      <span class="label down">Interactions</span>
+      <span title="Spacelike" class="option interactions selected" data-value="1" data-label="SPACELIKE">SPACE</span>
+      <span title="Timelike" class="option interactions" data-value="2" data-label="TIMELIKE">TIME</span>
+      <span title="Branchlike" class="option interactions" data-value="4" data-label="BRANCHLIKE">BRANCH</span>&nbsp;
+      <span class="label down">Options</span>
+      <span title="Wolfram Model" class="option wolfram" data-label="WM">WM</span>
+      <span title="Rule order Index" class="option rulendx" data-label="RO">RO</span>
+      <!-- <span title="No duplicates" class="option noduplicates" data-label="ND">ND</span> -->
+      <span title="De-duplicate" class="option deduplicate" data-label="DD">DD</span>
     </div>
-    <span id="red" class="button button-disabled">RED</span>
+    <span id="red" class="button">RED</span>
     <span id="red-text" class="text text-disabled" spellcheck="false">nball(100,2)</span><br/>
     <div id="red-settings" class="settings">
       <span title="Show red" id="red-show" class="button">RUN</span>
-      <span title="Hide red" id="red-hide" class="button">HIDE</span>
+      <span title="Hide red" id="red-hide" class="button">HIDE</span>&nbsp;
       <span class="label down">Show</span>
-      <span title="Show background" class="option background background-selected">BACK</span>
-      <span title="Show hypersurfaces" class="option red-surface red-surface-selected">FACES</span>
+      <span title="Show background" class="option background selected">BACK</span>
+      <span title="Show hypersurfaces" class="option red-surface selected">FACES</span>&nbsp;
     </div>
-    <span id="blue" class="button button-disabled">BLUE</span>
-    <span id="blue-text" class="text text-disabled" spellcheck="false">geodesic(0,100)</span><br/>
+    <span id="blue" class="button">BLUE</span>
+    <span id="blue-text" class="text text-disabled" spellcheck="false"></span><br/>
     <div id="blue-settings" class="settings">
       <span title="Show blue" id ="blue-show" class="button">RUN</span>
-      <span title="Hide blue" id ="blue-hide" class="button">HIDE</span>
+      <span title="Hide blue" id ="blue-hide" class="button">HIDE</span>&nbsp;
       <span class="label down">Show</span>
-      <span title="Show background" class="option background background-selected">BACK</span>
-      <span title="Show hypersurfaces" class="option blue-surface blue-surface-selected">FACES</span>
+      <span title="Show background" class="option background selected">BACK</span>
+      <span title="Show hypersurfaces" class="option blue-surface selected">FACES</span>&nbsp;
     </div>
-    <span id="grad" class="button button-disabled">GRAD</span>
+    <span id="grad" class="button">GRAD</span>
     <span id="grad-text" class="text text-disabled" spellcheck="false">energy</span><br/>
     <div id="grad-settings" class="settings">
-      <table>
-        <tr>
-          <td><a href="//created" data-value="created">created</a></td>
-          <td><a href="//degree" data-value="degree">degree</a></td>
-          <td><a href="//energy" data-value="energy">energy</a></td>
-          <td><a href="//curvature" data-value="curvature">curvature</a></td>
-          <td><a href="//action" data-value="action">action</a></td>
-        </tr>
-        <tr>
-          <td><a href="//updated" data-value="updated">updated</a></td>
-          <td><a href="//indegree" data-value="indegree">indegree</a></td>
-          <td><a href="//mass" data-value="mass">mass</a></td>
-          <td><a href="//spin" data-value="spin">spin</a></td>
-          <td><a href="//frequency" data-value="frequency">frequency</a></td>
-        </tr>
-          <td><a href="//activity" data-value="activity">activity</a></td>
-          <td><a href="//outdegree" data-value="outdegree">outdegree</a></td>
-          <td><a href="//momentum" data-value="momentum">momentum</a></td>
-        </tr>
-      </table><br>
       <span title="Show field" id ="grad-show" class="button">RUN</span>
-      <span title="Hide field" id ="grad-hide" class="button">HIDE</span>
-      <span class="label down">Radius</span>
-      <span title="Sample points" class="option grad-radius" data-value="0">0</span>
-      <span title="N-ball r=1" class="option grad-radius grad-radius-selected" data-value="1">1</span>
-      <span title="N-ball r=2" class="option grad-radius" data-value="2">2</span>
-      <span title="N-ball r=4" class="option grad-radius" data-value="4">4</span>
-      <span title="N-ball r=8" class="option grad-radius" data-value="8">8</span>
-      <span class="label down">Filter</span>
-      <span title="Values under 25%" class="option grad-lo grad-lo-selected">LO</span>
-      <span title="Values between 25%-75%" class="option grad-mid grad-mid-selected">MID</span>
-      <span title="Values over 75%" class="option grad-hi grad-hi-selected">HI</span><br><br>
+      <span title="Hide field" id ="grad-hide" class="button">HIDE</span>&nbsp;
+      <span>
+        <a href="//branch" data-value="branch">branch</a>
+        <a href="//created" data-value="created">created</a>
+        <a href="//curvature" data-value="curvature">curvature</a>
+        <a href="//degree" data-value="degree">degree</a>
+        <a href="//energy" data-value="energy">energy</a><br>
+        <span class="label down">Scalar field</span>
+        <a href="//mass" data-value="mass">mass</a>
+        <a href="//momentum" data-value="momentum">momentum</a>
+        <a href="//pathcnt" data-value="pathcnt">pathcnt</a>
+        <a href="//probability" data-value="probability">probability</a>
+        <a href="//step" data-value="step">step</a>
+      </span>
     </div>
   </div>
 
   <div id="topright" class="controls noselect">
     <span class="label down">Mode/reset</span>
-    <span id="space" title="Spatial graph" class="option mode mode-selected" data-value="spatial">SPACE</span>
-    <span id="time" title="Causal graph" class="option mode" data-value="causal">TIME</span>
-    <!-- <span id="algo" title="Rewriting rule" class="option mode" data-value="algorithmic">RULE</span> -->
+    <span id="space" title="Spatial graph" class="option mode selected" data-value="space">SPACE</span>
+    <span id="time" title="Causal graph" class="option mode" data-value="time">TIME</span>
+
     <span class="label down">Simulation</span>
     <span title="Play/pause" id="playstop" class="button button-disabled">
       <svg id="play" viewBox="0 0 32 16"><polygon fill="white" points="14,3 14,11 20,7"/></svg>
@@ -618,11 +646,21 @@ $(document).ready(function() {
       <svg id="reheat" viewBox="0 0 32 14"><path fill="white" d="M16.1 10.2c-2 0-3-1-3.1-3S14 4 15.7 3.9c1.8-.1 2.1 1.1 2.1 1.1L16.7 6.3h4V2.5l-1.3 1C18.4 2.4 17.5 2 16 2C13 2 11 4 11 7S12.9 11.8 16 12c3.1-.3 4.2-2 4.5-4h-2.1c-.3 1.2-1 2-2.3 2.2z"/></svg>
       <svg id="final" viewBox="0 0 32 14"><polygon fill="white" points="12,3 12,11 18,7"/><polygon fill="white" points="18,3 20,3 20,11 18,11" /></svg>
     </span>
-    <div id="dynamics">
-      <input id="distance-range" type="range" value="200" min="1" max="1000"><br>
-      <span class="label down">Force/decay</span>
-      <input id="decay-range" type="range" value="150" min="10" max="1000"><br>
+    <div id="observer">
+      <hr>
+      <div id="filter">
+        <span title="Show all" class="option filter selected" data-value="0">ALL</span>
+        <span title="Show leaves" class="option filter" data-value="-1">LEAVES</span>
+        <span title="Show branch #1" class="option filter" data-value="1">1</span>
+        <span title="Show branch #2" class="option filter" data-value="2">2</span>
+        <span title="Show branch #3" class="option filter" data-value="4">3</span>
+        <span title="Show branch #4" class="option filter" data-value="8">4</span>
+      </div>
+      <input id="distance-range" type="range" value="20" min="0" max="100"><br>
+      <span class="label down">Observer/visual</span>
+      <input id="decay-range" type="range" value="20" min="0" max="100"><br>
     </div>
+
   </div>
 
   <div id="bottomleft" class="controls noselect">
@@ -633,6 +671,7 @@ $(document).ready(function() {
   </div>
 
   <div id="bottomright" class="controls noselect">
+    <span id="rule-opt"></span><br>
     <span id="red-result-label" class="label up">Red</span>
     <span id="red-result" class="label status"></span>
     <span id="blue-result-label" class="label up">Blue</span>
@@ -644,51 +683,16 @@ $(document).ready(function() {
     <span title="Copy URL" id="url" class="button">URL</span>
   </div>
 
-  <div id="csrule" class="cheatsheet controls">
-    <table>
-      <thead>
-        <tr><th>Command Cheatsheet</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>points(n)</td></tr>
-        <tr><td>line(n)</td></tr>
-        <tr><td>grid(n,dim)</td></tr>
-        <tr><td>sphere(n)</td></tr>
-        <tr><td>random(n,dim,nedges)</td></tr>
-        <tr><td>complete(n)</td></tr>
-        <tr><td>rule('rule',n)</td></tr>
-        <tr><td>blackhole(n,rs)</td></tr>
-        <tr><td>blackhole2(n,rs)</td></tr>
-        <tr><td>erb(n,rs)</td></tr>
-      <tbody>
-    </table>
-  </div>
-
-  <div id="csredblue" class="cheatsheet controls">
-    <table>
-      <thead>
-        <tr><th>Command Cheatsheet</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>geodesic(v,u,[dir],[rev],[all])</td></tr>
-        <tr><td>curv(v,u)</td></tr>
-        <tr><td>nball(v,radius,[dir],[rev])</td></tr>
-        <tr><td>nsphere(v,radius,[dir],[rev])</td></tr>
-        <tr><td>random(v,steps)</td></tr>
-        <tr><td>(1,2)(2,3)</td></tr>
-        <tr><td>space(v,u)</td></tr>
-        <tr><td>time(v,u)</td></tr>
-        <tr><td>worldline(v1,v2,...)</td></tr>
-        <tr><td>lightcone(v,length)</td></tr>
-      <tbody>
-    </table>
-  </div>
-
   <div id="3d-graph" class="noselect"></div>
 
   <div id="paused" class="noselect"><span class="label">Paused</span></div>
 
-  <div id="progress" class="noselect"><span id="progress-label" class="label">Rewriting</span><div id="progress-bar"><span id="progress-bar-fill"></span></div><span id="cancel" class="button">STOP</span></div>
+  <div id="progress" class="noselect">
+    <span id="progress-label" class="label">|Rewriting</span><br>
+    <div id="progress-bar"><span id="progress-bar-fill"></span></div>
+    <span id="cancel" class="button">STOP</span><br>
+    <span id="progress-status"></span>
+  </div>
 
   <img id="logo" src="data:image/png;base64,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" alt="" />
 </body></html>

@@ -1,13 +1,15 @@
 
 /**
-* @class Hypergraph representing a hypergraph.
+* @class Graph
 * @author Mika Suominen
 */
-class Hypergraph {
+class Graph {
 
 	/**
-	* @typedef {number} Vertex
-	* @typedef {Vertex[]} Hyperedge
+	* @typedef {number[]} Edge
+	* @typedef {number[]} Pattern
+	* @typedef {Object} Node
+	* @typedef {Object} Token
 	*/
 
 	/**
@@ -15,25 +17,26 @@ class Hypergraph {
 	* @constructor
 	*/
 	constructor() {
-		this.V = new Map(); // Vertices
-		this.E = new Map(); // Hyperedge ids
-		this.maxv = -1; // Current maximum vertex number
-		this.maxe = -1; // Current maximum edge number
-		this.events = []; // Event log of additions and deletions used for animation
-		this.F = new Map(); // Search patterns for edges
+    this.nodes = [];
+    this.links = [];
+		this.L = new Map(); // Leafs
+		this.P = new Map(); // Search patterns for leafs
+		this.V = new Map(); // Map vertex id to node object
+		this.T = new Map(); // Map token to array of links
 	}
 
 	/**
 	* Clear the hypergraph for reuse.
 	*/
 	clear() {
+    this.nodes.length = 0;
+    this.links.length = 0;
+		this.L.clear();
+		this.P.clear();
 		this.V.clear();
-		this.E.clear();
-		this.maxv = -1;
-		this.maxe = -1;
-		this.events.length = 0;
-		this.F.clear();
+		this.T.clear();
 	}
+
 
 	/**
 	* Calculate the mean of array elements.
@@ -57,78 +60,296 @@ class Hypergraph {
 		return arr.length % 2 !== 0 ? nums[mid] : (nums[mid - 1] + nums[mid]) / 2;
 	}
 
+
 	/**
-	* Add a new edge.
-	* @param {Hyperedge} edge Hyperedge to be added
-	* @return {number} Id of the added edge
+	* Add a multiway hyperedge.
+	* @param {Token} t Token.
+	* @param {boolean} [dag=false] If true, this is a directed acyclic graph
+	* @return {Node[]} Array of nodes.
 	*/
-	add( edge, props = {} ) {
-		// Add new edge
-		const e = ++this.maxe;
-		this.E.set( e, edge );
+	add( t, dag = false ) {
+		// Add the edge
+		if ( this.T.has(t) ) return []; // Already added
 
-		// Add search pattern
-		const p = edge.join(",");
-		const f = this.F.get( p );
-		typeof f !== 'undefined' ? f.push( e ) : this.F.set( p, [ e ] );
-
-		// Add vertices to adjacency arrays
-		for( let i = edge.length - 1; i >= 0; i-- ) {
-			let v = this.V.get( edge[i] );
-			if ( typeof v === 'undefined' ) {
-				v = { in: [], out: [] };
-				this.V.set( edge[i], v );
-				if ( edge[i] > this.maxv ) this.maxv = edge[i]; // Keep track of max #
-			}
-			if ( i > 0 ) v.in.push( edge[i-1] );
-			if ( i < (edge.length-1) ) v.out.push( edge[i+1] );
+		// Add search patterns
+		const edge = t.edge;
+		let k = edge.join(",");
+		let es = this.L.get( k );
+		if ( dag && es ) return []; // Edge already exists, return (transitive closure)
+		es ? es.push( t ) : this.L.set( k, [ t ] );
+		for( let i = edge.length-1; i>=0; i-- ) {
+			k = edge.map( (x,j) => ( j === i ? x : "*" ) ).join(",");
+			es = this.P.get( k );
+			es ? es.push( t ) : this.P.set( k, [ t ] );
 		}
 
-		// Add event
-		this.events.push( { a: edge, ...props } );
+		// New edge object
+		const o = [];
+		this.T.set( t, o );
 
-		return e;
+		// Calculate position
+		let p = { x: 0, y: 0, z: 0 }, cnt = 0;
+		let u = [ ...new Set( t.edge ) ];
+		u.forEach( id => {
+			let v = this.V.get( id );
+			if ( v && v.x ) {
+				p.x += v.x;
+				p.y += v.y;
+				p.z += v.z;
+				cnt++;
+			}
+		});
+		if ( cnt ) {
+			p.x /= cnt;
+			p.y /= cnt;
+			p.z /= cnt;
+		}
+
+		// Add vertices and links
+		const vs = [];
+    let vprev
+		for( let i = 0; i < edge.length; i++ ) {
+      let id = edge[i];
+			let v = this.V.get( id );
+			if ( v ) {
+				v.refs++;
+			} else {
+        // New vertex
+        v = {
+					id: id,
+					refs: 1,
+					in: [], out: [],
+					source: [], target: [],
+					style: 0,
+					x: (p.x + (dag ? (Math.sign(p.x)*Math.random()) : ((Math.random()-0.5)/100))),
+					y: (p.y + (dag ? (Math.sign(p.y)*Math.random()) : ((Math.random()-0.5)/100))),
+					z: (p.z + (dag ? (10*Math.sign(p.z)*Math.random()) : ((Math.random()-0.5)/100)))
+				};
+				this.V.set( id, v );
+        this.nodes.push( v );
+			}
+
+			vs.push( v );
+
+      // Modify adjacency arrays
+      if ( i < (edge.length-1) ) v.out.push( edge[i+1] );
+			if ( i > 0 ) {
+        v.in.push( edge[i-1] );
+
+        // Curvature
+				let curv = 0.5;
+				let ls = vprev.source.filter( l => v.target.includes(l) && !l.hasOwnProperty("meshes") );
+				if ( ls.length === 0 ) {
+					// first link, keep straight
+					if ( vprev !== v ) {
+						curv = 0;
+					}
+				} else {
+					let rot = 2 * Math.PI / ( ls.length + 1);
+					ls.forEach( (l,j) => {
+						l.curvature = 0.5;
+						l.rotation = ( j + 1 ) * rot;
+					});
+				}
+
+				// New link
+        const l = {
+					source: vprev,
+					target: v,
+					style: 0,
+          curvature: curv,
+					rotation: 0
+        };
+				vprev.source.push( l );
+				v.target.push( l );
+        this.links.push( l );
+				o.push( l );
+      }
+      vprev = v;
+		}
+
+		// Hyperedges
+		if ( !dag && (vs.length === 1 || vs.length > 2) ) {
+			const hl = {
+				source: vs[ vs.length - 1 ],
+				target: vs[0],
+				hyperedge: vs,
+				style: 4
+			};
+			if ( vs.length === 1 ) {
+				hl.scale = 0;
+				vs[ vs.length - 1 ].source.push( hl );
+				vs[0].target.push( hl );
+			}
+			this.links.push( hl );
+			o.push( hl );
+
+			// Rescale rings
+			if ( vs.length === 1 ) {
+				let ls = vs[0].target.filter( l => l.hasOwnProperty("hyperedge") && l.hyperedge.length === 1 );
+				ls.forEach( (l,i) => l.scale = i );
+			}
+		}
+
+		return vs;
 	}
 
 	/**
-	*  Delete edge.
-	* @param {number} e Hyperedge id to be deleted
+	*  Delete multiway edge.
+	* @param {Token} t Token.
 	*/
-	delete( e, props = {} ) {
+	del( t ) {
+		if ( !this.T.has( t ) ) return; // Already deleted
+
+		// Delete links
+		this.T.get( t ).forEach( l => {
+			let idx = l.source.source.indexOf( l );
+			if ( idx !== -1 ) l.source.source.splice( idx, 1 );
+			idx = l.target.target.indexOf( l );
+			if ( idx !== -1 ) l.target.target.splice( idx, 1 );
+
+			if ( l.hyperedge && l.hyperedge.length === 1 ) {
+				// Rescale rings
+				let ls = l.target.target.filter( k => k.hasOwnProperty("hyperedge") && k.hyperedge.length === 1 );
+				ls.forEach( (l,i) => l.scale = i );
+			} else {
+				// Restore curvature
+				let ls = l.source.source.filter( x => l.target.target.includes(x) && !x.hasOwnProperty("meshes") );
+				if ( ls.length === 1 ) {
+					if ( l.source !== l.target ) {
+						ls[0].curvature = 0;
+					}
+					ls[0].rotation = 0;
+				} else if ( ls.length > 1 ) {
+					let rot = 2 * Math.PI / ls.length;
+					ls.forEach( (l,j) => {
+						l.curvature = 0.5;
+						l.rotation = j * rot;
+					});
+				}
+			}
+			this.links.splice( this.links.indexOf( l ), 1 );
+		});
+
+		// Remove search patterns
+		const edge = t.edge;
+		let k = edge.join(",");
+		let es = this.L.get( k );
+		es.splice( es.indexOf( t ), 1 );
+		if ( es.length === 0 ) this.L.delete( k );
+		for( let i = edge.length-1; i>=0; i-- ) {
+			k = edge.map( (x,j) => ( j === i ? x : "*" ) ).join(",");
+			es = this.P.get( k );
+			es.splice( es.indexOf( t ), 1 );
+			if ( es.length === 0 ) this.P.delete( k );
+		}
+
 		// Delete vertices
-		let edge = this.E.get( e );
 		for( let i = edge.length - 1; i >= 0; i-- ) {
-			const v = this.V.get( edge[i] );
-			if ( typeof v === 'undefined' ) continue; // Already deleted
+      const id = edge[i];
+			const v = this.V.get( id );
+			if ( !v ) continue; // Already deleted, ignore
 			if ( i > 0 ) v.in.splice( v.in.indexOf( edge[i-1] ), 1 );
 			if ( i < (edge.length-1) ) v.out.splice( v.out.indexOf( edge[i+1] ), 1 );
-			if ( v.in.length === 0 && v.out.length === 0) this.V.delete( edge[i] );
+			v.refs--;
+			if ( v.refs <= 0 ) {
+        this.V.delete( edge[i] );
+        this.nodes.splice( this.nodes.findIndex( v => v.id === id ), 1 );
+      }
 		}
 
-		// Remove search pattern
-		const p = edge.join(",");
-		const f = this.F.get( p );
-		const idx = f.findIndex( x => x === e );
-		f.splice( idx, 1 );
-		if ( f.length === 0 ) this.F.delete( p );
+		// Remove edge
+		this.T.delete( t );
 
-		// Delete edge
-		this.E.delete( e );
-
-		// Add event
-		this.events.push( { x: edge, ...props } );
 	}
+
+	/**
+	* Generate all combinations of an array of arrays
+	* @generator
+	* @param {Object[][]} arr Array of arrays
+	* @return {Object[]} Combination
+	*/
+	*combinations( arr ) {
+		let [head, ...tail] = arr;
+		let remainder = tail.length ? this.combinations(tail) : [[]];
+		for (let r of remainder) for (let h of head) yield [h, ...r];
+	}
+
+	/**
+	* Return all possible combinations of the given a list of hyperedges.
+	* @param {Edge[]} edges Array of edges
+	* @param {number} mode 0=no qm, 1=only qm, 2=both
+	* @return {Token[][]} Arrays of tokens
+	*/
+	hits( edges, mode = 0 ) {
+		const h = [];
+		for( let i = 0; i<edges.length; i++ ) {
+			let es = this.L.get( edges[i].join(",") );
+			if ( !es ) return []; // Some edge doesn't exist
+			h.push( es );
+		}
+
+		// All possible combinations
+		let hits = [];
+		for( let c of this.combinations(h) ) {
+			// Filter out combinations with duplicate edge ids
+			if ( c.some( (x,i,arr) => arr.indexOf(x) !== i ) ) continue;
+			hits.push( c );
+		}
+
+		return hits;
+	}
+
+	/**
+	* Find edges that match to the given wild card search pattern.
+	* @param {Pattern} p Search pattern, wild card < 0
+	* @return {Edge[]} Matching hyperedges.
+	*/
+	find( p ) {
+		let found = [];
+		let wilds = p.reduce( (a,b) => a + ( b<0 ? 1 : 0 ), 0 );
+		if ( wilds === 0 ) {
+			// Pattern has no wild cards, so we look for an exact match
+			if ( this.L.has( p.join(",") ) ) found.push( p );
+		} else if ( wilds === p.length ) {
+			// All wild cards, so we return all edges of the given length
+			for( const ts of this.L.values() ) {
+				if ( ts[0].edge.length === p.length ) found.push( [...ts[0].edge] );
+			}
+		} else {
+			// Extract individual keys and find edges based on them
+			// Filter out duplicates and get the intersection
+			let f,k,ts;
+			for( let i = p.length-1; i >= 0; i-- ) {
+				if ( p[i] < 0 ) continue;
+				k = p.map( (x,j) => ( j === i ? x : "*" )).join(",");
+				ts = this.P.get( k );
+				if ( !ts ) return [];
+				f = f ? ts.filter( t => f.includes(t) ) : ts;
+			}
+			// Get unique edges
+			if ( f ) {
+				found = Object.values( f.reduce((a,b) => {
+					a[b.edge.join(",")] = [...b.edge];
+					return a;
+				},{}));
+			}
+		}
+
+		return found;
+	}
+
 
 	/**
 	* BFS generator function.
 	* @generator
-	* @param {Vertex} v Root vertex of the bfs
+	* @param {Node} v Root vertex of the bfs
 	* @param {boolean} [dir=false] Use directed edges
 	* @param {boolean} [rev=false] Reverse the order of directed edges
-	* @yields {Vertex[]} The next leafs.
+	* @yields {Node[]} The next leafs.
 	*/
 	*bfs( v, dir = false, rev = false ) {
-		if ( !this.V.has( v ) ) throw new Error("Given vertex not found.");
+		if ( !this.V.has( v ) ) return; // Node not found
 		let searching = [ v ], visited = [];
 		while( searching.length > 0 ) {
 			// Yield the process; client can filter the search set
@@ -147,7 +368,7 @@ class Hypergraph {
 
 	/**
 	* Random walk never visiting any vertex twice.
-	* @param {Vertex} v Root vertex of the walk
+	* @param {Node} v Root vertex of the walk
 	* @param {number} [distance=Infinity] Maximum distance
 	* @param {boolean} [dir=false] Use directed edges
 	* @param {boolean} [rev=false] Reverse the order of directed edges
@@ -173,12 +394,12 @@ class Hypergraph {
 
 	/**
 	* Tree.
-	* @param {Vertex} root Root of the tree
+	* @param {Node} root Root of the tree
 	* @param {boolean} [dir=false] Use directed edges
 	* @param {boolean} [rev=false] Reverse the order of directed edges
-	* @param {Vertex[]} breaks Array of vertices on which to stop
+	* @param {Node[]} breaks Array of vertices on which to stop
 	* @param {distance} distance Maximum length of the tree
-	* @return {Vertex[][]} Array of vertex layers of the tree
+	* @return {Node[][]} Array of vertex layers of the tree
 	*/
 	tree( root, dir = false, rev = false, breaks = [], distance = Infinity ) {
 		const tree = [];
@@ -192,12 +413,12 @@ class Hypergraph {
 
 	/**
 	* Shortest path from vertex 'a' to vertex 'b' using BFS.
-	* @param {Vertex} v1 First vertex
-	* @param {Vertex} v2 Second vertex
+	* @param {Node} v1 First vertex
+	* @param {Node} v2 Second vertex
 	* @param {boolean} [dir=false] Use directed edges
 	* @param {boolean} [rev=false] Reverse the order of directed edges
 	* @param {boolean} [all=false] Return all shortest paths
-	* @return {Hyperedge[]} Shortest path(s) as an array of hyperedges
+	* @return {Edge[]} Shortest path(s) as an array of hyperedges
 	*/
 	geodesic( v1, v2, dir = false, rev = false, all = false ) {
 		const genA = this.bfs( v1, dir, rev ), treeA = [];
@@ -207,11 +428,11 @@ class Hypergraph {
 		// Find the collision point
 		while( true ) {
 			m = genA.next();
-			if ( m.done ) throw new Error("Root and Leaf are not connected.");
+			if ( m.done ) return []; // root/leaf not connected
 			if ( m.value.some( x => n.value.includes( x ) ) ) break;
 			treeA.push( m.value );
 			n = genB.next();
-			if ( n.done ) throw new Error("Root and Leaf are not connected.");
+			if ( n.done ) return []; // root/leaf not connected
 			if ( n.value.some( x => m.value.includes( x ) ) ) break;
 			treeB.push( n.value );
 		}
@@ -264,11 +485,11 @@ class Hypergraph {
 
 	/**
 	* N-dimensional ball.
-	* @param {Vertex} center Center vertex of the n-ball
-	* @param {Vertex} radius Radius of the n-ball
+	* @param {Node} center Center vertex of the n-ball
+	* @param {Node} radius Radius of the n-ball
 	* @param {boolean} [dir=false] Use directed edges
 	* @param {boolean} [rev=false] Reverse the order of directed edges
-	* @return {Hyperedge[]} Array of edges inside the n-ball
+	* @return {Edge[]} Array of edges inside the n-ball
 	*/
 	nball( center, radius, dir = false, rev = false ) {
 		// Start from the root and get the distance tree up to the distance 'radius'
@@ -286,24 +507,24 @@ class Hypergraph {
 
 	/**
 	* N-sphere.
-	* @param {Vertex} center Center vertex of the n-sphere
-	* @param {Vertex} radius Radius of the n-sphere
+	* @param {Node} center Center vertex of the n-sphere
+	* @param {Node} radius Radius of the n-sphere
 	* @param {boolean} [dir=false] Use directed edges
 	* @param {boolean} [rev=false] Reverse the order of directed edges
-	* @return {Vertex[]} Array of vertexes on the n-sphere
+	* @return {Node[]} Array of vertexes on the n-sphere
 	*/
 	nsphere( center, radius, dir = false, rev = false ) {
 		// Start from the root and get the distance tree up to the distance 'radius'
 		const tree = this.tree( center, dir, rev, [], Math.abs(radius) );
 		const d = tree.length - 1;
-		if ( d < radius ) throw new Error("N-sphere with the given radius not found.");
+		if ( d < Math.abs(radius) ) return []; // N-sphere with the given radius not found
 		return tree[ d ];
 	}
 
 	/**
 	* Minimum distance between two vertices.
-	* @param {Vertex} v1 First vertex
-	* @param {Vertex} v2 Second vertex
+	* @param {Node} v1 First vertex
+	* @param {Node} v2 Second vertex
 	* @param {boolean} [dir=false] Use directed edges
 	* @param {boolean} [rev=false] Reverse the order of directed edges
 	* @return {number} Number of step from 'a' to 'b', -1 if not connected
@@ -324,6 +545,46 @@ class Hypergraph {
 			d++;
 		}
 	}
+
+	/**
+	* Hypersurface.
+	* @param {Node} v1 Starting point in space/time
+	* @param {Node} v2 Ending point in space/time
+	* @return {Node[]} Hypersurface
+	*/
+	surface( v1, v2 ) {
+		const vertices = [];
+		for( let i = v1; i <= v2; i++ ) {
+			if ( this.V.has(i) ) vertices.push( i );
+		}
+		return vertices;
+	}
+
+	/**
+	* Light cones.
+	* @param {Node} moment Single point in space and time
+	* @param {number} length Size of the cones
+	* @param {boolean} [past=true] Include past light cone
+	* @param {boolean} [future=true] Include future light cone
+	* @return {Edge[]} Light cone.
+	*/
+	lightcone( moment, length, past = true, future = true ) {
+		let pastcone = [], futurecone = [];
+		if ( past ) {
+			let s =  this.nsphere( moment, length, true, true );
+			s.forEach( v => {
+				pastcone.push( ...this.geodesic( v, moment, true, false, true ).flat() );
+			});
+		}
+		if ( future ) {
+			let s =  this.nsphere( moment, length, true, false );
+			s.forEach( v => {
+				futurecone.push( ...this.geodesic( v, moment, true, true, true ).flat() );
+			});
+		}
+		return { past: [ ...new Set( pastcone ) ], future: [ ...new Set( futurecone ) ] };
+	}
+
 
 	/**
 	* Computes the optimal transport matrix and returns sinkhorn distance
@@ -387,8 +648,8 @@ class Hypergraph {
 
 	/**
 	* Curvature based on Ollivier-Ricci (1-Wasserstein) distance.
-	* @param {Vertex} v1 First vertex
-	* @param {Vertex} v2 Second vertex
+	* @param {Node} v1 First vertex
+	* @param {Node} v2 Second vertex
 	* @param {number} [radius=1] Radius
 	* @param {boolean} [dir=false] Use directed edges
 	* @return {number} Ollivier-Ricci distance.
@@ -418,9 +679,9 @@ class Hypergraph {
 	* @return {Object} Status of the hypergraph.
 	*/
 	status() {
-		return { nodes: this.V.size, edges: this.E.size };
+		return { nodes: this.nodes.length, edges: this.links.length };
 	}
 
 }
 
-export { Hypergraph };
+export { Graph };

@@ -4,196 +4,190 @@
 
 **Run it: https://met4citizen.github.io/Hypergraph/**
 
-A hypergraph is a generalization of a regular graph in which an edge can join
-any number of nodes. In a hypergraph rewriting system some initial hypergraph
-is transformed incrementally by making a series of updates that
-follow some abstract rewriting rule. That is, by following a given rule,
-subhypergraphs with particular canonical form are replaced with other
-subhypergraphs with different canonical form.
-
-The web app uses
+This web app is a hypergraph rewriting system that supports both singleway and
+multiway evolutions and can visualize the evolution of the hypergraph in 3D.
+The app uses
 [3d Force-Directed Graph](https://github.com/vasturiano/3d-force-graph)
 for representing graph structures,
 [ThreeJS](https://github.com/mrdoob/three.js/)/WebGL for 3D rendering and
 [d3-force-3d](https://github.com/vasturiano/d3-force-3d) for the force engine.
+
+## Introduction
+
+A hypergraph is a generalization of a regular graph in which an edge can join
+any number of nodes. In a hypergraph rewriting system some initial state is
+transformed incrementally by making a series of updates that follow some
+abstract rewriting rule.
+
+As an example, consider a rewriting rule
+`(1,1,2)(2,3,4)->(1,5,4)(2,5,3)(5,5,4)`. Whenever and wherever a subhypergraph
+having the form of the left-hand side pattern `(1,1,2)(2,3,4)` is found in the
+hypergraph, it is replaced with a new subhypergraph having the form of the
+right-hand side pattern `(1,5,4)(2,5,3)(5,5,4)`.
+
+The matches can also overlap, which can be a problem. One way to resolve these
+conflicts is to pick one of the matches according to some ordering scheme and
+just ignore the others. Another approach to is to rewrite all overlapping
+matches by allowing the evolution of the system to branch. In the latter case,
+the result is a multiway system with many possible histories.
 
 For more information about hypergraph rewriting systems and their potential to
 represent fundamental physics visit
 [The Wolfram Physics Project](https://www.wolframphysics.org) website.
 According to their
 [technical documents](https://www.wolframphysics.org/technical-documents/)
-certain models can reproduce key features of both relativity and quantum mechanics.
-
+certain models can reproduce key features of both relativity and quantum
+mechanics.
 
 ## Rules
 
-Click `RULE` to modify the rewriting rule or change its settings. The settings
-include different options for rule ordering, event ordering and the max number
-of rewriting events. Click `RUN` to start the rewriting process.
+Click `RULE` to modify the rewriting rule, change its settings, and run
+the rewriting process.
 
-An example of a hypergraph rewriting rule:
-
-```
-(1,1,2)(2,3,4)->(1,5,4)(2,5,3)(5,5,4)
-(1,1,1)(1,1,1)
-```
-
-In the above case, wherever a subhypergraph in the form of the left-hand side
-pattern `(1,1,2)(2,3,4)` is found on the hypergraph, it is replaced with
-a new subhypergraph in the form of the right-hand side pattern
-`(1,5,4)(2,5,3)(5,5,4)`. The two sides of any one-way rule must be separated
+The system supports several rules separated with a semicolon `;` or written
+on separate lines. The two sides of any one-way rule must be separated
 with an arrow `->`. The separator `==` can be used as a shortcut for a two-way
-setup, which includes both the rule and its inverse.
+setup in which both directions (the rule and its inverse) are possible.
 
-Hyperedge patterns can be described by using numbers and/or
-characters. Several types of parentheses are supported. For example, a rule
-such as `[{x,y}{x,z}]->[{x,y}{x,w}{y,w}{z,w}]` is considered valid and can be
-converted to the default format by clicking `Scan`.
+Hyperedge patterns can be described by using numbers, characters or words.
+Several types of parentheses are also supported. For example, a rule
+`[{x,y}{x,z}]->[{x,y}{x,w}{y,w}{z,w}]` is considered valid and can be
+validated and converted to the default number format by clicking `Scan`.
 
-A rule without the right-hand side `(1,1,1)(1,1,1)` is used as the initial
-graph. An alternative way of to specify the initial state is to use some of
-the predefined functions described in the following table.
+<!--
+The system supports an experimental filter `\`. As an example, the rule
+`(1)(1,2)\(2)->(1)(1,2)(2)` is applied only if there is no unary edge `(2)`.
+If the `Branch` interaction is enabled, the check is made relative to all
+branches.
+-->
+
+A rule without any right-hand side, such as `(1,1,1)(1,1,1)`, is used as the
+initial graph. An alternative way of to create the initial state is to use
+predefined functions:
 
 Initial graph | Description
 --- | ---
-`points(n)` | `n` unconnected vertices.
+`points(n)` | `n` unconnected unary edges.
 `line(n)` | Line with `n` vertices.
-`grid(n,d)` | Grid in `d` dimensions with approximately `n` vertices.
+`grid(d1,d2,...)` | Grid with sides of length `d1`, `d2`, and so on. The number of parameters defines the dimension of the grid.
 `sphere(n)` | Sphere with `n` vertices.
 `random(n,d,nedges)` | Random graph with `n` vertices so that each vertex is sprinkled randomly in `d` dimensional space and has at least `nedges` connections.
 `complete(n)` | Complete graph with `n` vertices so that each vertex is connected to every other vertex.
-`rule('rule',n)` | Run rewriting rule `rule` for maximum `n` events using default rule and event orders.
-`blackhole(n,rs)` | Black hole with `n` vertices and Schwarzschild radius `rs`. EXPERIMENTAL
-`blackhole2(n,rs)` | Twin black hole so that both black holes have `n` vertices and Schwarzschild radius `rs`. EXPERIMENTAL
-`erb(n,rs)` | Einstein-Rosen Bridge so that both sides have `n` vertices and Schwarzschild radius `rs`. EXPERIMENTAL
+`rule('rule',n)` | Run rewriting rule `rule` for maximum `n` events for one branch.
 
-During the rewriting process there can be overlapping matches for
-the left-hand side part of the rule. In these cases "event order" setting
-is used to decide which of the overlapping matches are replaced and which are
-ignored.
+If the initial state is not specified, the left-hand side pattern of the first
+rule is used together with a single element.
 
-Event order | Description
+The `Evolution` option defines which kind of evolution is to be simulated:
+
+Evolution | Description
 --- | ---
-`RND` | Random order shuffles all possible update events/matches. (DEFAULT)
-`WM` | Standard event order in the Wolfram Model (LeastRecentEdge + RuleOrdering + RuleIndex). Note: Do not define rule order separately, because it would override event order. EXPERIMENTAL
-`ASC` |  Ascending time order sorts update events so that the oldest edge is applied first.
-`DEC` | Descending time order Sort update event so that the newest edge is applied first.
+`1`,`2`,`4` | Singleway system with 1-4 branches. By default, random event order is used to resolve overlaps for each branch. If the `WM` option is set, Wolfram model's standard event order is used for branch 1 and its reverse for branch 2.
+`FULL` | Full multiway system. All the matches all instantiated and four branches tracked.
 
-The system supports several rules separated with a semicolon `;` or written
-on separate lines. If several rules are specified, the "rule order" setting
-is used to define whether their relative order matters.
+The `Interactions` option defines the possible interactions between hyperedges.
+Any combination of the three possible interactions can be selected.
 
-Rule order | Description
+Interactions | Description
 --- | ---
-`NON` | None. Follow event ordering without sorting based on rules. In other words, allow mixing of the rules. DEFAULT
-`NDX` | Index order. Regardless of the event ordering, always try to apply the events in the order in which rules are specified.
-`REV` | Reverse index order.
+`SPACE` | Allow interactions between spacelike separated hyperedges. Two edges are spacelike separated if their lowest common ancestors are all updating events.
+`TIME` | Allow interaction between timelike separated hyperedges. Two edges are timelike separated if either one of them is an ancestors of the other one, that is, inside the other's past light cone.
+`BRANCH` | Allow interaction between branchlike separated hyperedges. Two edges are branchlike separated if any of their lowest common ancestors is a hyperedge.
+
+Other options:
+
+Option | Description
+--- | ---
+`WM` | Wolfram Model. If set, the first branch uses Wolfram Model's standard event order (LeastRecentEdge + RuleOrdering + RuleIndex) and the second branch its reverse. By default the setting is off and all tracked branches use random event ordering.
+`RO` | Rule order (index). Regardless of other settings, always try to apply the events in the order in which the rules have been specified. By default the setting is off and the individual rules are allowed to mix.
+`DD` | De-duplicate. The overlapping new hyperedges on different branches are de-duplicated at the end of each step. This allows branches to merge. EXPERIMENTAL, FUNCTIONALITY LIKELY TO CHANGE.
+
+
 
 ## Simulation
 
-Simulator currently supports two modes: `Space` and `Time`.
+Simulation currently supports two modes: `Space` and `Time`.
 
-In `Space` mode the system simulates the evolution of the hypergraph.
+In `Space` mode the system shows the evolution of the spatial hypergraph.
+According to the Wolfram Model, the spatial hypergraph represents
+a spacelike state of the universe with nodes as "atoms of space".
 
 In `Time` mode the system builds up the transitive reduction of the causal
 graph. In this view nodes represent updating events and directed
-edges their causal relations.
+edges their causal relations. According to the Wolfram Model, the flux of
+causal edges through spacelike and timelike hypersurfaces is related to
+energy and momentum respectively.
 
-Media buttons let you reset the mode, start/pause simulation and
-skip to the end / reheat force engine.
+Media buttons let you reset the mode, start/pause the simulation and
+skip to the end. Whenever the system has branches, the first four
+branches can be shown separately or in any combination.
 
-According to the Wolfram Model, the spatial hypergraph represents a spacelike
-state of the universe with nodes as "atoms of space". The flux of causal edges
-through spacelike and timelike hypersurfaces is related to energy and momentum
-respectively.
-
-## Quantum Mechanics
-
-The left hand side pattern often produces many overlapping matches. According
-to the Wolfram model, applying them all gives rise to quantum mechanics with
-many possible sequencings i.e. many possible branches of histories.
-
-This simulator follows only one (classical) branch, because following
-them all would be computationally hard. However, with rule option `QM`
-selected, simulator tries to maximize the rewrites by ignoring the edges
-that are both removed and added with a single update. In some cases this
-allows more overlapping matches to be applied in one single step.
-
-In order to simulate interference, the left hand side of the rule can have
-a filter with the `\` option. For example, a rule `(1)(1,2)\(2)->(1)(1,2)(2)`)
-is only applied, if no match is found for `(2)`. With the `QM` option set,
-this check is made relative to all possible branches.
-
-Note: Using the `QM` option changes the structure of the causal graph closer
-to so called multiway causal graph.
-
+In `Observer` section you can decide which kind of view you take
+to the multiway system. `All` shows the full multiway structure, whereas
+`Leaves` shows only nodes without child events. Tracked branches can be
+visualized separately. The two sliders change the visual appearance of the
+graph by tuning the parameters of the underlying force engine.
 
 ## Highlighting
 
-When the simulation ends, subgraphs can be highlighted by clicking `RED`/`BLUE`
-and using one or more of the following commands:
+Subgraphs can be highlighted by clicking `RED`/`BLUE` and using one or more
+of the following commands:
 
 Command | Highlighted | Status Bar
 --- | --- | ---
-`geodesic(n1,n2,[dir],[rev],[all])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction<br/>`all` = all shortest paths | Shortest path(s) between two nodes.<br/><br/> | Path distance as the number of edges.
-`curv(n1,n2)` | Two n-dimensional balls of radius one and the shortest path between their centers. | Curvature based on Ollivier-Ricci (1-Wasserstein) distance.
-`nball(center,radius,[dir],[rev])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | N-dimensional ball is a set of nodes and edges within a distance `radius` from a given node `center`. | Volume as the number of edges.
-`nsphere(center,radius,[dir],[rev])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | N-dimensional sphere/hypersurface within a distance `radius` from a given node `center`. | Area as the number of nodes.
-`random(n,distance,[dir],[rev])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | Random walk starting from a specific node with some maximum `distance`. | Path distance as the number of edges.
-`(x,y)(y,z)` | Hypersurfaces matching the given rule-based pattern. With a prefix '-' the matched hypersurfaces are excluded from the results. NOTE: Matching is always done in `SPACE` mode and only projected to `TIME` mode by highlighting world lines of the matched hypersurface. | The number of rule-based matches.
-`space(n1,n2)` | Space-like hypersurface based on a range of nodes. `SPACE` mode only. | Volume as the number of nodes.
-`time(t1,t2)` | Time-like hypersurface based on a range of iterations. `TIME` mode only. | Volume as the number of nodes.
-`worldline(n1,n2,...)` | Time-like curve of space-like node/nodes. `TIME` mode only. | Distance as the number of edges.
-`lightcone(n,length)` | Lightcone centered at node `n` with size `length`. `TIME` mode only. | Size of the cones as the number of edges.
+`geodesic(x,y,[dir],[rev],[all])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction<br/>`all` = all shortest paths | Shortest path(s) between two nodes.<br/><br/> | Path distance as the number of edges.
+`curv(x,y)` | Two n-dimensional balls of radius one and the shortest path between their centers. | Curvature based on Ollivier-Ricci (1-Wasserstein) distance.
+`nball(x,radius,[dir],[rev])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | N-dimensional ball is a set of nodes and edges within a distance `radius` from a given node `center`. | Volume as the number of edges.
+`nsphere(x,radius,[dir],[rev])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | N-dimensional sphere/hypersurface within a distance `radius` from a given node `x`. | Area as the number of nodes.
+`random(x,distance,[dir],[rev])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | Random walk starting from a specific node with some maximum `distance`. | Path distance as the number of edges.
+`surface(x,y)` | Space-like hypersurface based on a range of nodes. | Volume as the number of nodes.
+`(x,y)(y,z)`<br>`(x,y)(y,z)\(z)->(x,y)` | Hypersurfaces matching the given rule-based pattern. The right hand side pattern can be used to specify which part of the match is highlighted. `SPACE` mode only. | The number of rule-based matches.
+`worldline(x,...)` | Time-like curve of space-like node/nodes. `TIME` mode only. | Distance as the number of edges.
+`lightcone(x,length)` | Lightcone centered at node `x` with size `length`. `TIME` mode only. | Size of the cones as the number of edges.
+
 
 ## Scalar Fields
 
-Scalar fields can be highlighted by clicking `GRAD`. Relative intensity of the
-field is represented by different hues of colour from light blue (lowest) to
-green to yellow (mid) to orange to red (highest). Field values are
-calculated for each vertex and the colours for edges represent the mean of
-the values of the vertices they connect.
+Click `GRAD` to highlight scalar fields. Relative intensity of the field is
+represented by different hues of colour from light blue (lowest) to green to
+yellow (mid) to orange to red (highest). Field values are calculated for each
+edge and the colours of the vertices represent the mean of their edges.
 
 Scalar Field | Description
 --- | ---
+`branch` | Branch id. With two branches the main colours are blue and red. With four branches blue, green, orange and red. For shared edges the colour is in the middle of the spectrum.
 `created` | Creation time from oldest to newest.
-`updated` | Last update time from oldest to newest. For causal graph the same as 'created'.
-`degree` | Number of incoming and outgoing edges.
-`indegree` | Number of incoming edges.
-`outdegree` | Number of outgoing edges.
-`curvature` | Ollivier-Ricci curvature calculated as the mean of the vertex's edges.
-`energy` | The average number of updated edges.
-`mass` | The part of 'energy' in which the right hand side edges connect pre-existing vertices.
-`momentum` | The part of 'energy' in which the right hand side edges have new vertices.
-`action` | The average number of causal edges.
-`spin` | The average number of edge direction flips.
-`activity` | For spatial graph the world line length. For causal graph the crossings of the world lines.
-`frequency` | Aperiodic frequency of spins calculated as the total number of spins divided by the length of the vertex's world line. `SPACE` mode only.
+`curvature` | Ollivier-Ricci curvature. NOTE: Calculating curvature is a CPU intensive task. If used in real-time it will slow down the animation.
+`degree` | The mean of incoming and outgoing edges.
+`energy` | The mean of updated edges.
+`mass` | The part of `energy` in which the right hand side edges connect pre-existing vertices.
+`momentum` | The part of `energy` in which the right hand side edges have new vertices.
+`pathcnt` | The number of paths leading to specific edge.
+`probability` | Normalized path count for each edge in each step.
+`step` | Rewriting step.
 
-The setting `Radius` can be used to change sample size. In spatial graphs it
-defines the radius of a n-ball. In causal graphs it defines the length of the
-light cone. The setting `Filter` can be use to show only certain range of
-values: low (<25%), mid (25%-75%), hi (>75%). If several fields are specific,
-the shown intensity represents their average.
+The value range can be limited by giving lower and higher limits as
+parameters. For example, `branch(2,4)` shows branches 2-4. A limit can also
+be given as a percentage. For example, `energy(50%,100%)` highlights
+only upper half of the full range.
 
 ## Notes
 
 The aim of this project has been to learn some basic concepts and
 ideas related to hypergraphs and hypergraph rewriting. Whereas the Wolfram
-physics project has been a great inspiration, this project is not
-directly associated with it, doesn't use any code from it, and doesn't claim
-to be compatible with the Wolfram Model.
+physics project has been a great inspiration, this project is not directly
+associated with it, doesn't use any code from it, and doesn't claim to be
+compatible with the Wolfram Model.
 
-The idea of "atoms of space" is not a new one. It already appears in the old
-Greek tradition of atomism (*atomos*, "uncuttable") started by Leucippus
-(5thC BCE) and his pupil Democritus (ca. 460–370 BCE). In the Hellenistic
-period the idea was revived by Epicurus (341–270 BCE) and a Roman poet
-Lucretius (ca. 99–55 BCE). Unfortunately, starting from the Early Middle Ages,
-atomism was mostly forgotten in the Western world until Lucretius'
-*De rerum natura* and other atomist teachings were rediscovered
-in the 14th century.
+As a historical note, the idea of "atoms of space" is not a new one. It already
+appears in the old Greek tradition of atomism (*atomos*, "uncuttable") started
+by Democritus (ca. 460–370 BCE). In the Hellenistic period the idea was revived
+by Epicurus (341–270 BCE) and described in a poetic form by Lucretius
+(ca. 99–55 BCE). Unfortunately, starting from the Early Middle Ages, atomism
+was mostly forgotten in the Western world until Lucretius' *De rerum natura*
+and other atomist teachings were rediscovered in the 14th century.
 
 > “The atoms come together in different order and position, like letters,
 > which, though they are few, yet, by being placed together in different ways,
 > produce innumerable words.”
-> -- Epicurus, according to Lactantius
+> -- Epicurus (according to Lactantius)
