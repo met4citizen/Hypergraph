@@ -193,7 +193,8 @@ class TokenEvent {
 		t2.parent.length = 0;
 
 		// Update the past and path count
-		t1.past = new Set( [ ...t1.past, ...t2.past.slice(1) ] );
+		t1.past = new Set( [ ...t1.past, ...t2.past ] );
+		t1.past.delete( t2 );
 		t1.pathcnt = this.pathcnt2( t1 );
 
 		// Remove the extra token
