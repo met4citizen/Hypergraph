@@ -33,6 +33,32 @@ class TokenEvent {
 
 
 	/**
+	* Lowest common ancestors of two arrays
+	* @static
+	* @param {Set} s1
+	* @param {Set} s2
+	*/
+	static lca( s1, s2 ) {
+		// Intersection
+		const intersection = new Set();
+		for( let x of s1 ) {
+			if ( s2.has(x) ) {
+				intersection.add( x );
+			}
+		}
+
+		// Lowest common ancestors
+		const lca = [];
+		for( let x of intersection ) {
+			if ( x.child.every( y => !intersection.has(y) ) ) {
+				lca.push( x );
+			}
+		}
+		return lca;
+	}
+
+
+	/**
 	* Add a new token.
 	* @param {Event} ev Parent event
 	* @return {Token} New token.
@@ -42,16 +68,15 @@ class TokenEvent {
 			id: ++this.id,
 			parent: [ ev ],
 			child: [],
-			past: [],
+			past: new Set(),
 			pathcnt: ev.pathcnt
 		};
 
 		// Past causal cone
-		t.past.push( t );
+		t.past.add( t );
 		if ( ev ) {
-			t.past.push( ev );
-			ev.parent.forEach( x => t.past.push( ...x.past ) );
-			t.past = [ ...new Set( t.past ) ];
+			t.past.add( ev );
+			ev.parent.forEach( x => t.past.add( ...x.past ) );
 		}
 
 		this.T.push( t );
@@ -119,12 +144,11 @@ class TokenEvent {
 					t.parent.splice( t.parent.indexOf( ev ), 1);
 
 					// Update past cone
-					t.past.push( t );
+					t.past.add( t );
 					t.parent.forEach( x => {
-						t.past.push( x );
-						x.parent.forEach( x => t.past.push( ...x.past ) );
+						t.past.add( x );
+						x.parent.forEach( x => t.past.add( ...x.past ) );
 					});
-					t.past = [ ...new Set( t.past ) ];
 
 					// Update path count
 					t.pathcnt = this.pathcnt2( t );
@@ -169,7 +193,7 @@ class TokenEvent {
 		t2.parent.length = 0;
 
 		// Update the past and path count
-		t1.past = [ ...new Set( [ ...t1.past, ...t2.past.slice(1) ] ) ];
+		t1.past = new Set( [ ...t1.past, ...t2.past.slice(1) ] );
 		t1.pathcnt = this.pathcnt2( t1 );
 
 		// Remove the extra token
@@ -186,13 +210,10 @@ class TokenEvent {
 		if ( t1 === t2 ) return 0; // same
 
 		// Intersection of past causal cones
-		let c = t1.past.filter( x => t2.past.includes(x) );
-
-		// Lowest Common Ancestors i.e. outdegree = 0
-		let lca = c.filter( x => x.child.every( y => !c.includes(y) ) );
+		let lca = TokenEvent.lca( t1.past, t2.past );
 
 		if ( lca.includes(t1) || lca.includes(t2) ) return 2; // timelike
-		if ( lca.some( l => l.past ) ) return 4; // branchlike
+		if ( lca.some( l => l.hasOwnProperty("past") ) ) return 4; // branchlike
 		return 1; // spacelike
 	}
 
