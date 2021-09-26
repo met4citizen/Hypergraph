@@ -374,53 +374,68 @@ class Rulial {
     // Set ids
     this.rules.forEach( (r,i) => r.id = i );
 
-
     // Process commands
-    this.commands.forEach( c => {
+    let idx = this.commands.findIndex( x => x.cmd === "prerun" );
+    if ( idx !== -1 ) {
+      // Process pre-run and other commands with it
+      let c = this.commands[idx];
       let cmd = c.cmd;
       let p = c.params;
+      if ( p.length < 1 ) throw new TypeError("Prerun: Invalid number of parameters.");
       let branch = c.opt.length ? parseInt(c.opt) : 0;
       if ( branch < 0 || branch > 15 ) throw new RangeError("Option '/': Branch must be between 0-15.");
-      let edges = [];
-
-      switch( cmd ) {
-        case "": // initial graph
-          edges = p[0].split("(").map( p => [ ...p.replace( /[^-a-z0-9,\.]+/g, "" ).split(",") ] ).slice(1);
-          break;
-        case "rule":
-          if ( p.length < 2 ) throw new TypeError("Rule: Invalid number of parameters.");
-          edges = this.rule( p[0].slice(1, -1) || "", parseInt(p[1]) || 10 );
-          break;
-        case "points":
-          if ( p.length < 1 ) throw new TypeError("Points: Invalid number of parameters.");
-          edges = this.points( parseInt(p[0]) || 1 );
-          break;
-        case "line":
-          if ( p.length < 1 ) throw new TypeError("Line: Invalid number of parameters.");
-          edges = this.grid( [ parseInt(p[0]) || 1 ] );
-          break;
-        case "grid": case "ngrid":
-          if ( p.length < 1 ) throw new TypeError("Grid: Invalid number of parameters.");
-          edges = this.grid( p.map( x => parseInt(x) ) );
-          break;
-        case "sphere":
-          if ( p.length < 1 ) throw new TypeError("Sphere: Invalid number of parameters.");
-          edges = this.complete( parseInt(p[0]) || 10, 1, true );
-          break;
-        case "random":
-          if ( p.length < 3 ) throw new TypeError("Random: Invalid number of parameters.");
-          edges = this.random( parseInt(p[0]) || 10, parseInt(p[1]) || 3, parseInt(p[2]) || 3 );
-          break;
-        case "complete":
-          if ( p.length < 1 ) throw new TypeError("Complete: Invalid number of parameters.");
-          edges = this.complete( parseInt(p[0]) || 10 );
-          break;
-        default:
-          throw new TypeError( "Unknown command: " + c.cmd );
-      }
-
+      let rule = this.getRule(";");
+      rule = rule.replace( /;prerun[^;]+/g, "" ); // filter out to avoid recursion
+      let edges = this.rule( rule, parseInt(p[0]) || 10 );
       this.initial.push( { edges: edges, b: branch } );
-    });
+    } else {
+      // Process commands
+      this.commands.forEach( c => {
+        let cmd = c.cmd;
+        let p = c.params;
+        let branch = c.opt.length ? parseInt(c.opt) : 0;
+        if ( branch < 0 || branch > 15 ) throw new RangeError("Option '/': Branch must be between 0-15.");
+        let edges = [];
+
+        switch( cmd ) {
+          case "": // initial graph
+            edges = p[0].split("(").map( p => [ ...p.replace( /[^-a-z0-9,\.]+/g, "" ).split(",") ] ).slice(1);
+            break;
+          case "rule":
+            if ( p.length < 2 ) throw new TypeError("Rule: Invalid number of parameters.");
+            edges = this.rule( p[0].slice(1, -1) || "", parseInt(p[1]) || 10 );
+            break;
+          case "points":
+            if ( p.length < 1 ) throw new TypeError("Points: Invalid number of parameters.");
+            edges = this.points( parseInt(p[0]) || 1 );
+            break;
+          case "line":
+            if ( p.length < 1 ) throw new TypeError("Line: Invalid number of parameters.");
+            edges = this.grid( [ parseInt(p[0]) || 1 ] );
+            break;
+          case "grid": case "ngrid":
+            if ( p.length < 1 ) throw new TypeError("Grid: Invalid number of parameters.");
+            edges = this.grid( p.map( x => parseInt(x) ) );
+            break;
+          case "sphere":
+            if ( p.length < 1 ) throw new TypeError("Sphere: Invalid number of parameters.");
+            edges = this.complete( parseInt(p[0]) || 10, 1, true );
+            break;
+          case "random":
+            if ( p.length < 3 ) throw new TypeError("Random: Invalid number of parameters.");
+            edges = this.random( parseInt(p[0]) || 10, parseInt(p[1]) || 3, parseInt(p[2]) || 3 );
+            break;
+          case "complete":
+            if ( p.length < 1 ) throw new TypeError("Complete: Invalid number of parameters.");
+            edges = this.complete( parseInt(p[0]) || 10 );
+            break;
+          default:
+            throw new TypeError( "Unknown command: " + c.cmd );
+        }
+
+        this.initial.push( { edges: edges, b: branch } );
+      });
+    }
 
     // Use first lhs as the initial state, if not specified
     // Note: replace all vertices with pattern 1, e.g. (1,2) => (1,1)

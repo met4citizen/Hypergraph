@@ -67,13 +67,14 @@ predefined functions:
 
 Initial graph | Description
 --- | ---
-`points(n)` | `n` unconnected unary edges.
-`line(n)` | Line with `n` vertices.
-`grid(d1,d2,...)` | Grid with sides of length `d1`, `d2`, and so on. The number of parameters defines the dimension of the grid.
-`sphere(n)` | Sphere with `n` vertices.
-`random(n,d,nedges)` | Random graph with `n` vertices so that each vertex is sprinkled randomly in `d` dimensional space and has at least `nedges` connections.
 `complete(n)` | Complete graph with `n` vertices so that each vertex is connected to every other vertex.
-`rule('rule',n)` | Run rewriting rule `rule` for maximum `n` events for one branch.
+`grid(d1,d2,...)` | Grid with sides of length `d1`, `d2`, and so on. The number of parameters defines the dimension of the grid.
+`line(n)` | Line with `n` vertices.
+`points(n)` | `n` unconnected unary edges.
+`prerun(n)` | Pre-run the current rule for `n` events in one branch (singleway).
+`random(n,d,nedges)` | Random graph with `n` vertices so that each vertex is sprinkled randomly in `d` dimensional space and has at least `nedges` connections.
+`rule('rule',n)` | Run rewriting rule `rule` for maximum `n` events in one branch (singleway).
+`sphere(n)` | Sphere with `n` vertices.
 
 If the initial state is not specified, the left-hand side pattern of the first
 rule is used together with a single element.
