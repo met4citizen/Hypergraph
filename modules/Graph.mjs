@@ -264,15 +264,20 @@ class Graph {
 	}
 
 	/**
-	* Generate all combinations of an array of arrays
+	* Generate all combinations of an array of arrays.
 	* @generator
 	* @param {Object[][]} arr Array of arrays
 	* @return {Object[]} Combination
 	*/
-	*combinations( arr ) {
-		let [head, ...tail] = arr;
-		let remainder = tail.length ? this.combinations(tail) : [[]];
-		for (let r of remainder) for (let h of head) yield [h, ...r];
+	*cartesian( arr ) {
+		const inc = (t,p) => {
+			if (p < 0) return true; // reached end of first array
+			t[p].idx = (t[p].idx + 1) % t[p].len;
+			return t[p].idx ? false : inc(t,p-1);
+		}
+		const t = arr.map( (x,i) => { return { idx: 0, len: x.length }; } );
+		const len = arr.length - 1;
+		do { yield t.map( (x,i) => arr[i][x.idx] ); } while( !inc(t,len) );
 	}
 
 	/**
@@ -291,7 +296,7 @@ class Graph {
 
 		// All possible combinations
 		let hits = [];
-		for( let c of this.combinations(h) ) {
+		for( let c of this.cartesian(h) ) {
 			// Filter out combinations with duplicate edge ids
 			if ( c.some( (x,i,arr) => arr.indexOf(x) !== i ) ) continue;
 			hits.push( c );
