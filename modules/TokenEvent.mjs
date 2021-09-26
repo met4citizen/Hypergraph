@@ -33,27 +33,28 @@ class TokenEvent {
 
 
 	/**
-	* Lowest common ancestors of two arrays
+	* Lowest common ancestors of two arrays.
 	* @static
 	* @param {Set} s1
 	* @param {Set} s2
 	*/
 	static lca( s1, s2 ) {
 		// Intersection
-		const intersection = new Set();
+		const is = new Set();
 		for( let x of s1 ) {
 			if ( s2.has(x) ) {
-				intersection.add( x );
+				is.add( x );
 			}
 		}
 
-		// Lowest common ancestors
+		// Lowest common ancestors, outdegree = 0
 		const lca = [];
-		for( let x of intersection ) {
-			if ( x.child.every( y => !intersection.has(y) ) ) {
+		for( let x of is ) {
+			if ( x.child.every( y => !is.has(y) ) ) {
 				lca.push( x );
 			}
 		}
+
 		return lca;
 	}
 
@@ -193,7 +194,7 @@ class TokenEvent {
 		t2.parent.length = 0;
 
 		// Update the past and path count
-		t1.past = new Set( [ ...t1.past, ...t2.past ] );
+		t1.past.add( ...t2.past );
 		t1.past.delete( t2 );
 		t1.pathcnt = this.pathcnt2( t1 );
 
@@ -210,7 +211,7 @@ class TokenEvent {
 	separation( t1, t2 ) {
 		if ( t1 === t2 ) return 0; // same
 
-		// Intersection of past causal cones
+		// Lowest Common Ancestors
 		let lca = TokenEvent.lca( t1.past, t2.past );
 
 		if ( lca.includes(t1) || lca.includes(t2) ) return 2; // timelike
