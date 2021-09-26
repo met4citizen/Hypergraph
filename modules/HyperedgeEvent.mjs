@@ -166,11 +166,11 @@ class HyperedgeEvent extends TokenEvent {
 						// There has to be children to de-duplicate
 						if ( ev2.child.length ) {
 							let t2 = ev2.child[0];
-							// All the combined tokens must be branchlike separated
-							if ( ts.every( t => this.separation( t, t2 ) === 4 ) ) {
-								let ps2 = ev2.child.map( t => t.p.join(",") );
-								// Hyperedge patterns must overlap
-								if ( ps2.some( p => ps.includes( p ) ) ) {
+							let ps2 = ev2.child.map( t => t.p.join(",") );
+							// Hyperedge patterns must overlap
+							if ( ps2.some( p => ps.includes( p ) ) ) {
+								// All the combined tokens must be branchlike separated
+								if ( ts.every( t => this.separation( t, t2 ) === 4 ) ) {
 									// Use the same map to create new vertices
 									ev2.child.forEach( t => {
 										t.edge = this.mapper( [ t.p ] )[0];
