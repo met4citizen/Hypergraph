@@ -462,7 +462,6 @@ class Simulator extends Rewriter {
 
 		// Rules
 		if ( rules && rules.length>0 && this.view === 1 ) {
-			// TODO: Fix this hack
 			let rw = new Rewriter();
 			rw.rulial.rules = rules; // Rules
 			rw.multiway = this.G; // Multiway system to search from
@@ -470,7 +469,7 @@ class Simulator extends Rewriter {
 			while( !g.next().done ); // Find matches
 			r.push( rw.M.length );
 			for( let m of rw.M ) {
-				let ls = m.hit.map( t => this.G.T.get(t).map( l => [l.source.id,l.target.id] ) ).flat();
+				let ls = m.hit.filter( (_,i) => m.rule.lhsdup[i] ).map( t => this.G.T.get(t).map( l => [l.source.id,l.target.id] ) ).flat();
 				e.push( ls );
 			}
 		}

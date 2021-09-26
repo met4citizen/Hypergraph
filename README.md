@@ -145,7 +145,7 @@ Command | Highlighted | Status Bar
 `random(x,distance,[dir],[rev])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | Random walk starting from a specific node with some maximum `distance`. | Path distance as the number of edges.
 `surface(x,y)` | Space-like hypersurface based on a range of nodes. | Volume as the number of nodes.
 `worldline(x,...)` | Time-like curve of space-like node/nodes. `TIME` mode only. | Distance as the number of edges.
-`(x,y)(y,z)`<br>`(x,y)(y,z)\(z)->(x,y)` | Hypersurfaces matching the given rule-based pattern. The right hand side pattern can be used to specify which part of the match is highlighted. `SPACE` mode only. | The number of rule-based matches.
+`(x,y)(y,z)`<br>`(x,y)(y,z)\(z)->(x,y)` | Subhypergraphs matching the given rule-based pattern. The right hand side pattern can be used to specify which part of the match is highlighted. `SPACE` mode only. | The number of rule-based matches.
 
 
 
