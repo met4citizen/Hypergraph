@@ -25,9 +25,9 @@ having the form of the left-hand side pattern `(1,1,2)(2,3,4)` is found in the
 hypergraph, it is replaced with a new subhypergraph having the form of the
 right-hand side pattern `(1,5,4)(2,5,3)(5,5,4)`.
 
-The matches can also overlap, which can be a problem. One way to resolve these
+The matches can also overlap, which can be a problem. One way to resolve the
 conflicts is to pick one of the matches according to some ordering scheme and
-just ignore the others. Another approach to is to rewrite all overlapping
+just ignore the others. Another approach to is to rewrite all the overlapping
 matches by allowing the evolution of the system to branch. In the latter case,
 the result is a multiway system with many possible histories.
 
@@ -68,31 +68,31 @@ predefined functions:
 Initial graph | Description
 --- | ---
 `complete(n)` | Complete graph with `n` vertices so that each vertex is connected to every other vertex.
-`grid(d1,d2,...)` | Grid with sides of length `d1`, `d2`, and so on. The number of parameters defines the dimension of the grid.
+`grid(d1,d2,...)` | Grid with sides of length `d1`, `d2`, and so on. The number of parameters defines the dimension of the grid. For example, `grid(2,4,5)` creates a 3-dimensional 2x4x5 grid.
 `line(n)` | Line with `n` vertices.
 `points(n)` | `n` unconnected unary edges.
-`prerun(n)` | Pre-run the current rule for `n` events in one branch (singleway).
+`prerun(n)` | Pre-run the current rule for `n` events in one branch (singleway). The leaves of the result are used as an initial state.
 `random(n,d,nedges)` | Random graph with `n` vertices so that each vertex is sprinkled randomly in `d` dimensional space and has at least `nedges` connections.
-`rule('rule',n)` | Run rewriting rule `rule` for maximum `n` events in one branch (singleway).
-`sphere(n)` | Sphere with `n` vertices.
+`rule('rule',n)` | Run rewriting rule `rule` for maximum `n` events in one branch (singleway).  The leaves of the result are used as an initial state.
+`sphere(n)` | Fibonacci sphere with `n` vertices.
 
 If the initial state is not specified, the left-hand side pattern of the first
-rule is used together with a single element.
+rule is used, but with only a single node. For example, a rule `(1,2)(1,3)->(1,2)(1,4)(2,4)(3,4)` gives an initial state `(1,1)(1,1)`.
 
 The `Evolution` option defines which kind of evolution is to be simulated:
 
 Evolution | Description
 --- | ---
-`1`,`2`,`4` | Singleway system with 1-4 branches. By default, random event order is used to resolve overlaps for each branch. If the `WM` option is set, Wolfram model's standard event order is used for branch 1 and its reverse for branch 2.
-`FULL` | Full multiway system. All the matches all instantiated and four branches tracked.
+`1`,`2`,`4` | Singleway system with 1/2/4 branches. By default, random event order is used to resolve overlaps for each branch. If the `WM` option is set, Wolfram model's standard event order is used for branch 1 and its reverse for branch 2.
+`FULL` | Full multiway system. All the matches are instantiated and four branches tracked.
 
 The `Interactions` option defines the possible interactions between hyperedges.
 Any combination of the three possible interactions can be selected.
 
 Interactions | Description
 --- | ---
-`SPACE` | Allow interactions between spacelike separated hyperedges. Two edges are spacelike separated if their lowest common ancestors are all updating events.
-`TIME` | Allow interaction between timelike separated hyperedges. Two edges are timelike separated if either one of them is an ancestors of the other one, that is, inside the other's past light cone.
+`SPACE` | Allow interactions between spacelike separated hyperedges. Two edges are spacelike separated if their lowest common ancestors are all updating events. In practice this should always be selected, because the nodes in a typical initial state are spacelike separated.
+`TIME` | Allow interaction between timelike separated hyperedges. Two edges are timelike separated if either one of them is an ancestors of the other one, that is, inside the other's past causal cone.
 `BRANCH` | Allow interaction between branchlike separated hyperedges. Two edges are branchlike separated if any of their lowest common ancestors is a hyperedge.
 
 Other options:
@@ -101,8 +101,7 @@ Option | Description
 --- | ---
 `WM` | Wolfram Model. If set, the first branch uses Wolfram Model's standard event order (LeastRecentEdge + RuleOrdering + RuleIndex) and the second branch its reverse. By default the setting is off and all tracked branches use random event ordering.
 `RO` | Rule order (index). Regardless of other settings, always try to apply the events in the order in which the rules have been specified. By default the setting is off and the individual rules are allowed to mix.
-`DD` | De-duplicate. The overlapping new hyperedges on different branches are de-duplicated at the end of each step. This allows branches to merge. EXPERIMENTAL, FUNCTIONALITY LIKELY TO CHANGE.
-
+`DD` | De-duplicate. The overlapping new hyperedges on different branches are de-duplicated at the end of each step. This allows branches to merge. EXPERIMENTAL. FUNCTIONALITY LIKELY TO CHANGE.
 
 
 ## Simulation
@@ -123,11 +122,13 @@ Media buttons let you reset the mode, start/pause the simulation and
 skip to the end. Whenever the system has branches, the first four
 branches can be shown separately or in any combination.
 
-In `Observer` section you can decide which kind of view you take
+In the `Observer/visual` section you decide which kind of view to take
 to the multiway system. `All` shows the full multiway structure, whereas
-`Leaves` shows only nodes without child events. Tracked branches can be
-visualized separately. The two sliders change the visual appearance of the
-graph by tuning the parameters of the underlying force engine.
+`Leaves` shows only the edges without any child events. Individually tracked
+branches can be visualized separately in any combination. The two sliders
+change the visual appearance of the graph by tuning the parameters of
+the underlying force engine. Note: Changing the viewpoint or the forces
+do not in anyway change the multiway system itself.
 
 ## Highlighting
 
@@ -136,20 +137,21 @@ of the following commands:
 
 Command | Highlighted | Status Bar
 --- | --- | ---
-`geodesic(x,y,[dir],[rev],[all])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction<br/>`all` = all shortest paths | Shortest path(s) between two nodes.<br/><br/> | Path distance as the number of edges.
 `curv(x,y)` | Two n-dimensional balls of radius one and the shortest path between their centers. | Curvature based on Ollivier-Ricci (1-Wasserstein) distance.
+`geodesic(x,y,[dir],[rev],[all])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction<br/>`all` = all shortest paths | Shortest path(s) between two nodes.<br/><br/> | Path distance as the number of edges.
+`lightcone(x,length)` | Lightcone centered at node `x` with size `length`. `TIME` mode only. | Size of the cones as the number of edges.
 `nball(x,radius,[dir],[rev])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | N-dimensional ball is a set of nodes and edges within a distance `radius` from a given node `center`. | Volume as the number of edges.
 `nsphere(x,radius,[dir],[rev])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | N-dimensional sphere/hypersurface within a distance `radius` from a given node `x`. | Area as the number of nodes.
 `random(x,distance,[dir],[rev])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | Random walk starting from a specific node with some maximum `distance`. | Path distance as the number of edges.
 `surface(x,y)` | Space-like hypersurface based on a range of nodes. | Volume as the number of nodes.
-`(x,y)(y,z)`<br>`(x,y)(y,z)\(z)->(x,y)` | Hypersurfaces matching the given rule-based pattern. The right hand side pattern can be used to specify which part of the match is highlighted. `SPACE` mode only. | The number of rule-based matches.
 `worldline(x,...)` | Time-like curve of space-like node/nodes. `TIME` mode only. | Distance as the number of edges.
-`lightcone(x,length)` | Lightcone centered at node `x` with size `length`. `TIME` mode only. | Size of the cones as the number of edges.
+`(x,y)(y,z)`<br>`(x,y)(y,z)\(z)->(x,y)` | Hypersurfaces matching the given rule-based pattern. The right hand side pattern can be used to specify which part of the match is highlighted. `SPACE` mode only. | The number of rule-based matches.
+
 
 
 ## Scalar Fields
 
-Click `GRAD` to highlight scalar fields. Relative intensity of the field is
+Click `GRAD` to visualize scalar fields. Relative intensity of the field is
 represented by different hues of colour from light blue (lowest) to green to
 yellow (mid) to orange to red (highest). Field values are calculated for each
 edge and the colours of the vertices represent the mean of their edges.
@@ -183,10 +185,10 @@ compatible with the Wolfram Model.
 As a historical note, the idea of "atoms of space" is not a new one. It already
 appears in the old Greek tradition of atomism (*atomos*, "uncuttable") started
 by Democritus (ca. 460–370 BCE). In the Hellenistic period the idea was revived
-by Epicurus (341–270 BCE) and described in a poetic form by Lucretius
-(ca. 99–55 BCE). Unfortunately, starting from the Early Middle Ages, atomism
-was mostly forgotten in the Western world until Lucretius' *De rerum natura*
-and other atomist teachings were rediscovered in the 14th century.
+by Epicurus (341–270 BCE) and put in a poetic form by Lucretius (ca. 99–55 BCE).
+Unfortunately, starting from the Early Middle Ages, atomism was mostly
+forgotten in the Western world until Lucretius' *De Rerum Natura* and other
+atomist teachings were rediscovered in the 14th century.
 
 > “The atoms come together in different order and position, like letters,
 > which, though they are few, yet, by being placed together in different ways,
