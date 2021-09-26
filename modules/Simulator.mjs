@@ -500,20 +500,24 @@ class Simulator extends Rewriter {
 	* Set gradient colours based on fields
 	* @param {string} str Fields separated with semicolon
 	* @param {Object} element DOM element for text results.
+	* @param {Object} opt Options
 	*/
-	setField( str, element ) {
+	setField( str, element, opt ) {
+		opt = opt || {};
+
 		// Parse command string
 		let cmds = Rulial.parseCommands( str );
 
 		// Field object
 		this.F = {
 			cmds: cmds,
-			element: element
+			element: element,
+			opt: opt
 		};
 
 		// Calculate & display
 		this.G.clearField();
-		let result = this.calculateField( cmds );
+		let result = this.calculateField( cmds, opt );
 		this.G.setField();
 
 		// Display numeric results
@@ -526,9 +530,10 @@ class Simulator extends Rewriter {
 	/**
 	* Set gradient colours based on fields
 	* @param {string} cmds Fields separated with semicolon
+	* @param {Object} opt Options
 	* @return {string[]} Text results
 	*/
-	calculateField( cmds ) {
+	calculateField( cmds, opt ) {
 		const grad = new Map();
 		const results = [];
 
@@ -733,6 +738,15 @@ class Simulator extends Rewriter {
 			}
 		});
 
+		// Smooth
+		if ( opt.smooth ) {
+			for( const l of this.G.links ) {
+				if ( l.hasOwnProperty("grad") && l.source.hasOwnProperty("grad") && l.target.hasOwnProperty("grad") ) {
+					l.grad = ( 2 * l.grad + l.source.grad + l.target.grad ) / 4;
+				}
+			}
+		}
+
 		return results;
 	}
 
@@ -744,7 +758,7 @@ class Simulator extends Rewriter {
 
 		try {
 			this.G.clearField();
-			let result = this.calculateField( this.F.cmds );
+			let result = this.calculateField( this.F.cmds, this.F.opt );
 			this.G.setField();
 
 			if ( this.F.element ) {

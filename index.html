@@ -57,7 +57,7 @@
   .up { position: absolute; transform: translateY(-17px); z-index: -1; }
   .down { position: absolute; transform: translateY(15px); z-index: -1; }
   .up:before, .down:before { content: "|"; }
-  #progress { position:absolute; width: 300px; height: 76px; z-index: 15; top: 40%; left: 50%; margin: 0 0 0 -150px; padding: 5px 10px; background-color: white; border: 1px solid lightgrey; box-shadow: 6px 6px 4px 1px rgba(128, 128, 128, .2); display: none; }
+  #progress { position:fixed; width: 300px; height: 76px; z-index: 15; top: 40%; left: 50%; margin: 0 0 0 -150px; padding: 5px 10px; background-color: white; border: 1px solid lightgrey; box-shadow: 6px 6px 4px 1px rgba(128, 128, 128, .2); display: none; }
   #progress span.status { min-width: 46px; }
   span.status:nth-child(2) { min-width: 36px !important; }
   #progress-bar { display: inline-block; width: 250px; background-color: #e0e0e0; margin: 0; padding: 0; line-height: 16px; height: 16px; border-radius: 3px; }
@@ -317,7 +317,10 @@ $(document).ready(function() {
     try {
       const command = $("#grad-text")[0].innerText.split("\n").join(";").replace(/;$/g,"");
       const element = $("#grad-result")[0];
-      sim.setField( command, element );
+      const opt = {
+        smooth: Boolean($(".smooth.selected").length)
+      };
+      sim.setField( command, element, opt );
       $("#grad-result-label").show();
       $("#grad-text").removeClass("text-disabled");
       resumeTimeout();
@@ -354,9 +357,10 @@ $(document).ready(function() {
   });
 
   // Single-options
-  [ "interactions","noduplicates","deduplicate","wolfram","rulendx","background","red-surface","blue-surface" ].forEach( x => {
+  [ "interactions","noduplicates","deduplicate","wolfram","rulendx","red-surface","blue-surface", "smooth" ].forEach( x => {
     $("."+x).on("click", function() { $(this).toggleClass("selected"); } );
   });
+  $(".background").on("click", function() { $(".background").toggleClass("selected"); } );
 
   // Mode specific settings and defaults
   let decay = new Map();
@@ -551,9 +555,9 @@ $(document).ready(function() {
     $("#"+mode+".mode").click();
     $("#rule-run").click();
     let f = parseInt( getUrlParameter('f') || "0" );
-    $(".filter").each( function() {
+    $(".filter").removeClass("selected").each( function() {
       let val = $(this).data("value");
-      if ( (f === val) || ( f>0 && (f & val) ) ) {
+      if ( (f === val) || ( f>0 && val>0 && (f & val) ) ) {
         $(this).addClass("selected");
       } else {
         $(this).removeClass("selected");
@@ -628,7 +632,9 @@ $(document).ready(function() {
         <a href="//pathcnt" data-value="pathcnt">pathcnt</a>
         <a href="//probability" data-value="probability">probability</a>
         <a href="//step" data-value="step">step</a>
-      </span>
+      </span>&nbsp;&nbsp;
+      <span class="label down">Options</span>
+      <span title="Smooth" class="option smooth">SMOOTH</span>
     </div>
   </div>
 
