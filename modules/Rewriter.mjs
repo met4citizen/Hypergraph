@@ -61,7 +61,6 @@ class Rewriter {
 		this.opt = {
 			evolution: opt.hasOwnProperty("evolution") ? opt.evolution : 1,
 			interactions: opt.hasOwnProperty("interactions") ? opt.interactions : 5,
-			maxevents: 0,
 			timeslot: opt.hasOwnProperty("timeslot") ? opt.timeslot : 250,
 			noduplicates: opt.hasOwnProperty("noduplicates") ? opt.noduplicates : false,
 			deduplicate: opt.hasOwnProperty("deduplicate") ? opt.deduplicate : false,
@@ -115,7 +114,7 @@ class Rewriter {
 	* Get the number of of neg hits.
 	* @param {Rule} rule
 	* @param {number[]} map
-	* @param {Event} [ignore=null] Event to ignore
+	* @param {Edge[]} [ignore=null] Hit to ignore
 	* @return {number} Number of hits
 	*/
 	negs( rule, map, ignore ) {
@@ -149,7 +148,7 @@ class Rewriter {
 			// Ignore hits with tokens from 'ignore'
 			if ( ignore ) {
 				hits.forEach( h => {
-					if ( h.some( t => t.parent.length === 1 && t.parent[0] === ignore )) {
+					if ( h.length === ignore.length && h.every( (t,i) => t === ignore[i] ) ) {
 						cnt--;
 					}
 				});
@@ -366,12 +365,12 @@ class Rewriter {
 			// Test for negs and remove overlapping matches
 			const rm = [];
 			const total = this.M.length;
-			for( let idx = this.M.length-1; idx >= 0; idx-- ) {
+			for( let idx = total-1; idx >= 0; idx-- ) {
 				let m = this.M[idx];
-				if ( m.ev && m.rule.neg && this.negs( m.rule, m.map, m.ev ) ) {
+				if ( m.ev && m.rule.neg && this.negs( m.rule, m.map, m.hit ) ) {
 					rm.push( m );
 				}
-				this.progress.merge = "Negs ["+ Math.floor( this.M.length - idx / total * 100 ) + "%]";
+				this.progress.merge = "Negs ["+ Math.floor( (total - idx) / total * 100 ) + "%]";
 				yield;
 			}
 			rm.forEach( m => {
@@ -488,7 +487,7 @@ class Rewriter {
 		this.finishedfn = finishedfn;
 
 		// Add initial edges for all tracked branches
-		let b = ( 1 << ( ( this.opt.evolution || 4 ) + 1) ) - 1;
+		let b = ( 1 << ( this.opt.evolution || 4 ) ) - 1;
 		this.rulial.initial.forEach( init => {
 			let ev =  this.multiway.rewrite( [], init.edges, null, ++this.step, init.b || b );
 		});
