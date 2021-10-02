@@ -23,7 +23,7 @@
   a { cursor: pointer; pointer-events: auto; }
   hr { display: block; height: 1px; border: 0; border-top: 1px solid #ccc; margin: 4px 0; padding: 0; }
   #topleft { top:0; left:0; z-index: 5; }
-  #topright { top:0; right:0; text-align: right; }
+  #topright { top:0; right:0; text-align: left; }
   #bottomleft { bottom:0; left:0; margin-left: 42px; }
   #bottomright { bottom:0; right:4px; text-align: right; }
   #paused { position: fixed; z-index: 2; top:0; left:50%; width: 120px; margin-left: -60px; text-align: center; background-color: transparent; display:none; }
@@ -44,12 +44,11 @@
   div.settings a { display: inline-block; color: inherit; text-decoration: inherit; pointer-events: auto; }
   #rule-opt { display: block; margin:0 0 4px 46px; padding:0; pointer-events: none; white-space: nowrap; clear:both; }
   #rule-opt span { display: inline-block; margin: 0 1px; padding: 0 2px; height:12px; background-color: transparent; color: grey; border: 1px solid grey; border-radius: 3px; font-size: 7px; font-weight: bold; line-height: 12px; text-align: center; vertical-align: middle; }
-  #observer { display:block; text-align: left; margin: 16px 0 0 0; width: 140px; padding:0; line-height: 10px; }
+  #visual { display:block; text-align: left; margin: 2px 0 0 0; width: 145px; padding:0; line-height: 10px; }
   input[type=range] { width: 100%; margin: 0; }
   #distance-range, #decay-range { cursor: pointer; pointer-events: auto; }
-  #filter { display: none; margin: 0 0 4px 0; padding: 0; }
   .option { display: inline-block; margin: 0; padding: 0 1px; height:14px; background-color: transparent; color: black;  border: 1px solid transparent; border-radius: 3px; font-size: 8px; font-weight: bold; line-height: 14px; text-align: center; vertical-align: middle; cursor: pointer; pointer-events: auto; }
-  .mode { width: 30px }
+  .view { width: 30px }
   .selected { border: 1px solid grey; }
   .label { display: inline-block; line-height: 16px; font-size: 8px; font-weight: bold; text-align:left; text-transform: uppercase; color: grey; margin: 2px; min-width: 4px; }
   .status { min-width: 38px; }
@@ -91,8 +90,9 @@ $(document).ready(function() {
 
   // Hypergraph object and define colors, sizes and widths for different graph styles
   // Note: use CSS to define node label style .nodeLabelGraph3d
-  const e = document.getElementById("3d-graph");
-  const sim = new Simulator(e);
+  const canvas = document.getElementById("3d-graph");
+  const status = document.getElementById("status");
+  const sim = new Simulator( canvas, status );
   window.sim = sim; // TODO: REMOVE THIS AFTER DEBUGGING
 
   // Monitor inactivity
@@ -206,18 +206,19 @@ $(document).ready(function() {
       };
 
       // Show options
-      $(".filter").removeClass("selected").first().addClass("selected");
+      $(".filtertime").removeClass("selected").first().addClass("selected");
+      $(".filterbranch").removeClass("selected");
       if ( e === 1 ) {
-        $("#filter").css('display','none');
+        $("#brachlike").hide();
       } else {
-        $("#filter").css('display','inline-block');
-        if ( e === 0 || e === 4 ) {
-          $(".filter[data-value='4']").show();
-          $(".filter[data-value='8']").show();
-        } else {
-          $(".filter[data-value='4']").hide();
-          $(".filter[data-value='8']").hide();
-        }
+        $("#brachlike").show();
+      }
+      if ( e === 0 || e === 4 ) {
+        $(".filterbranch[data-value='4']").show();
+        $(".filterbranch[data-value='8']").show();
+      } else {
+        $(".filterbranch[data-value='4']").hide();
+        $(".filterbranch[data-value='8']").hide();
       }
 
       sim.run( r, opt, function(o) {
@@ -248,7 +249,7 @@ $(document).ready(function() {
 
         $("#progress").hide();
         $("#playstop, #finalreheat").removeClass('button-disabled').css("background-color","black");
-        $(".mode.selected").click();
+        $(".view.selected").click();
       });
 
     }
@@ -362,7 +363,7 @@ $(document).ready(function() {
   });
   $(".background").on("click", function() { $(".background").toggleClass("selected"); } );
 
-  // Mode specific settings and defaults
+  // View specific settings and defaults
   let decay = new Map();
   let distance = new Map();
   let cameraz = new Map();
@@ -379,33 +380,30 @@ $(document).ready(function() {
   $("#decay-range").val( decay.get("space") );
 
   // Mode/reset
-  $(".mode").on("click", function(e) {
+  $(".view").on("click", function(e) {
     // Save current settings
-    let mode = $(".mode.selected").data("value");
-    distance.set(mode,parseInt( $("#distance-range").val(), 10 ));
-    decay.set(mode,parseInt( $("#decay-range").val(), 10 ));
-    cameraz.set(mode,parseInt(sim.G.FG.cameraPosition().z,10));
+    let view = $(".view.selected").data("value");
+    distance.set(view,parseInt( $("#distance-range").val(), 10 ));
+    decay.set(view,parseInt( $("#decay-range").val(), 10 ));
+    cameraz.set(view,parseInt(sim.G.FG.cameraPosition().z,10));
 
-    $(".mode").removeClass("selected");
+    $(".view").removeClass("selected");
     $(this).addClass("selected");
 
     // Reset graph
-    mode = $(this).data("value");
-    let element = $("#status")[0];
-    sim.resetView( mode, element );
-
-    // Show current
-    if ( $(".filter.selected").length === 0 ) {
-      $(".filter").first().addClass("selected");
-    }
-    let rfn = (a,x) => a | $(x).data("value");
-    let f = $(".filter.selected").toArray().reduce( rfn, 0 );
-    sim.showBranches( f );
+    view = $(this).data("value");
+    let leaves = Boolean( $(".leaves.selected").length );
+    let branches = $(".branches.selected").toArray().reduce( (a,x) => a | $(x).data("value"), 0 );
+    sim.setRefFrame( {
+      view: view,
+      leaves: leaves,
+      branches: branches
+    });
 
     // Restore previous settings
-    $("#distance-range").val( distance.get( mode ) || 20 );
-    $("#decay-range").val( decay.get( mode ) || 20 );
-    let z = cameraz.get(mode) || 750;
+    $("#distance-range").val( distance.get( view ) || 20 );
+    $("#decay-range").val( decay.get( view ) || 20 );
+    let z = cameraz.get(view) || 750;
     sim.G.FG.cameraPosition( { x: 0, y: 0, z: z }, { x: 0, y: 0, z: 0 } );
 
     $("#playstop").removeClass("button-disabled").css("background-color","black");
@@ -416,25 +414,31 @@ $(document).ready(function() {
 
 
   // Filter
-  $(".filter").on("click", function(e) {
+  $(".leaves").on("click", function(e) {
     $(this).toggleClass("selected");
-    if ( $(".filter.selected").length === 0 ) {
-      $(this).toggleClass("selected");
-    }
-    if ( $(this).data("value") === 0 ) {
-      if ( $(this).hasClass("selected") ) {
-        $(".filter").removeClass("selected").first().addClass("selected");
-      }
-    } else if ( $(this).data("value") === -1 ) {
-      if ( $(this).hasClass("selected") ) {
-        $(".filter").removeClass("selected").first().next().addClass("selected");
+    sim.setRefFrame( {
+      leaves: $(this).hasClass("selected")
+    });
+    resumeTimeout();
+  });
+
+  $(".branches").on("click", function(e) {
+    let all = $(this).data("value") === 0;
+    if ( all ) {
+      if ( !$(this).hasClass("selected") ) {
+        $(".branches").removeClass("selected").first().addClass("selected");
       }
     } else {
-      $(".filter").first().removeClass("selected").next().removeClass("selected");
+      $(".branches").first().removeClass("selected");
+      $(this).toggleClass("selected");
+      if ( $(".branches.selected").length === 0 ) {
+        $(".branches").first().addClass("selected");
+      }
     }
-    let rfn = (a,x) => a | $(x).data("value");
-    let f = $(".filter.selected").toArray().reduce( rfn, 0 );
-    sim.showBranches( f );
+    let branches = $(".branches.selected").toArray().reduce( (a,x) => a | $(x).data("value"), 0 );
+    sim.setRefFrame( {
+      branches: branches
+    });
     resumeTimeout();
   });
 
@@ -495,16 +499,17 @@ $(document).ready(function() {
     let rfn = (a,x) => a | $(x).data("value");
     let i = $(".interactions.selected").toArray().reduce( rfn, 0 );
     let e = $(".evolution.selected").data("value");
-    let mode = $(".mode.selected").data("value");
-    let f = $(".filter.selected").toArray().reduce( rfn, 0 );
+    let v = $(".view.selected").data("value");
+    let b = $(".branches.selected").toArray().reduce( rfn, 0 );
 
     let tfn = (s) => encodeURIComponent($(s)[0].innerText.split("\n").join(";").replace(/;$/g,"")).replace(/%2C/g,",").replace(/%3B/g,";");
     let url = window.location.href.split('?')[0]
       + "?rule=" + tfn("#rule-text")
       + ( i !== 1 ? "&i=" + encodeURIComponent(i) : "" )
       + ( e !== 1 ? "&e=" + encodeURIComponent(e) : "" )
-      + ( mode !== "space" ? "&mode=" + encodeURIComponent(mode) : "" )
-      + ( f !== 0 ? "&f=" + encodeURIComponent(f) : "" )
+      + ( v !== "space" ? "&mode=" + encodeURIComponent(v) : "" )
+      + ( Boolean($(".leaves.selected").length) ? "" : "&l=0" );
+      + ( b !== 0 ? "&b=" + encodeURIComponent(b) : "" )
       + ( Boolean($(".noduplicates.selected").length) ? "&nd=1" : "" )
       + ( Boolean($(".deduplicate.selected").length) ? "&dd=1" : "" )
       + ( Boolean($(".wolfram.selected").length) ? "&wm=1" : "" )
@@ -536,6 +541,7 @@ $(document).ready(function() {
     ofn("dd",0,"deduplicate");
     ofn("wm",0,"wolfram");
     ofn("ro",0,"rulendx");
+    ofn("l",1,"leaves");
 
     let i = parseInt( getUrlParameter('i') || "1" );
     $(".interactions").each( function() {
@@ -551,13 +557,13 @@ $(document).ready(function() {
       $(".evolution").removeClass("selected");
       $(".evolution[data-value='" + e + "']").addClass("selected");
     }
-    let mode = getUrlParameter('mode') || "space";
-    $("#"+mode+".mode").click();
+    let view = getUrlParameter('mode') || "space";
+    $("#"+view+".view").click();
     $("#rule-run").click();
-    let f = parseInt( getUrlParameter('f') || "0" );
-    $(".filter").removeClass("selected").each( function() {
+    let l = parseInt( getUrlParameter('l') || "0" );
+    $(".branches").removeClass("selected").each( function() {
       let val = $(this).data("value");
-      if ( (f === val) || ( f>0 && val>0 && (f & val) ) ) {
+      if ( (l === val) || ( l>0 && val>0 && (l & val) ) ) {
         $(this).addClass("selected");
       } else {
         $(this).removeClass("selected");
@@ -640,8 +646,8 @@ $(document).ready(function() {
 
   <div id="topright" class="controls noselect">
     <span class="label down">Mode/reset</span>
-    <span id="space" title="Spatial graph" class="option mode selected" data-value="space">SPACE</span>
-    <span id="time" title="Causal graph" class="option mode" data-value="time">TIME</span>
+    <span id="space" title="Spatial graph" class="option view selected" data-value="space">SPACE</span>
+    <span id="time" title="Causal graph" class="option view" data-value="time">TIME</span>
 
     <span class="label down">Simulation</span>
     <span title="Play/pause" id="playstop" class="button button-disabled">
@@ -652,18 +658,19 @@ $(document).ready(function() {
       <svg id="reheat" viewBox="0 0 32 14"><path fill="white" d="M16.1 10.2c-2 0-3-1-3.1-3S14 4 15.7 3.9c1.8-.1 2.1 1.1 2.1 1.1L16.7 6.3h4V2.5l-1.3 1C18.4 2.4 17.5 2 16 2C13 2 11 4 11 7S12.9 11.8 16 12c3.1-.3 4.2-2 4.5-4h-2.1c-.3 1.2-1 2-2.3 2.2z"/></svg>
       <svg id="final" viewBox="0 0 32 14"><polygon fill="white" points="12,3 12,11 18,7"/><polygon fill="white" points="18,3 20,3 20,11 18,11" /></svg>
     </span>
-    <div id="observer">
-      <hr>
-      <div id="filter">
-        <span title="Show all" class="option filter selected" data-value="0">ALL</span>
-        <span title="Show leaves" class="option filter" data-value="-1">LEAVES</span>
-        <span title="Show branch #1" class="option filter" data-value="1">1</span>
-        <span title="Show branch #2" class="option filter" data-value="2">2</span>
-        <span title="Show branch #3" class="option filter" data-value="4">3</span>
-        <span title="Show branch #4" class="option filter" data-value="8">4</span>
-      </div>
+    <br><br><hr>
+    <span title="Only leaves" class="option leaves selected">LEAVES</span>
+    <span style="color: lightgrey">|</span>
+    <span title="All branches" class="option branches selected" data-value="0">ALL</span>
+    <span title="Branch #1" class="option branches" data-value="1">1</span>
+    <span title="Branch #2" class="option branches" data-value="2">2</span>
+    <span title="Branch #3" class="option branches" data-value="4">3</span>
+    <span title="Branch #4" class="option branches" data-value="8">4</span>
+<!--    <span style="color: lightgrey">|</span>
+    <span title="Homotopy equivalence" class="option homotopy">HE</span> -->
+    <div id="visual">
       <input id="distance-range" type="range" value="20" min="0" max="100"><br>
-      <span class="label down">Observer/visual</span>
+      <span class="label down">Observer</span>
       <input id="decay-range" type="range" value="20" min="0" max="100"><br>
     </div>
 

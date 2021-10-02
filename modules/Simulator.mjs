@@ -9,21 +9,35 @@ import { Graph3D } from "./Graph3D.mjs";
 class Simulator extends Rewriter {
 
 	/**
+	* Reference frame
+	* @typedef {Object} RefFrame
+	* @property {number} view Viewmode, 1 = space (default), 2 = time
+	* @property {boolean} leaves If true, show only leaves of the multiway system
+	* @property {number} branches Field for branches to show, 0 = all
+	*/
+
+	/**
 	* Creates an instance of Multiway3D.
 	* @param {Object} element DOM element of the canvas
+	* @param {Object} status DOM element of the status
 	* @constructor
 	*/
-	constructor(element) {
+	constructor(canvas,status) {
 		super();
-    this.G = new Graph3D(element);
+    this.G = new Graph3D(canvas);
+		this.dom = status; // DOM element for status
 
     this.pos = 0; // Event log position
 		this.playpos = 0; // Play position
 		this.playing = false; // Is play on?
 		this.stopfn = null; // stop callback function
-		this.view = 1; // View by default, 1 = space (default), 2 = time
-		this.filter = 1; // Branches to show, by default 1
-		this.dom = null; // DOM element for status
+
+		// Observer's reference frame
+		this.observer = {
+			view: 1, // space view
+			leaves: true, // show only leaves
+			branches: 0 // show all branches
+		};
 
 		this.H = new Map(); // Highlights
 		this.F = null; // Fields
@@ -41,24 +55,58 @@ class Simulator extends Rewriter {
 	}
 
 	/**
-	* Reset graph and set view.
-	* @param {string} view Mode
-	* @param {Object} dom DOM element for status
+	* Set observer's reference frame
+	* @param {RefFrame} rf
 	*/
-	resetView( view, dom ) {
-		this.view = (view === "time" ? 2 : 1);
-		this.dom = dom;
+	setRefFrame( rf ) {
+		if ( rf.hasOwnProperty("view") ) {
+			this.observer.view = ( rf.view === "time" ) ? 2 : 1;
 
-		// Stop animation and set position to start
-		this.stop();
-		this.pos = 0;
-		this.playpos = 0;
+			// Stop animation and set position to start
+			this.stop();
+			this.pos = 0;
+			this.playpos = 0;
 
-		// Reset graph
-		this.G.reset( this.view );
+			// Reset graph
+			this.G.reset( this.observer.view );
 
-		// First additions
-		this.tick( this.rulial.initial.length );
+			// First additions
+			this.tick( this.rulial.initial.length );
+		}
+
+		if ( ( rf.hasOwnProperty("branches") && rf.branches !== this.observer.branches ) ||
+	 			 ( rf.hasOwnProperty("leaves") && rf.leaves !== this.observer.leaves ) ) {
+			if ( rf.hasOwnProperty("branches") ) {
+				this.observer.branches = rf.branches;
+			}
+			if ( rf.hasOwnProperty("leaves") ) {
+				this.observer.leaves = rf.leaves;
+			}
+
+			if ( this.observer.view === 1 ) {
+				for( let i=0; i<this.pos; i++ ) {
+					let ev = this.multiway.EV[ i ];
+					this.processSpatialEvent( ev );
+				}
+			} else if ( this.observer.view === 2 ) {
+				// Rewind
+				if ( this.observer.branches > 0 ) {
+					let rm = [];
+					for( let t of this.G.T.keys() ) {
+						if ( t.ev.some( ev => !( ev.b & this.observer.branches ) ) ) rm.push( t );
+					}
+					rm.forEach( this.G.del, this.G );
+				}
+
+				// Forward
+				for( let i = 0; i < this.pos; i++ ) {
+					let ev = this.multiway.EV[ i ];
+					this.processCausalEvent( ev );
+				}
+			}
+			this.refresh();
+		}
+
 	}
 
 	/**
@@ -81,48 +129,48 @@ class Simulator extends Rewriter {
 	/**
 	* Show of hide edges in spatial graph.
 	* @param {Object} ev Event reference
-	* @return {boolean} True, if change was made
+	* @return {boolean} True, if some change was made
 	*/
 	processSpatialEvent( ev ) {
-		let r = false;
-		if ( (this.filter > 0) && !( ev.b & this.filter ) ) return r;
-		let tokens = [ ...new Set( [ ...ev.child, ...ev.parent ] ) ];
-		for( let t of tokens ) {
-			if ( this.filter === -1 ) {
-				if ( t.child.some( x => x.id <= ev.id ) ) {
-					if ( this.G.T.has( t ) ) {
-						this.G.del(t);
-						r = true;
-					}
-				} else {
+		const tokens = [ ...ev.child, ...ev.parent ];
+
+		let change = false;
+		let bfn = (a,x) => a | (x.id <= ev.id ? x.b :0);
+		if ( this.observer.branches ) {
+			tokens.forEach( t => {
+				let b = t.parent.reduce( bfn, 0 );
+				if ( this.observer.leaves ) {
+					b &= ~t.child.reduce( bfn, 0 );
+				}
+				if ( b & this.observer.branches ) {
 					if ( !this.G.T.has( t ) ) {
 						this.G.add(t,false);
-						r = true;
-					}
-				}
-			} else if ( this.filter === 0 && t.parent.some( x => x.b === 0 ) ) {
-				if ( !this.G.T.has( t ) ) {
-					this.G.add(t,false);
-					r = true;
-				}
-			} else {
-				let b1 = t.parent.reduce( (a,x) => a | (x.id <= ev.id ? x.b :0), 0);
-				let b2 = t.child.reduce( (a,x) => a | (x.id <= ev.id ? x.b :0), 0);
-				let bs = b1 & ~b2;
-				if ( bs && ( this.filter === 0 || bs & this.filter ) ) {
-					if ( !this.G.T.has( t ) ) {
-						this.G.add(t,false);
-						r = true;
+						change = true;
 					}
 				} else {
 					if ( this.G.T.has( t ) ) {
 						this.G.del(t);
-						r = true;
+						change = true;
 					}
 				}
-			}
+			});
+		} else {
+			tokens.forEach( t => {
+				if ( this.observer.leaves && t.child.some( x => x.id <= ev.id ) ) {
+					if ( this.G.T.has( t ) ) {
+						this.G.del(t);
+						change = true;
+					}
+				} else {
+					if ( !this.G.T.has( t ) ) {
+						this.G.add(t,false);
+						change = true;
+					}
+				}
+			});
 		}
-		return r;
+
+		return change;
 	}
 
 	/**
@@ -131,90 +179,21 @@ class Simulator extends Rewriter {
 	* @return {boolean} True, if change was made
 	*/
 	processCausalEvent( ev ) {
-		let r = false;
-		if ( this.filter > 0 && !( ev.b & this.filter ) ) return r;
+		let change = false;
+		if ( this.observer.branches > 0 && !( ev.b & this.observer.branches ) ) return change;
 		if ( ev.parent.length === 0 ) {
 			this.G.add( { ev: [ ev ], edge: [ ev.id ] }, true );
-			r = true;
+			change = true;
 		} else {
 			let pev = [ ...new Set( ev.parent.map( x => x.parent ).flat() ) ];
 			pev.forEach( x => {
-				if ( x.id < ev.id && (this.filter <= 0 || (x.b & this.filter)) ) {
+				if ( x.id < ev.id && ( !this.observer.branches || (x.b & this.observer.branches)) ) {
 					this.G.add( { ev: [ x, ev ], edge: [ x.id, ev.id ] }, true );
-					r = true;
+					change = true;
 				}
 			});
 		}
-		return r;
-	}
-
-	/**
-	* Modify branches to show
-	* @param {number} f Filter, bit field of branches to show, 0 = show all, -1 = all leafs
-	*/
-	showBranches( f ) {
-		if ( f === this.filter ) return; // Same filter, do nothing
-
-		let oldfilter = this.filter;
-		this.filter = f;
-		let posid = this.pos > 0 ? this.multiway.EV[ this.pos-1 ].id : 0;
-
-		if ( this.view === 1 ) {
-			// Rewind
-			if ( this.filter === -1 ) {
-				let rm = [];
-				for( let t of this.G.T.keys() ) {
-					if ( t.child.some( x => x.id < posid ) ) rm.push( t );
-				}
-				rm.forEach( this.G.del, this.G );
-			} else if ( this.filter > 0 ) {
-				let rm = [];
-				for( let t of this.G.T.keys() ) {
-					let b1 = t.parent.reduce( (a,x) => a | (x.id <= posid ? x.b :0), 0);
-					let b2 = t.child.reduce( (a,x) => a | (x.id <= posid ? x.b :0), 0);
-					if ( !( ( b1 & ~b2 ) & this.filter ) ) rm.push( t );
-				}
-				rm.forEach( this.G.del, this.G );
-			}
-
-			// Forward
-			for( let i = 0; i < this.pos; i++ ) {
-				let ev = this.multiway.EV[ i ];
-				let tokens = [ ...new Set( [ ...ev.child, ...ev.parent ] ) ];
-				for( let t of tokens ) {
-					if ( this.filter === -1 ) {
-						if ( t.child.every( x => x.id > posid ) ) {
-							this.G.add(t,false);
-						}
-					} else if ( this.filter === 0 && t.parent.some( x => x.b === 0 ) ) {
-						this.G.add(t,false);
-					} else {
-						let b1 = t.parent.reduce( (a,x) => a | (x.id <= posid ? x.b :0), 0);
-						let b2 = t.child.reduce( (a,x) => a | (x.id <= posid ? x.b :0), 0);
-						let bs = b1 & ~b2;
-						if ( bs && ( this.filter === 0 || bs & this.filter ) ) {
-							this.G.add(t,false)
-						}
-					}
-				}
-			}
-		} else if ( this.view === 2 ) {
-			// Rewind
-			if ( this.filter > 0 ) {
-				let rm = [];
-				for( let t of this.G.T.keys() ) {
-					if ( t.ev.some( ev => !( ev.b & this.filter ) ) ) rm.push( t );
-				}
-				rm.forEach( this.G.del, this.G );
-			}
-
-			// Forward
-			for( let i = 0; i < this.pos; i++ ) {
-				let ev = this.multiway.EV[ i ];
-				this.processCausalEvent( ev );
-			}
-		}
-		this.refresh();
+		return change;
 	}
 
 	/**
@@ -226,9 +205,9 @@ class Simulator extends Rewriter {
 		while ( steps > 0 && this.pos < this.multiway.EV.length ) {
 			let ev = this.multiway.EV[ this.pos ];
 			let r = false;
-			if ( this.view === 1 ) {
+			if ( this.observer.view === 1 ) {
 				r = this.processSpatialEvent( ev );
-			} else if ( this.view === 2 ) {
+			} else if ( this.observer.view === 2 ) {
 				r = this.processCausalEvent( ev );
 			}
 			if ( r ) {
@@ -285,7 +264,7 @@ class Simulator extends Rewriter {
 	*/
 	final() {
 		this.stop();
-		if ( this.view === 1 ) {
+		if ( this.observer.view === 1 ) {
 			this.G.force(-1,10);
 		} else {
 			this.G.force(-1,10);
@@ -420,7 +399,7 @@ class Simulator extends Rewriter {
 					break;
 
 				case "worldline": case "timeline":
-					if ( this.view === 2 ) {
+					if ( this.observer.view === 2 ) {
 						if ( c.params.length < 1 ) throw new TypeError("Worldline: Invalid number of parameters.");
 						let maxv = this.G.nodes.length;
 						ret = this.multiway.worldline( [ ...c.params.map( x => parseInt(x) ) ] ).filter( e => {
@@ -435,7 +414,7 @@ class Simulator extends Rewriter {
 					break;
 
 				case "lightcone":
-					if ( this.view === 2 ) {
+					if ( this.observer.view === 2 ) {
 						if ( c.params.length < 2 ) throw new TypeError("Lightcone: Invalid number of parameters.");
 						p.push( parseInt(c.params[0]) );
 						ret = this.G.lightcone( parseInt(c.params[0]), parseInt(c.params[1]) );
@@ -461,7 +440,7 @@ class Simulator extends Rewriter {
 		}
 
 		// Rules
-		if ( rules && rules.length>0 && this.view === 1 ) {
+		if ( rules && rules.length>0 && this.observer.view === 1 ) {
 			let rw = new Rewriter();
 			rw.rulial.rules = rules; // Rules
 			rw.multiway = this.G; // Multiway system to search from
@@ -584,16 +563,14 @@ class Simulator extends Rewriter {
 				let posid = this.pos > 0 ? this.multiway.EV[ this.pos-1 ].id : 0;
 				for ( const t of this.G.T.keys() ) {
 					let b;
-					if ( this.view === 1 ) {
-						let b1 = t.parent.reduce( (a,x) => a | (x.id <= posid ? x.b : 0), 0);
-						let b2 = t.child.reduce( (a,x) => a | (x.id <= posid ? x.b : 0), 0);
-						b = b1 & ~b2;
-					} else if ( this.view === 2 ) {
+					if ( this.observer.view === 1 ) {
+						b = t.parent.reduce( (a,x) => a | (x.id <= posid ? x.b : 0), 0);
+					} else if ( this.observer.view === 2 ) {
 						b = t.ev.reduce( (a,x) => a | x.b, 0 );
 					}
 					if ( b > 0 ) {
 						let val = bits.filter( (x,i) => b & nums[i] );
-						setfn( t, val.reduce( (a,b) => a+b, 0 )/val.length + 1 );
+						setfn( t, val.reduce( (a,x) => a+x, 0 )/val.length + 1 );
 					}
 				}
 				min = min || 1;
@@ -613,10 +590,10 @@ class Simulator extends Rewriter {
 
 			case "energy": case "mass": case "momentum":
 				for ( const t of this.G.T.keys() ) {
-					if ( this.view === 1 ) {
+					if ( this.observer.view === 1 ) {
 						let evs = [ ...t.parent, ...t.child ].filter( x => x.rule );
 						if ( evs.length ) setfn( t, evs.reduce( (a,x) => a + x.rule[c.cmd],0 ) / evs.length );
-					} else if ( this.view === 2 ) {
+					} else if ( this.observer.view === 2 ) {
 						let ev = t.ev[ t.ev.length-1 ];
 						if ( ev.rule ) setfn( t, ev.rule[c.cmd] );
 					}
@@ -625,9 +602,9 @@ class Simulator extends Rewriter {
 
 			case "step":
 				for ( const t of this.G.T.keys() ) {
-					if ( this.view === 1 ) {
+					if ( this.observer.view === 1 ) {
 						setfn( t, t.parent.reduce( (a,x) => a + x.step,0 ) / t.parent.length );
-					} else if ( this.view === 2 ) {
+					} else if ( this.observer.view === 2 ) {
 						let ev = t.ev[ t.ev.length-1 ];
 						setfn( t, ev.step );
 					}
@@ -636,9 +613,9 @@ class Simulator extends Rewriter {
 
 			case "pathcnt":
 				for ( const t of this.G.T.keys() ) {
-					if ( this.view === 1 ) {
+					if ( this.observer.view === 1 ) {
 						setfn( t, t.pathcnt );
-					} else if ( this.view === 2 ) {
+					} else if ( this.observer.view === 2 ) {
 						let ev = t.ev[ t.ev.length-1 ];
 						setfn( t, ev.pathcnt );
 					}
@@ -648,18 +625,18 @@ class Simulator extends Rewriter {
 			case "probability":
 				let sum = 0, s = [];
 				for ( const t of this.G.T.keys() ) {
-					if ( this.view === 1 ) {
+					if ( this.observer.view === 1 ) {
 						sum += t.pathcnt;
-					} else if ( this.view === 2 ) {
+					} else if ( this.observer.view === 2 ) {
 						let ev = t.ev[ t.ev.length-1 ];
 						let pc = ev.pathcnt;
 						s[ ev.step ] ? s[ ev.step ] += pc : s[ ev.step ] = pc;
 					}
 				}
 				for ( const t of this.G.T.keys() ) {
-					if ( this.view === 1 ) {
+					if ( this.observer.view === 1 ) {
 						setfn( t, t.pathcnt / sum );
-					} else if ( this.view === 2 ) {
+					} else if ( this.observer.view === 2 ) {
 						let ev = t.ev[ t.ev.length-1 ];
 						let pc = ev.pathcnt;
 						setfn( t, pc / s[ ev.step ] );
