@@ -25,9 +25,9 @@ having the form of the left-hand side pattern `(1,1,2)(2,3,4)` is found in the
 hypergraph, it is replaced with a new subhypergraph having the form of the
 right-hand side pattern `(1,5,4)(2,5,3)(5,5,4)`.
 
-The matches can also overlap, which can be a problem. One way to resolve the
-conflicts is to pick one of the matches according to some ordering scheme and
-just ignore the others. Another approach to is to rewrite all the overlapping
+The matches can also overlap. One way to resolve these conflicts is to pick
+one of the overlapping matches according to some ordering scheme and just
+ignore the others. Another approach to is to rewrite all the overlapping
 matches by allowing the evolution of the system to branch. In the latter case,
 the result is a multiway system with many possible histories.
 
@@ -54,12 +54,10 @@ Several types of parentheses are also supported. For example, a rule
 `[{x,y}{x,z}]->[{x,y}{x,w}{y,w}{z,w}]` is considered valid and can be
 validated and converted to the default number format by clicking `Scan`.
 
-<!--
-The system supports an experimental filter `\`. As an example, the rule
-`(1)(1,2)\(2)->(1)(1,2)(2)` is applied only if there is no unary edge `(2)`.
-If the `Branch` interaction is enabled, the check is made relative to all
-branches.
--->
+As an experimental extension, the system supports a filter `\`. As an example,
+the rule `(1)(1,2)\(2)->(1)(1,2)(2)` is applied only if there is no unary
+edge `(2)`. If the branchlike interactions are allowed, the check is made
+relative to all possible branches of history.
 
 A rule without any right-hand side, such as `(1,1,1)(1,1,1)`, is used as the
 initial graph. An alternative way of to create the initial state is to use
@@ -76,8 +74,14 @@ Initial graph | Description
 `rule('rule',n)` | Run rewriting rule `rule` for maximum `n` events in one branch (singleway).  The leaves of the result are used as an initial state.
 `sphere(n)` | Fibonacci sphere with `n` vertices.
 
+It is also possible to define some specific branch, or a combination of
+branches, for the initial state. As an example, `(1,1)(1,1)/7`, would specify
+branches 1-3 (the sum of the first three bits 1+2+4). By default, the initial
+state is set for all the tracked branches.
+
 If the initial state is not specified, the left-hand side pattern of the first
-rule is used, but with only a single node. For example, a rule `(1,2)(1,3)->(1,2)(1,4)(2,4)(3,4)` gives an initial state `(1,1)(1,1)`.
+rule is used, but with only a single node. For example, a rule
+`(1,2)(1,3)->(1,2)(1,4)(2,4)(3,4)` gives an initial state `(1,1)(1,1)`.
 
 The `Evolution` option defines which kind of evolution is to be simulated:
 
@@ -104,9 +108,9 @@ Option | Description
 `DD` | De-duplicate. The overlapping new hyperedges on different branches are de-duplicated at the end of each step. This allows branches to merge. EXPERIMENTAL. FUNCTIONALITY LIKELY TO CHANGE.
 
 
-## Simulation
+## Simulation/Observer
 
-Simulation currently supports two modes: `Space` and `Time`.
+Simulation can be run in two different modes: `Space` and `Time`.
 
 In `Space` mode the system shows the evolution of the spatial hypergraph.
 According to the Wolfram Model, the spatial hypergraph represents
@@ -122,13 +126,12 @@ Media buttons let you reset the mode, start/pause the simulation and
 skip to the end. Whenever the system has branches, the first four
 branches can be shown separately or in any combination.
 
-In the `Observer/visual` section you decide which kind of view to take
-to the multiway system. `All` shows the full multiway structure, whereas
-`Leaves` shows only the edges without any child events. Individually tracked
-branches can be visualized separately in any combination. The two sliders
-change the visual appearance of the graph by tuning the parameters of
-the underlying force engine. Note: Changing the viewpoint or the forces
-do not in anyway change the multiway system itself.
+If `Leaves` is set, only the leaf edges are shown. Otherwise the full multiway
+system, even the timelike separated edges, are shown. The tracked branches 1-4
+can be visualized separately in any combination. The two sliders change the
+visual appearance of the graph by tuning the parameters of the underlying
+force engine. Note: Changing the viewpoint or the forces do not in anyway
+change the multiway system itself.
 
 ## Highlighting
 
