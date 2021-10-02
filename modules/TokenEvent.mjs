@@ -92,18 +92,23 @@ class TokenEvent {
 	deleteToken( t ) {
 		let idx = this.T.indexOf( t );
 		if ( idx !== -1 ) {
-			// Delete childs
-			t.child.forEach( ev => {
-				this.deleteEvent(ev);
-			});
+			// Remove edge
+			this.T.splice( idx, 1);
 
 			// Remove from parents
 			t.parent.forEach( ev => {
 				ev.child.splice( ev.child.indexOf( t ), 1);
 			});
 
-			// Remove edge
-			this.T.splice( idx, 1);
+			// Delete childs
+			t.child.forEach( ev => {
+				if ( ev.parent.length === 1 ) {
+					ev.parent.length = 0;
+					this.deleteEvent( ev );
+				} else {
+					ev.parent.splice( ev.parent.indexOf( t ), 1);
+				}
+			});
 		}
 	}
 
@@ -137,9 +142,18 @@ class TokenEvent {
 	deleteEvent( ev ) {
 		let idx = this.EV.indexOf( ev );
 		if ( idx !== -1 ) {
+			// Remove event
+			this.EV.splice(idx,1);
+
+			// Process parents
+			ev.parent.forEach( t => {
+				t.child.splice( t.child.indexOf( ev ), 1);
+			});
+
 			// Remove childs
 			ev.child.forEach( t => {
 				if ( t.parent.length === 1 ) {
+					t.parent.length = 0;
 					this.deleteToken( t );
 				} else {
 					t.parent.splice( t.parent.indexOf( ev ), 1);
@@ -155,14 +169,6 @@ class TokenEvent {
 					t.pathcnt = this.pathcnt2( t );
 				}
 			});
-
-			// Process parents
-			ev.parent.forEach( t => {
-				t.child.splice( t.child.indexOf( ev ), 1);
-			});
-
-			// Remove event
-			this.EV.splice(idx,1);
 		}
 	}
 
