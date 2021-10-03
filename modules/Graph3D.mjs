@@ -138,7 +138,7 @@ class Graph3D extends Graph {
 			Object.assign(o.position, coord.start);
 			let f = 20 + Math.min( 20, Math.pow(l.scale,3/5) * 10 );
 			o.scale.set( f, f, 0 );
-			if ( l.grad ) {
+			if ( l.hasOwnProperty("grad") ) {
 				o.material.color.set( Graph3D.colorGradient( l.grad ) );
 			} else {
 				o.material.color.set( this.spaceStyles[4].ring );
@@ -155,7 +155,7 @@ class Graph3D extends Graph {
 					});
 				}
 			});
-			if ( l.grad ) {
+			if ( l.hasOwnProperty("grad") ) {
 				o.material.color.set( Graph3D.colorGradient( l.grad ) );
 			} else {
 				o.material.color.set( this.spaceStyles[4].fill );
@@ -419,7 +419,7 @@ class Graph3D extends Graph {
     } else {
       this.FG.nodeVisibility( "style" ).linkVisibility( "style" );
     }
-		
+
   }
 
   /**
