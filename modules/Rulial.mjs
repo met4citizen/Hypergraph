@@ -57,7 +57,7 @@ class Rulial {
         x = s.match( /\/([^/]*)$/ );
         opt = x ? x[1] : "";
         x = s.match( /\((.*)\)/s );
-        if ( x ) {
+        if ( x && x[1].length ) {
           ps = x[1].split(",").map( t => t.replace( /''/g, qfn ) );
         }
       }
