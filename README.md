@@ -141,11 +141,12 @@ of the following commands:
 Command | Highlighted | Status Bar
 --- | --- | ---
 `curv(x,y)` | Two n-dimensional balls of radius one and the shortest path between their centers. | Curvature based on Ollivier-Ricci (1-Wasserstein) distance.
+`dim([x],[radius])` | N-dimensional ball with an origin `x` (random, if not specified) and radius `r` (automatically slcaed if not specified). | The effective dimension `d` based on nearby n-ball volumes fitted to `r^d`.
 `geodesic(x,y,[dir],[rev],[all])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction<br/>`all` = all shortest paths | Shortest path(s) between two nodes.<br/><br/> | Path distance as the number of edges.
 `lightcone(x,length)` | Lightcone centered at node `x` with size `length`. `TIME` mode only. | Size of the cones as the number of edges.
-`nball(x,radius,[dir],[rev])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | N-dimensional ball is a set of nodes and edges within a distance `radius` from a given node `center`. | Volume as the number of edges.
+`nball(x,radius,[dir],[rev])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | N-dimensional ball is a set of nodes and edges within a distance `radius` from a given node `x`. | Volume as the number of edges.
 `nsphere(x,radius,[dir],[rev])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | N-dimensional sphere/hypersurface within a distance `radius` from a given node `x`. | Area as the number of nodes.
-`random(x,distance,[dir],[rev])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | Random walk starting from a specific node with some maximum `distance`. | Path distance as the number of edges.
+`random(x,distance,[dir],[rev])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | Random walk starting from a specific node `x` with maximum `distance`. | Path distance as the number of edges.
 `surface(x,y)` | Space-like hypersurface based on a range of nodes. | Volume as the number of nodes.
 `worldline(x,...)` | Time-like curve of space-like node/nodes. `TIME` mode only. | Distance as the number of edges.
 `(x,y)(y,z)`<br>`(x,y)(y,z)\(z)->(x,y)` | Subhypergraphs matching the given rule-based pattern. The right hand side pattern can be used to specify which part of the match is highlighted. `SPACE` mode only. | The number of rule-based matches.

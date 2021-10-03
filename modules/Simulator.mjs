@@ -180,7 +180,7 @@ class Simulator extends Rewriter {
 	*/
 	processCausalEvent( ev ) {
 		let change = false;
-		if ( this.observer.branches > 0 && !( ev.b & this.observer.branches ) ) return change;
+		if ( this.observer.branches && !( ev.b & this.observer.branches ) ) return change;
 		if ( ev.parent.length === 0 ) {
 			this.G.add( { ev: [ ev ], edge: [ ev.id ] }, true );
 			change = true;
@@ -204,13 +204,13 @@ class Simulator extends Rewriter {
 	tick( steps = 1 ) {
 		while ( steps > 0 && this.pos < this.multiway.EV.length ) {
 			let ev = this.multiway.EV[ this.pos ];
-			let r = false;
+			let changed = false;
 			if ( this.observer.view === 1 ) {
-				r = this.processSpatialEvent( ev );
+				changed = this.processSpatialEvent( ev );
 			} else if ( this.observer.view === 2 ) {
-				r = this.processCausalEvent( ev );
+				changed = this.processCausalEvent( ev );
 			}
-			if ( r ) {
+			if ( changed ) {
 				steps--;
 				this.playpos++;
 			}
@@ -362,7 +362,7 @@ class Simulator extends Rewriter {
 					e.push( ret );
 					break;
 
-				case "curv":
+				case "curv": case "curvature":
 					if ( c.params.length < 2 ) throw new TypeError("Curv: Invalid number of parameters.");
 					p.push( parseInt(c.params[0]), parseInt(c.params[1]) );
 					let curv = this.G.orc( parseInt(c.params[0]), parseInt(c.params[1]) );
@@ -371,6 +371,24 @@ class Simulator extends Rewriter {
 					e.push( this.G.geodesic( parseInt(c.params[0]), parseInt(c.params[1]), c.params.includes("dir"), c.params.includes("rev"), c.params.includes("all") ).flat() );
 					v.push( this.G.nsphere( parseInt(c.params[0]), 1 ) );
 					v.push( this.G.nsphere( parseInt(c.params[1]), 1 ) );
+					break;
+
+				case "dim": case "dimension":
+					let origin = this.G.nodes[ Math.floor( this.G.nodes.length / 2 ) ].id;
+					if ( c.params.length ) origin = parseInt(c.params[0]);
+					let tree = this.G.tree( origin );
+					let radius = Math.max(1,Math.floor( tree.length/4 ));
+					if ( c.params.length > 1 ) radius = parseInt(c.params[1]);
+					if ( (radius+3) < tree.length ) {
+						let dfn = (rad) => (Math.log(tree.slice(0,rad+1).flat().length)/Math.log(rad));
+						let rads = Array(4).fill().map((x,j) => j+radius);
+						let dim = rads.reduce((a,x) => a+dfn(x),0) / rads.length;
+						ret = this.G.nball( origin, radius+1 );
+						p.push( origin );
+						r.push( dim.toLocaleString(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 1 }) );
+						e.push( ret );
+						v.push( [ ...new Set( ret.flat() ) ] );
+					}
 					break;
 
 				case "nsphere": case "sphere":
