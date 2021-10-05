@@ -142,9 +142,10 @@ class HyperedgeEvent extends TokenEvent {
 	* Post-process to be called just after processing matches.
 	* @generator
 	* @param {boolean} [dd=true] De-duplicate tokens.
+	* @param {boolean} [merge=true] Merge identical tokens.
 	* @return {string} Status of post-processing.
 	*/
-	*postProcess( dd = true ) {
+	*postProcess( dd = true, merge = true ) {
 
 		if ( dd ) {
 			// De-dublication
@@ -207,27 +208,29 @@ class HyperedgeEvent extends TokenEvent {
 		}
 
 		// Merge identical new hyperedges
-		let total = this.L.size;
-		let cnt = 0;
-		for( let l of this.L.values() ) {
-			let ts = l.filter( t => t.id > this.limitid ).sort( (a,b) => a.id - b.id );
-			for( let i=0; i<ts.length-1; i++ ) {
-				let cs = [ ts[i] ];
-				for( let j=ts.length-1; j>=i+1; j-- ) {
-					if ( cs.every( t => this.separation( t, ts[j] ) === 4 ) ) {
-						cs.push( ts[j] );
-						ts.splice( j, 1 );
+		if ( merge ) {
+			let total = this.L.size;
+			let cnt = 0;
+			for( let l of this.L.values() ) {
+				let ts = l.filter( t => t.id > this.limitid ).sort( (a,b) => a.id - b.id );
+				for( let i=0; i<ts.length-1; i++ ) {
+					let cs = [ ts[i] ];
+					for( let j=ts.length-1; j>=i+1; j-- ) {
+						if ( cs.every( t => this.separation( t, ts[j] ) === 4 ) ) {
+							cs.push( ts[j] );
+							ts.splice( j, 1 );
+						}
 					}
+					cs.forEach( (t,i,arr) => {
+						if ( i ) {
+							this.unsetLeaf( t );
+							this.merge( arr[0], t );
+						}
+					});
 				}
-				cs.forEach( (t,i,arr) => {
-					if ( i ) {
-						this.unsetLeaf( t );
-						this.merge( arr[0], t );
-					}
-				});
-			}
 
-			yield "Edges ["+ Math.floor( (++cnt / total) * 100 ) + "%]";
+				yield "Edges ["+ Math.floor( (++cnt / total) * 100 ) + "%]";
+			}
 		}
 
 	}

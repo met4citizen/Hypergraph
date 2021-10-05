@@ -18,9 +18,11 @@ class Rewriter {
 	* @property {number} evolution Number of branches to evolve, 0 = full multiway
 	* @property {number} interactions Combination of allowed separations; 1=spacelike, 2=timelike, 4=branchlike
 	* @property {number} maxevents Maximum number of events
+	* @property {number} maxsteps Maximum number of steps
 	* @property {number} timeslot Processing unit in msec
 	* @property {boolean} noduplicates If true, duplicate edges in rules are ignored
 	* @property {boolean} deduplicate If true, de-duplicate new edges
+	* @property {boolean} merge If true, merge identical edges
 	* @property {boolean} wolfram If true, use Wolfram default order/reverse for branches 1/2
 	* @property {boolean} rulendx If true, order based on rule index
 	*/
@@ -59,15 +61,22 @@ class Rewriter {
 		this.M.length = 0;
 		this.eventcnt = 0;
 		this.opt = {
-			evolution: opt.hasOwnProperty("evolution") ? opt.evolution : 1,
-			interactions: opt.hasOwnProperty("interactions") ? opt.interactions : 5,
-			timeslot: opt.hasOwnProperty("timeslot") ? opt.timeslot : 250,
-			noduplicates: opt.hasOwnProperty("noduplicates") ? opt.noduplicates : false,
-			deduplicate: opt.hasOwnProperty("deduplicate") ? opt.deduplicate : false,
-			wolfram: opt.hasOwnProperty("wolfram") ? opt.wolfram : false,
-			rulendx: opt.hasOwnProperty("rulendx") ? opt.rulendx : false
+			evolution: 1,
+			interactions: 5,
+			timeslot: 250,
+			maxsteps: Infinity,
+			maxevents: Infinity,
+			noduplicates: false,
+			deduplicate: false,
+			merge: true,
+			wolfram: false,
+			rulendx: false
 		};
-		this.opt.maxevents = opt.maxevents || (this.opt.evolution || 4) * 1000;
+		Object.assign( this.opt, opt );
+		if ( this.opt.maxevents === Infinity && this.opt.maxsteps === Infinity ) {
+			// If no max limits set, use default limit
+			this.opt.maxevents = (this.opt.evolution || 4) * 1000;
+		}
 		this.multiway.clear();
 
 		this.timerid = null; // Timer
@@ -313,8 +322,7 @@ class Rewriter {
 				}
 
 				// If the match have already been instantiated, reuse it
-				// (but only if branchlike interactions are allowed)
-				if ( (this.opt.interactions & 4) && m.ev ) {
+				if ( m.ev ) {
 					m.ev.b |= b;
 					continue;
 				}
@@ -350,7 +358,7 @@ class Rewriter {
 	*postProcessMatches() {
 
 		// Finalize multiway system step
-		let g = this.multiway.postProcess( this.opt.deduplicate );
+		let g = this.multiway.postProcess( this.opt.deduplicate, this.opt.merge );
 		let vs = g.next();
 		while( !vs.done ) {
 			if ( vs.value ) {
@@ -449,7 +457,7 @@ class Rewriter {
 			// Break if no new rewrites
 			if ( this.eventcnt === oldeventcnt ) break;
 
-		} while( !this.interrupt && this.eventcnt < this.opt.maxevents );
+		} while( !this.interrupt && (this.step < this.opt.maxsteps) && (this.eventcnt < this.opt.maxevents) );
 	}
 
 	/**
@@ -464,7 +472,7 @@ class Rewriter {
 			}
 		} else {
 			if ( this.progressfn ) {
-				this.progress.progress = this.eventcnt / this.opt.maxevents;
+				this.progress.progress = Math.max( this.eventcnt / this.opt.maxevents, this.step / this.maxsteps );
 				this.progressfn( this.progress );
 			}
 			this.timerid = setTimeout( this.timer.bind(this), this.rewritedelay, g );
