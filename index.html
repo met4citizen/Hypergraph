@@ -392,11 +392,11 @@ $(document).ready(function() {
 
     // Reset graph
     view = $(this).data("value");
-    let leaves = Boolean( $(".leaves.selected").length );
+    let past = Boolean( $(".past.selected").length );
     let branches = $(".branches.selected").toArray().reduce( (a,x) => a | $(x).data("value"), 0 );
     sim.setRefFrame( {
       view: view,
-      leaves: leaves,
+      leaves: !past,
       branches: branches
     });
 
@@ -414,10 +414,10 @@ $(document).ready(function() {
 
 
   // Filter
-  $(".leaves").on("click", function(e) {
+  $(".past").on("click", function(e) {
     $(this).toggleClass("selected");
     sim.setRefFrame( {
-      leaves: $(this).hasClass("selected")
+      leaves: !$(this).hasClass("selected")
     });
     resumeTimeout();
   });
@@ -508,7 +508,7 @@ $(document).ready(function() {
       + ( i !== 1 ? "&i=" + encodeURIComponent(i) : "" )
       + ( e !== 1 ? "&e=" + encodeURIComponent(e) : "" )
       + ( v !== "space" ? "&mode=" + encodeURIComponent(v) : "" )
-      + ( Boolean($(".leaves.selected").length) ? "" : "&l=0" );
+      + ( Boolean($(".past.selected").length) ? "p=1" : "" );
       + ( b !== 0 ? "&b=" + encodeURIComponent(b) : "" )
       + ( Boolean($(".noduplicates.selected").length) ? "&nd=1" : "" )
       + ( Boolean($(".deduplicate.selected").length) ? "&dd=1" : "" )
@@ -541,7 +541,7 @@ $(document).ready(function() {
     ofn("dd",0,"deduplicate");
     ofn("wm",0,"wolfram");
     ofn("ro",0,"rulendx");
-    ofn("l",1,"leaves");
+    ofn("p",0,"past");
 
     let i = parseInt( getUrlParameter('i') || "1" );
     $(".interactions").each( function() {
@@ -659,15 +659,14 @@ $(document).ready(function() {
       <svg id="final" viewBox="0 0 32 14"><polygon fill="white" points="12,3 12,11 18,7"/><polygon fill="white" points="18,3 20,3 20,11 18,11" /></svg>
     </span>
     <br><br><hr>
-    <span title="Only leaves" class="option leaves selected">LEAVES</span>
-    <span style="color: lightgrey">|</span>
+
     <span title="All branches" class="option branches selected" data-value="0">ALL</span>
     <span title="Branch #1" class="option branches" data-value="1">1</span>
     <span title="Branch #2" class="option branches" data-value="2">2</span>
     <span title="Branch #3" class="option branches" data-value="4">3</span>
     <span title="Branch #4" class="option branches" data-value="8">4</span>
-<!--    <span style="color: lightgrey">|</span>
-    <span title="Homotopy equivalence" class="option homotopy">HE</span> -->
+    <span style="color: lightgrey">|</span>
+    <span title="Show past" class="option past">PAST</span>
     <div id="visual">
       <input id="distance-range" type="range" value="20" min="0" max="100"><br>
       <span class="label down">Observer</span>

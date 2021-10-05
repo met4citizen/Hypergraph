@@ -126,12 +126,13 @@ Media buttons let you reset the mode, start/pause the simulation and
 skip to the end. Whenever the system has branches, the first four
 branches can be shown separately or in any combination.
 
-If `Leaves` is set, only the leaf edges are shown. Otherwise the full multiway
-system, even the timelike separated edges, are shown. The tracked branches 1-4
-can be visualized separately in any combination. The two sliders change the
-visual appearance of the graph by tuning the parameters of the underlying
-force engine. Note: Changing the viewpoint or the forces do not in anyway
-change the multiway system itself.
+The tracked sequencings 1-4 can be visualized separately in any combination.
+If `Past` is set, the full history of the multiway system is shown in space
+mode. Otherwise only the leaf edges of the system are visible. The two sliders
+change the visual appearance of the graph by tuning the parameters of the
+underlying force engine. Note: Changing the viewpoint or the forces do not
+in any way change the multiway system itself only how it is presented.
+
 
 ## Highlighting
 
