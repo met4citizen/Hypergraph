@@ -353,7 +353,7 @@ class Rulial {
     this.clear();
 
     // Check if empty
-    if ( str.length === 0 ) throw new SyntaxError("Given rule is empty.");
+    if ( str.length === 0 ) throw new RangeError("Given rule is empty.");
 
     // Parse commands and rules
     [ this.rules, this.commands ] = Rulial.parseCommands( str ).reduce( (a,b) => {
@@ -383,7 +383,7 @@ class Rulial {
       let p = c.params;
       if ( p.length < 1 ) throw new TypeError("Prerun: Invalid number of parameters.");
       let branch = c.opt.length ? parseInt(c.opt) : 0;
-      if ( branch < 0 || branch > 15 ) throw new RangeError("Option '/': Branch must be between 0-15.");
+      if ( branch < 0 || branch > 16 ) throw new RangeError("Option '/': Branch must be between 0-16.");
       let rule = this.getRule(";");
       rule = rule.replace( /;prerun[^;]+/g, "" ); // filter out to avoid recursion
       let edges = this.rule( rule, parseInt(p[0]) || 10 );
@@ -394,7 +394,7 @@ class Rulial {
         let cmd = c.cmd;
         let p = c.params;
         let branch = c.opt.length ? parseInt(c.opt) : 0;
-        if ( branch < 0 || branch > 15 ) throw new RangeError("Option '/': Branch must be between 0-15.");
+        if ( branch < 0 || branch > 16 ) throw new RangeError("Option '/': Branch must be between 0-16.");
         let edges = [];
 
         switch( cmd ) {
@@ -455,7 +455,7 @@ class Rulial {
     })
 
     if ( this.initial.length === 0 ) {
-      throw new SyntaxError("Parsing the rule failed.");
+      throw new TypeError("Parsing the rule failed.");
     }
 
   }
