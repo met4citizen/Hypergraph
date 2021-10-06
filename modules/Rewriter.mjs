@@ -183,6 +183,17 @@ class Rewriter {
 			for( let i=0; i < this.rulial.rules.length; i++ ) {
 				let rule = this.rulial.rules[i];
 
+				// Allowed interactions for this rule
+				let interactions = this.opt.interactions;
+				if ( rule.hasOwnProperty("opt") && rule.opt.length > 0 ) {
+					if ( rule.opt === "c" ) {
+						interactions = 5; // Completions spacelike+branchlike
+					} else {
+						let x = parseInt(rule.opt);
+						if ( x > 0 && x < 7 ) interactions = x;
+					}
+				}
+
 				// Next rule, if the edge doesn't match the rule
 				if ( !this.isMatch( edge, rule.lhs[0] ) ) continue;
 
@@ -217,7 +228,7 @@ class Rewriter {
 
 				// Replicate according to the final results
 				for( let k = mapsNext.length-1; k >= 0; k-- ) {
-					let hits = this.multiway.hits( this.mapper( rule.lhs, mapsNext[k] ), this.opt.interactions );
+					let hits = this.multiway.hits( this.mapper( rule.lhs, mapsNext[k] ), interactions );
 					for( let l = hits.length-1; l >= 0; l-- ) {
 						this.M.push( {
 							hit: hits[l],
@@ -301,6 +312,19 @@ class Rewriter {
 		for( let idx of order ) {
 			let m = this.M[idx];
 
+			// Allowed interactions for this rule
+			let interactions = this.opt.interactions;
+			let isCompletion = false;
+			if ( m.rule.hasOwnProperty("opt") && m.rule.opt.length > 0 ) {
+				if ( m.rule.opt === "c" ) {
+					isCompletion = true;
+					interactions = 4; // Completions between branches
+				} else {
+					let x = parseInt(m.rule.opt);
+					if ( x > 0 && x < 7 ) interactions = x;
+				}
+			}
+
 			if ( b ) {
 				// If no duplicates set, test only with no duplicates
 				let hit = m.hit;
@@ -312,13 +336,20 @@ class Rewriter {
 				let bsc = hit.map( t => t.child.reduce( (a,x) => a | x.b, 0) );
 				if ( bsc.some( x => x & b ) ) continue;
 
-				// If branchlike allowed, one of the edges must be accessible to b
-				// Otherwise, all the edges must be accessible to b
+
 				let bsp = m.hit.map( t => t.parent.reduce( (a,x) => a | x.b, 0) );
-				if ( this.opt.interactions & 4 ) {
-					if ( bsp.every( x => !(x & b) ) ) continue;
+				if ( isCompletion ) {
+					// If completion, there must be only tracked branches but several different ones
+					if ( bsp.some( x => x === 0 ) ) continue;
+					if ( bsp.every( (x,_,arr) => x === arr[0] ) ) continue;
 				} else {
-					if ( bsp.some( x => !(x & b) ) ) continue;
+					// If branchlike allowed, one of the edges must be accessible to b
+					// Otherwise, all the edges must be accessible to b
+					if ( interactions & 4 ) {
+						if ( bsp.every( x => !(x & b) ) ) continue;
+					} else {
+						if ( bsp.some( x => !(x & b) ) ) continue;
+					}
 				}
 
 				// If the match have already been instantiated, reuse it
@@ -327,6 +358,9 @@ class Rewriter {
 					continue;
 				}
 			} else {
+				// Ignore completions of the tracked branches
+				if ( isCompletion ) continue;
+
 				// Ignore matches that have already been instantiated
 				if ( m.ev ) continue;
 			}
@@ -472,7 +506,7 @@ class Rewriter {
 			}
 		} else {
 			if ( this.progressfn ) {
-				this.progress.progress = Math.max( this.eventcnt / this.opt.maxevents, this.step / this.maxsteps );
+				this.progress.progress = Math.max( (this.eventcnt / this.opt.maxevents) || 0, (this.step / this.maxsteps) || 0 );
 				this.progressfn( this.progress );
 			}
 			this.timerid = setTimeout( this.timer.bind(this), this.rewritedelay, g );
