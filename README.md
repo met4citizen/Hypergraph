@@ -5,7 +5,7 @@
 **Run it: https://met4citizen.github.io/Hypergraph/**
 
 This web app is a hypergraph rewriting system that supports both singleway and
-multiway evolutions and can visualize the evolution of the hypergraph in 3D.
+multiway evolutions and can visualize the evolution in 3D.
 The app uses
 [3d Force-Directed Graph](https://github.com/vasturiano/3d-force-graph)
 for representing graph structures,
@@ -14,22 +14,34 @@ for representing graph structures,
 
 ## Introduction
 
-A hypergraph is a generalization of a regular graph in which an edge can join
-any number of nodes. In a hypergraph rewriting system some initial state is
-transformed incrementally by making a series of updates that follow some
-abstract rewriting rule.
+A hypergraph is a generalization of a regular graph. Whereas an edge always
+connects two nodes, a hyperedge can join any number of nodes. In a hypergraph
+rewriting system some initial state is transformed incrementally by making
+a series of updates that follow some abstract rewriting rule.
 
 As an example, consider a rewriting rule
-`(1,1,2)(2,3,4)->(1,5,4)(2,5,3)(5,5,4)`. Whenever and wherever a subhypergraph
-having the form of the left-hand side pattern `(1,1,2)(2,3,4)` is found in the
+`(x,x,y)(y,z,u)->(x,v,u)(y,v,z)(v,v,u)`. Wherever and whenever a subhypergraph
+having the form of the left-hand side pattern `(x,x,y)(y,z,u)` is found in the
 hypergraph, it is replaced with a new subhypergraph having the form of the
-right-hand side pattern `(1,5,4)(2,5,3)(5,5,4)`.
+right-hand side pattern `(x,v,u)(y,v,z)(v,v,u)`.
 
-The matches can also overlap. One way to resolve these conflicts is to pick
-one of the overlapping matches according to some ordering scheme and just
-ignore the others. Another approach to is to rewrite all the overlapping
-matches by allowing the evolution of the system to branch. In the latter case,
-the result is a multiway system with many possible histories.
+Sometimes the matches overlap. For example, when using the previous rule
+with the initial state `(1,1,2)(2,2,3)(3,3,4)`, we can find two overlapping
+matches `(x=1,y=2,z=2,u=3)` and `(x=2,y=3,z=3,u=4)`.
+
+One way to resolve this conflict is to pick just one of the matches
+according to some ordering scheme and ignore the other (single-way evolution).
+Another approach is to rewrite the two overlapping matches (critical pair)
+by allowing the system to branch (multiway evolution).
+
+As the multiway system branches and diverges (quantum mechanics), the
+probability of ending up in some particular end state is related to the number
+of different evolutionary paths to that state (path counting). However, there
+can also be rules that make two branches merge (critical pair completions).
+This makes certain end states more and/or less likely
+(constructive/destructive interference). In the end, we are likely to find
+ourselves in the part of the system in which the branches always merge
+(confluence) so that the evolution converges (classical mechanics).
 
 For more information about hypergraph rewriting systems and their potential to
 represent fundamental physics visit
@@ -54,14 +66,14 @@ Several types of parentheses are also supported. For example, a rule
 `[{x,y}{x,z}]->[{x,y}{x,w}{y,w}{z,w}]` is considered valid and can be
 validated and converted to the default number format by clicking `Scan`.
 
-As an experimental extension, the system supports a filter `\`. As an example,
-the rule `(1)(1,2)\(2)->(1)(1,2)(2)` is applied only if there is no unary
-edge `(2)`. If the branchlike interactions are allowed, the check is made
-relative to all possible branches of history.
+The system also supports a filter `\`. As an example, the rule
+`(1)(1,2)\(2)->(1)(1,2)(2)` is applied only if there is no unary edge `(2)`.
+If the branchlike interactions are allowed, the check is made relative to all
+possible branches of history.
 
 A rule without any right-hand side, such as `(1,1,1)(1,1,1)`, is used as the
 initial graph. An alternative way of to create the initial state is to use
-predefined functions:
+some predefined function:
 
 Initial graph | Description
 --- | ---
@@ -105,7 +117,7 @@ Option | Description
 --- | ---
 `WM` | Wolfram Model. If set, the first branch uses Wolfram Model's standard event order (LeastRecentEdge + RuleOrdering + RuleIndex) and the second branch its reverse. By default the setting is off and all tracked branches use random event ordering.
 `RO` | Rule order (index). Regardless of other settings, always try to apply the events in the order in which the rules have been specified. By default the setting is off and the individual rules are allowed to mix.
-`DD` | De-duplicate. The overlapping new hyperedges on different branches are de-duplicated at the end of each step. This allows branches to merge. EXPERIMENTAL. FUNCTIONALITY LIKELY TO CHANGE.
+`DD` | De-duplicate. The overlapping new hyperedges on different branches are de-duplicated at the end of each step. This allows branches to merge. EXPERIMENTAL, FUNCTIONALITY LIKELY TO CHANGE.
 
 
 ## Simulation/Observer
@@ -127,22 +139,23 @@ skip to the end. Whenever the system has branches, the first four
 branches can be shown separately or in any combination.
 
 The tracked sequencings 1-4 can be visualized separately in any combination.
-If `Past` is set, the full history of the multiway system is shown in space
-mode. Otherwise only the leaf edges of the system are visible. The two sliders
-change the visual appearance of the graph by tuning the parameters of the
-underlying force engine. Note: Changing the viewpoint or the forces do not
-in any way change the multiway system itself only how it is presented.
+If `Past` is set, the full history of the local multiway system is shown in
+space mode. Otherwise only the leaf edges of the system are visible.
+The two sliders change the visual appearance of the graph by tuning the
+parameters of the underlying force engine. Note: Changing the viewpoint
+or the forces do not in any way change the multiway system itself only
+how it is visualized.
 
 
 ## Highlighting
 
-Subgraphs can be highlighted by clicking `RED`/`BLUE` and using one or more
-of the following commands:
+Subhypergraphs can be highlighted by clicking `RED`/`BLUE` and using one or
+more of the following commands:
 
 Command | Highlighted | Status Bar
 --- | --- | ---
 `curv(x,y)` | Two n-dimensional balls of radius one and the shortest path between their centers. | Curvature based on Ollivier-Ricci (1-Wasserstein) distance.
-`dim([x],[radius])` | N-dimensional ball with an origin `x` (random, if not specified) and radius `r` (automatically slcaed if not specified). | The effective dimension `d` based on nearby n-ball volumes fitted to `r^d`.
+`dim([x],[radius])` | N-dimensional ball with an origin `x` (random, if not specified) and radius `r` (automatically scaled if not specified). | The effective dimension `d` based on nearby n-ball volumes fitted to `r^d`.
 `geodesic(x,y,[dir],[rev],[all])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction<br/>`all` = all shortest paths | Shortest path(s) between two nodes.<br/><br/> | Path distance as the number of edges.
 `lightcone(x,length)` | Lightcone centered at node `x` with size `length`. `TIME` mode only. | Size of the cones as the number of edges.
 `nball(x,radius,[dir],[rev])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | N-dimensional ball is a set of nodes and edges within a distance `radius` from a given node `x`. | Volume as the number of edges.
@@ -156,16 +169,17 @@ Command | Highlighted | Status Bar
 
 ## Scalar Fields
 
-Click `GRAD` to visualize scalar fields. Relative intensity of the field is
-represented by different hues of colour from light blue (lowest) to green to
-yellow (mid) to orange to red (highest). Field values are calculated for each
-edge and the colours of the vertices represent the mean of their edges.
+Click `GRAD` to visualize predefined scalar fields. Relative intensity of
+the field is represented by different hues of colour from light blue (lowest)
+to green to yellow (mid) to orange to red (highest). Field values are
+calculated for each edge and the colours of the vertices represent
+the mean of their edges.
 
 Scalar Field | Description
 --- | ---
 `branch` | Branch id. With two branches the main colours are blue and red. With four branches blue, green, orange and red. For shared edges the colour is in the middle of the spectrum.
 `created` | Creation time from oldest to newest.
-`curvature` | Ollivier-Ricci curvature. NOTE: Calculating curvature is a CPU intensive task. If used in real-time it will slow down the animation.
+`curvature` | Ollivier-Ricci curvature. NOTE: Calculating curvature is a CPU intensive task. When used in real-time it will slow down the animation.
 `degree` | The mean of incoming and outgoing edges.
 `energy` | The mean of updated edges.
 `mass` | The part of `energy` in which the right hand side edges connect pre-existing vertices.
