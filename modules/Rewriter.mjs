@@ -19,6 +19,7 @@ class Rewriter {
 	* @property {number} interactions Combination of allowed separations; 1=spacelike, 2=timelike, 4=branchlike
 	* @property {number} maxevents Maximum number of events
 	* @property {number} maxsteps Maximum number of steps
+	* @property {number} maxtokens Maximum number of tokens
 	* @property {number} timeslot Processing unit in msec
 	* @property {boolean} noduplicates If true, duplicate edges in rules are ignored
 	* @property {boolean} deduplicate If true, de-duplicate new edges
@@ -66,6 +67,7 @@ class Rewriter {
 			timeslot: 250,
 			maxsteps: Infinity,
 			maxevents: Infinity,
+			maxtokens: Infinity,
 			noduplicates: false,
 			deduplicate: false,
 			merge: true,
@@ -73,9 +75,12 @@ class Rewriter {
 			rulendx: false
 		};
 		Object.assign( this.opt, opt );
-		if ( this.opt.maxevents === Infinity && this.opt.maxsteps === Infinity ) {
-			// If no max limits set, use default limit
+		if ( this.opt.maxevents === Infinity &&
+				 this.opt.maxsteps === Infinity &&
+			   this.opt.maxtokens === Infinity ) {
+			// If no max limits set, use default limits
 			this.opt.maxevents = (this.opt.evolution || 4) * 1000;
+			this.opt.maxtokens = 20000;
 		}
 		this.multiway.clear();
 
@@ -318,7 +323,7 @@ class Rewriter {
 			if ( m.rule.hasOwnProperty("opt") && m.rule.opt.length > 0 ) {
 				if ( m.rule.opt === "c" ) {
 					isCompletion = true;
-					interactions = 4; // Completions between branches
+					interactions = 5; // Completions between branches
 				} else {
 					let x = parseInt(m.rule.opt);
 					if ( x > 0 && x < 7 ) interactions = x;
@@ -378,7 +383,8 @@ class Rewriter {
 			this.eventcnt++;
 
 			// Break when limit reached
-			if ( this.eventcnt >= this.opt.maxevents ) break;
+			if ( this.eventcnt >= this.opt.maxevents ||
+					 this.multiway.T.length >= this.opt.maxtokens ) break;
 
 			yield;
 		}
@@ -491,7 +497,12 @@ class Rewriter {
 			// Break if no new rewrites
 			if ( this.eventcnt === oldeventcnt ) break;
 
-		} while( !this.interrupt && (this.step < this.opt.maxsteps) && (this.eventcnt < this.opt.maxevents) );
+		} while(
+			!this.interrupt &&
+			(this.step < this.opt.maxsteps) &&
+			(this.eventcnt < this.opt.maxevents) &&
+			(this.multiway.T.length < this.opt.maxtokens)
+		);
 	}
 
 	/**
@@ -506,7 +517,11 @@ class Rewriter {
 			}
 		} else {
 			if ( this.progressfn ) {
-				this.progress.progress = Math.max( (this.eventcnt / this.opt.maxevents) || 0, (this.step / this.maxsteps) || 0 );
+				this.progress.progress = Math.max(
+					(this.eventcnt / this.opt.maxevents) || 0,
+					(this.step / this.opt.maxsteps) || 0,
+					(this.multiway.T.length / this.opt.maxtokens) || 0
+				);
 				this.progressfn( this.progress );
 			}
 			this.timerid = setTimeout( this.timer.bind(this), this.rewritedelay, g );
