@@ -229,7 +229,7 @@ class HyperedgeEvent extends TokenEvent {
 					});
 				}
 
-				yield "Edges ["+ Math.floor( (++cnt / total) * 100 ) + "%]";
+				yield "MERGE ["+ Math.floor( (++cnt / total) * 100 ) + "%]";
 			}
 		}
 
