@@ -185,6 +185,7 @@ Scalar Field | Description
 `mass` | The part of `energy` in which the right hand side edges connect pre-existing vertices.
 `momentum` | The part of `energy` in which the right hand side edges have new vertices.
 `pathcnt` | The number of paths leading to specific edge.
+`phase` | The branchial distance to a single token in branch 1. Branchial coordinates are calculated using 10240-dimensional dense bipolar hypervectors. NOTE: Hyperdimensional computing is CPU intensive, so when used in real-time it will slow down the animation. EXPERIMENTAL, LIKELY TO CHANGE.
 `probability` | Normalized path count for each edge in each step.
 `step` | Rewriting step.
 

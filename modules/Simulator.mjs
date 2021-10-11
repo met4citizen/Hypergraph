@@ -579,16 +579,21 @@ class Simulator extends Rewriter {
 				let bits = [...Array(this.opt.evolution || 4)].map( (_,i) => i );
 				let nums = bits.map( x => Math.pow(2,x) );
 				let posid = this.pos > 0 ? this.multiway.EV[ this.pos-1 ].id : 0;
-				for ( const t of this.G.T.keys() ) {
-					let b;
-					if ( this.observer.view === 1 ) {
-						b = t.parent.reduce( (a,x) => a | (x.id <= posid ? x.b : 0), 0);
-					} else if ( this.observer.view === 2 ) {
-						b = t.ev.reduce( (a,x) => a | x.b, 0 );
+				if ( this.observer.view === 1 ) {
+					for ( const t of this.G.T.keys() ) {
+						let b = t.parent.reduce( (a,x) => a | (x.id <= posid ? x.b : 0), 0);
+						if ( b > 0 ) {
+							let val = bits.filter( (x,i) => b & nums[i] );
+							setfn( t, val.reduce( (a,x) => a+x, 0 )/val.length + 1 );
+						}
 					}
-					if ( b > 0 ) {
-						let val = bits.filter( (x,i) => b & nums[i] );
-						setfn( t, val.reduce( (a,x) => a+x, 0 )/val.length + 1 );
+				} else if ( this.observer.view === 2 ) {
+					for ( const t of this.G.T.keys() ) {
+						let b = t.ev.reduce( (a,x) => a | x.b, 0 );
+						if ( b > 0 ) {
+							let val = bits.filter( (x,i) => b & nums[i] );
+							setfn( t, val.reduce( (a,x) => a+x, 0 )/val.length + 1 );
+						}
 					}
 				}
 				min = min || 1;
@@ -607,11 +612,13 @@ class Simulator extends Rewriter {
 				break;
 
 			case "energy": case "mass": case "momentum":
-				for ( const t of this.G.T.keys() ) {
-					if ( this.observer.view === 1 ) {
+				if ( this.observer.view === 1 ) {
+					for ( const t of this.G.T.keys() ) {
 						let evs = [ ...t.parent, ...t.child ].filter( x => x.rule );
 						if ( evs.length ) setfn( t, evs.reduce( (a,x) => a + x.rule[c.cmd],0 ) / evs.length );
-					} else if ( this.observer.view === 2 ) {
+					}
+				} else if ( this.observer.view === 2 ) {
+					for ( const t of this.G.T.keys() ) {
 						let ev = t.ev[ t.ev.length-1 ];
 						if ( ev.rule ) setfn( t, ev.rule[c.cmd] );
 					}
@@ -619,10 +626,12 @@ class Simulator extends Rewriter {
 				break;
 
 			case "step":
-				for ( const t of this.G.T.keys() ) {
-					if ( this.observer.view === 1 ) {
+				if ( this.observer.view === 1 ) {
+					for ( const t of this.G.T.keys() ) {
 						setfn( t, t.parent.reduce( (a,x) => a + x.step,0 ) / t.parent.length );
-					} else if ( this.observer.view === 2 ) {
+					}
+				} else if ( this.observer.view === 2 ) {
+					for ( const t of this.G.T.keys() ) {
 						let ev = t.ev[ t.ev.length-1 ];
 						setfn( t, ev.step );
 					}
@@ -630,31 +639,68 @@ class Simulator extends Rewriter {
 				break;
 
 			case "pathcnt":
-				for ( const t of this.G.T.keys() ) {
-					if ( this.observer.view === 1 ) {
+				if ( this.observer.view === 1 ) {
+					for ( const t of this.G.T.keys() ) {
 						setfn( t, t.pathcnt );
-					} else if ( this.observer.view === 2 ) {
+					}
+				} else if ( this.observer.view === 2 ) {
+					for ( const t of this.G.T.keys() ) {
 						let ev = t.ev[ t.ev.length-1 ];
 						setfn( t, ev.pathcnt );
 					}
 				}
 				break;
 
+			case "phase":
+				if ( this.observer.view === 1 ) {
+					// Find token from branch #1
+					let tref;
+					for ( const t of this.G.T.keys() ) {
+						if ( t.parent.every( x => x.b === 1 ) ) {
+							tref = t;
+							break;
+						}
+					}
+					if ( tref ) {
+						for ( const t of this.G.T.keys() ) {
+							setfn( t, this.multiway.distance( t, tref ) );
+						}
+					}
+				} else if ( this.observer.view === 2 ) {
+					// Find event from branch #1
+					let evref;
+					for ( const t of this.G.T.keys() ) {
+						let ev = t.ev[ t.ev.length-1 ];
+						if ( ev.b === 1 ) {
+							evref = ev;
+							break;
+						}
+					}
+					if ( evref ) {
+						for ( const t of this.G.T.keys() ) {
+							let ev = t.ev[ t.ev.length-1 ];
+							setfn( t, this.multiway.distance2( ev, evref ) );
+						}
+					}
+				}
+				break;
+
 			case "probability":
 				let sum = 0, s = [];
-				for ( const t of this.G.T.keys() ) {
-					if ( this.observer.view === 1 ) {
+				if ( this.observer.view === 1 ) {
+					for ( const t of this.G.T.keys() ) {
 						sum += t.pathcnt;
-					} else if ( this.observer.view === 2 ) {
+					}
+					for ( const t of this.G.T.keys() ) {
+						setfn( t, t.pathcnt / sum );
+					}
+				} else if ( this.observer.view === 2 ) {
+					for ( const t of this.G.T.keys() ) {
 						let ev = t.ev[ t.ev.length-1 ];
 						let pc = ev.pathcnt;
 						s[ ev.step ] ? s[ ev.step ] += pc : s[ ev.step ] = pc;
 					}
-				}
-				for ( const t of this.G.T.keys() ) {
-					if ( this.observer.view === 1 ) {
-						setfn( t, t.pathcnt / sum );
-					} else if ( this.observer.view === 2 ) {
+					for ( const t of this.G.T.keys() ) {
 						let ev = t.ev[ t.ev.length-1 ];
 						let pc = ev.pathcnt;
 						setfn( t, pc / s[ ev.step ] );
