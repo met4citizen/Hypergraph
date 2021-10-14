@@ -526,6 +526,7 @@ $(document).ready(function() {
   // Final state
   $("#finalreheat").on("click", function() {
     try {
+      phasechanged = true;
       sim.final();
       $("#playstop").addClass("button-disabled").css("background-color","black");;
       $("#play, #reheat").show();
