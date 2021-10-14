@@ -4,20 +4,22 @@
 
 **Run it: https://met4citizen.github.io/Hypergraph/**
 
-This web app is a hypergraph rewriting system that supports both singleway and
-multiway evolutions and can visualize the evolution in 3D.
-The app uses
+This is a hypergraph rewriting system that supports both singleway and
+multiway evolutions and can visualize them in 3D. The app uses
 [3d Force-Directed Graph](https://github.com/vasturiano/3d-force-graph)
 for representing graph structures,
 [ThreeJS](https://github.com/mrdoob/three.js/)/WebGL for 3D rendering and
 [d3-force-3d](https://github.com/vasturiano/d3-force-3d) for the force engine.
+Singular value decomposition function adapted from
+[svdjs](https://github.com/stardisblue/svdjs).
 
 ## Introduction
 
-A hypergraph is a generalization of a regular graph. Whereas an edge always
-connects two nodes, a hyperedge can join any number of nodes. In a hypergraph
-rewriting system some initial state is transformed incrementally by making
-a series of updates that follow some abstract rewriting rule.
+A hypergraph is a generalization of a regular graph. Whereas an edge typically
+connects only two nodes, a hyperedge can join any number of nodes.
+In a hypergraph rewriting system some initial state is transformed
+incrementally by making a series of updates that follow some abstract
+rewriting rule.
 
 As an example, consider a rewriting rule
 `(x,x,y)(y,z,u)->(x,v,u)(y,v,z)(v,v,u)`. Wherever and whenever a subhypergraph
@@ -25,11 +27,11 @@ having the form of the left-hand side pattern `(x,x,y)(y,z,u)` is found in the
 hypergraph, it is replaced with a new subhypergraph having the form of the
 right-hand side pattern `(x,v,u)(y,v,z)(v,v,u)`.
 
-Sometimes the matches overlap. For example, when using the previous rule
-with the initial state `(1,1,2)(2,2,3)(3,3,4)`, we can find two overlapping
+Sometimes matches overlap. For example, when using the previous rule
+with the initial state `(1,1,2)(2,2,3)(3,3,4)`, there are two overlapping
 matches `(x=1,y=2,z=2,u=3)` and `(x=2,y=3,z=3,u=4)`.
 
-One way to resolve this conflict is to pick just one of the matches
+One way to resolve the conflict is to pick just one of the matches
 according to some ordering scheme and ignore the other (single-way evolution).
 Another approach is to rewrite the two overlapping matches (critical pair)
 by allowing the system to branch (multiway evolution).
@@ -37,11 +39,11 @@ by allowing the system to branch (multiway evolution).
 As the multiway system branches and diverges (quantum mechanics), the
 probability of ending up in some particular end state is related to the number
 of different evolutionary paths to that state (path counting). However, there
-can also be rules that make two branches merge (critical pair completions).
-This makes certain end states more and/or less likely
-(constructive/destructive interference). In the end, we are likely to find
+can also be rules that make two branches merge (critical pair completion).
+This makes certain end states more/less likely
+(constructive/destructive interference). In the end we are likely to find
 ourselves in the part of the system in which the branches always merge
-(confluence) so that the evolution converges (classical mechanics).
+(confluence) and the evolution converges (classical mechanics).
 
 For more information about hypergraph rewriting systems and their potential to
 represent fundamental physics visit
@@ -138,9 +140,15 @@ Media buttons let you reset the mode, start/pause the simulation and
 skip to the end. Whenever the system has branches, the first four
 branches can be shown separately or in any combination.
 
-The tracked sequencings 1-4 can be visualized separately in any combination.
-If `Past` is set, the full history of the local multiway system is shown in
-space mode. Otherwise only the leaf edges of the system are visible.
+If `Past` is selected, the full history of the local multiway system is
+shown in space mode. By default only the leaf edges of the system are visible.
+
+If `Phase` is selected, hyper-dimensional branchial coordinates are projected
+into 3D/2D and new forces are applied to nodes based on the projected
+coordinates. Note: Multidimensional scaling is a CPU intensive task, so
+it can not be used while the simulation is running. EXPERIMENTAL,
+FUNCTIONALITY LIKELY TO CHANGE.
+
 The two sliders change the visual appearance of the graph by tuning the
 parameters of the underlying force engine. Note: Changing the viewpoint
 or the forces do not in any way change the multiway system itself only

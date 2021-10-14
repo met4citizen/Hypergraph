@@ -2,6 +2,9 @@ import { Rulial } from "./Rulial.mjs";
 import { Rewriter } from "./Rewriter.mjs";
 import { Graph3D } from "./Graph3D.mjs";
 
+import {forceX,forceY,forceZ} from "https://cdn.skypack.dev/d3-force-3d";
+import { Phase } from "./Phase.mjs"; // Multidimensional scaling
+
 /**
 * @class User interface for rewriter
 * @author Mika Suominen
@@ -41,6 +44,8 @@ class Simulator extends Rewriter {
 
 		this.H = new Map(); // Highlights
 		this.F = null; // Fields
+
+		this.phase = new Phase( this.G ); // Branchial distances
 	}
 
 	/**
@@ -72,6 +77,47 @@ class Simulator extends Rewriter {
 
 			// First additions
 			this.tick( this.rulial.initial.length );
+		}
+
+		if ( rf.hasOwnProperty("phase") && rf.phase !== this.observer.phase ) {
+			this.observer.phase = rf.phase;
+			// Add/remove x,y,z forces
+			if ( this.observer.phase ) {
+				this.G.FG.d3Force("x", forceX() );
+				this.G.FG.d3Force("x").x( n => {
+					return n.bx || 0;
+				});
+				this.G.FG.d3Force("x").strength( 0.5 );
+				this.G.FG.d3Force("z", forceZ() );
+				this.G.FG.d3Force("z").z( n => {
+					return n.by || 0; // Note: This by is not an error, in time mode z is fixed
+				});
+				this.G.FG.d3Force("z").strength( 0.5 );
+				if ( this.observer.view === 1 ) {
+					this.G.FG.d3Force("y", forceY() );
+					this.G.FG.d3Force("y").y( n => {
+						return n.bz || 0; // Note: This bz is not an error, in time mode z is fixed
+					});
+					this.G.FG.d3Force("y").strength( 0.5 );
+				}
+				this.G.FG.d3Force("link").strength( 0 );
+			} else {
+				this.G.FG.d3Force("x", null );
+				this.G.FG.d3Force("y", null );
+				this.G.FG.d3Force("z", null );
+				if ( this.observer.view === 1 ) {
+					this.G.FG.d3Force("link").strength( l => {
+						let refs = Math.min(l.source.refs, l.target.refs) + 1;
+						return 1 / refs;
+					});
+				} else {
+					this.G.FG.d3Force("link").strength( l => {
+						let refs = 4 * (Math.min(l.source.refs, l.target.refs) + 1);
+						return 1 / refs;
+					});
+				}
+			}
+			this.refresh();
 		}
 
 		if ( ( rf.hasOwnProperty("branches") && rf.branches !== this.observer.branches ) ||
@@ -663,7 +709,7 @@ class Simulator extends Rewriter {
 					}
 					if ( tref ) {
 						for ( const t of this.G.T.keys() ) {
-							setfn( t, this.multiway.distance( t, tref ) );
+							setfn( t, this.multiway.d( t, tref ) );
 						}
 					}
 				} else if ( this.observer.view === 2 ) {
@@ -679,7 +725,7 @@ class Simulator extends Rewriter {
 					if ( evref ) {
 						for ( const t of this.G.T.keys() ) {
 							let ev = t.ev[ t.ev.length-1 ];
-							setfn( t, this.multiway.distance2( ev, evref ) );
+							setfn( t, this.multiway.d( ev, evref ) );
 						}
 					}
 				}

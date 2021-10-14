@@ -113,6 +113,7 @@ class Graph {
 			let v = this.V.get( id );
 			if ( v ) {
 				v.refs++;
+				v.bc = dag ? t.ev[ t.ev.length - 1 ].bc : t.bc;
 			} else {
         // New vertex
         v = {
@@ -123,7 +124,8 @@ class Graph {
 					style: 0,
 					x: (p.x + (dag ? (Math.sign(p.x)*Math.random()) : ((Math.random()-0.5)/100))),
 					y: (p.y + (dag ? (Math.sign(p.y)*Math.random()) : ((Math.random()-0.5)/100))),
-					z: (p.z + (dag ? (10*Math.sign(p.z)*Math.random()) : ((Math.random()-0.5)/100)))
+					z: (p.z + (dag ? (10*Math.sign(p.z)*Math.random()) : ((Math.random()-0.5)/100))),
+					bc: (dag ? t.ev[ t.ev.length - 1 ].bc : t.bc)
 				};
 				this.V.set( id, v );
         this.nodes.push( v );
