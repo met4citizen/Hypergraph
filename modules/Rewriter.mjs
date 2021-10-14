@@ -22,6 +22,8 @@ class Rewriter {
 	* @property {number} maxtokens Maximum number of tokens
 	* @property {number} timeslot Processing unit in msec
 	* @property {boolean} noduplicates If true, duplicate edges in rules are ignored
+	* @property {boolean} pathcnts If true, calculate path counts
+	* @property {boolean} bcoordinates If true, calculate branchial coordinates
 	* @property {boolean} deduplicate If true, de-duplicate new edges
 	* @property {boolean} merge If true, merge identical edges
 	* @property {boolean} wolfram If true, use Wolfram default order/reverse for branches 1/2
@@ -69,6 +71,8 @@ class Rewriter {
 			maxevents: Infinity,
 			maxtokens: Infinity,
 			noduplicates: false,
+			pathcnts: true,
+			bcoordinates: true,
 			deduplicate: false,
 			merge: true,
 			wolfram: false,
@@ -94,7 +98,7 @@ class Rewriter {
 			step: "0",
 			matches: "0",
 			events: "0",
-			merge: ""
+			post: ""
 		};
 		this.interrupt = false; // If true, user stopped the rewriting process
 	}
@@ -397,13 +401,14 @@ class Rewriter {
 	*/
 	*postProcessMatches() {
 
-		// Finalize multiway system step
-		let g = this.multiway.postProcess( this.opt.deduplicate, this.opt.merge );
+		// Determine vertices
+		let g = this.multiway.postProcess( {
+			deduplicate: this.opt.deduplicate,
+			merge: this.opt.merge
+		});
 		let vs = g.next();
 		while( !vs.done ) {
-			if ( vs.value ) {
-				this.progress.merge = vs.value || "";
-			}
+			this.progress.post = vs.value || "";
 			yield;
 			vs = g.next();
 		}
@@ -418,7 +423,7 @@ class Rewriter {
 				if ( m.ev && m.rule.neg && this.negs( m.rule, m.map, m.hit ) ) {
 					rm.push( m );
 				}
-				this.progress.merge = "Negs ["+ Math.floor( (total - idx) / total * 100 ) + "%]";
+				this.progress.post = "Negs ["+ Math.floor( (total - idx) / total * 100 ) + "%]";
 				yield;
 			}
 			rm.forEach( m => {
@@ -428,7 +433,19 @@ class Rewriter {
 			});
 		}
 
-		this.progress.merge = "";
+		// Finalize multiway system
+		g = this.multiway.postProcess( {
+			pathcnts: this.opt.pathcnts,
+			bcoordinates: this.opt.bcoordinates
+		});
+		vs = g.next();
+		while( !vs.done ) {
+			this.progress.post = vs.value || "";
+			yield;
+			vs = g.next();
+		}
+
+		this.progress.post = "";
 	}
 
 	/**
@@ -548,7 +565,12 @@ class Rewriter {
 		this.rulial.initial.forEach( init => {
 			let ev =  this.multiway.rewrite( [], init.edges, null, ++this.step, init.b || b );
 		});
-		let f = this.multiway.postProcess( false ); // No de-duplication
+		let f = this.multiway.postProcess( {
+			deduplicate: false,
+			merge: false,
+			pathcnts: this.opt.pathcnts,
+			bcoordinates: this.opt.bcoordinates
+		}); // No de-duplication
 		while ( !f.next().done );
 
 		// Start rewriting process; timeout if either of the callback fns set

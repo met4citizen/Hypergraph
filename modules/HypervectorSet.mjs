@@ -3,7 +3,7 @@
 * @class Hypervector Set using Dense Bipolar Hypervectors.
 * @author Mika Suominen
 */
-class HSet extends Set {
+class HypervectorSet extends Set {
 
 	/**
 	* @typedef {Uint8Array} Hypervector
@@ -177,4 +177,4 @@ class HSet extends Set {
 
 }
 
-export { HSet };
+export { HypervectorSet };

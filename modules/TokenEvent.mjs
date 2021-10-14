@@ -1,4 +1,3 @@
-import { HSet } from "./HSet.mjs";
 
 /**
 * @class Token-Event graph
@@ -12,7 +11,6 @@ class TokenEvent {
 	* @property {Event[]} parent Parent events
 	* @property {Event[]} child Child events
 	* @property {Object[]} past Past causal cone
-	* @property {number} pathcnt Path count
 	*/
 
 	/**
@@ -20,8 +18,6 @@ class TokenEvent {
 	* @property {number} id Identifier
 	* @property {Token[]} parent Parent tokens
 	* @property {Token[]} child Child tokens
-	* @property {Hypervector} bc Branchial coordinate as a hypervector
-	* @property {number} pathcnt Path count
 	*/
 
 	/**
@@ -31,7 +27,6 @@ class TokenEvent {
 		this.T = []; // Tokens
 		this.EV = []; // Events
 		this.id = -1; // Maximum id
-		this.ham = new HSet(); // Hyperdimensional Associative Memory
 	}
 
 
@@ -72,8 +67,7 @@ class TokenEvent {
 			id: ++this.id,
 			parent: [ ev ],
 			child: [],
-			past: new Set(),
-			pathcnt: ev.pathcnt
+			past: new Set()
 		};
 
 		// Past causal cone
@@ -125,8 +119,7 @@ class TokenEvent {
 		const ev = {
 			id: ++this.id,
 			parent: ts,
-			child: [],
-			pathcnt: this.pathcnt( ts )
+			child: []
 		};
 		this.EV.push( ev );
 
@@ -134,9 +127,6 @@ class TokenEvent {
 		ts.forEach( t => {
 			t.child.push( ev );
 		});
-
-		// Brancial coordinate
-		ev.bc = this.coordinate( ev );
 
 		return ev;
 	}
@@ -170,9 +160,6 @@ class TokenEvent {
 						t.past.add( x );
 						x.parent.forEach( x => t.past.add( ...x.past ) );
 					});
-
-					// Update path count
-					t.pathcnt = this.pathcnt2( t );
 				}
 			});
 		}
@@ -194,7 +181,6 @@ class TokenEvent {
 			let idx = ev.parent.indexOf( t2 );
 			ev.parent[idx] = t1;
 			t1.child.push( ev );
-			ev.bc = this.coordinate( ev );
 		});
 		t2.child.length = 0;
 
@@ -203,14 +189,12 @@ class TokenEvent {
 			let idx = ev.child.indexOf( t2 );
 			ev.child[idx] = t1;
 			t1.parent.push( ev );
-			ev.bc = this.coordinate( ev );
 		});
 		t2.parent.length = 0;
 
-		// Update the past and path count
+		// Update the past, path count and branchial coordinate
 		t1.past.add( ...t2.past );
 		t1.past.delete( t2 );
-		t1.pathcnt = this.pathcnt2( t1 );
 
 		// Remove the extra token
 		this.deleteToken( t2 );
@@ -247,95 +231,6 @@ class TokenEvent {
 			}
 		}
 		return true;
-	}
-
-	/**
-	* Path count of given tokens.
-	* @param {Token[]} ts Array of tokens.
-	* @return {number} Path count.
-	*/
-	pathcnt( ts ) {
-		let g = ts.slice();
-		let cs = []; // branchlike counts
-		while ( g.length ) {
-			let t = g.pop();
-			let c = t.pathcnt;
-			for( let i = g.length-1; i>=0; i-- ) {
-				let s = this.separation( t, g[i] );
-				if ( s !== 4 ) {
-					// max of spacelike/timelike tokens
-					c = Math.max( c, g[i].pathcnt );
-					g.splice( i, 1 );
-				}
-			}
-			cs.push( c );
-		}
-		// return the sum of branchlike tokens
-		return cs.reduce( (a,x) => a + x, 0 ) || 1;
-	}
-
-	/**
-	* Path count of a given token.
-	* @param {Token} t
-	* @return {number} Path count.
-	*/
-	pathcnt2( t ) {
-		let ts = [];
-		t.parent.forEach( ev => ts.push( ...ev.parent ) );
-		ts = [ ...new Set( ts ) ];
-		return this.pathcnt( ts );
-	}
-
-	/**
-	* Calculate the branchial coordinate of an event.
-	* @param {Event} ev
-	* @return {Hypervector} Branchial coordinate.
-	*/
-	coordinate( ev ) {
-		let bc;
-		let bcs = []; // Branchial coordinates of ancestor events
-		let overlap = false;
-
-		if ( ev.parent.length ) {
-			ev.parent.forEach( t => {
-				bcs.push( ...t.parent.map( x => x.bc ) );
-				if ( t.child.length > 1 ) overlap = true;
-			});
-			if ( bcs.every( (x,_,arr) => x === arr[0] ) ) {
-				bc = bcs[0];
-			} else {
-				bc = this.ham.maj( bcs );
-			}
-			if ( overlap ) {
-				bc = this.ham.maj( [ bc, this.ham.random() ] );
-			}
-		} else {
-			bc = this.ham.random();
-		}
-
-		return bc;
-	}
-
-	/**
-	* Hamming distance of two tokens in hyper-dimensional branchial space.
-	* @param {Token} t1
-	* @param {Token} t2
-	* @return {number} Distance
-	*/
-	distance( t1, t2 ) {
-		let bc1 = this.ham.maj( [ ...new Set( t1.parent.map( x => x.bc ) ) ] );
-		let bc2 = this.ham.maj( [ ...new Set( t2.parent.map( x => x.bc ) ) ] );
-		return this.ham.d( bc1, bc2 );
-	}
-
-	/**
-	* Hamming distance of two events in hyper-dimensional branchial space.
-	* @param {Event} ev1
-	* @param {Event} ev2
-	* @return {number} Distance
-	*/
-	distance2( ev1, ev2 ) {
-		return this.ham.d( ev1.bc, ev2.bc );
 	}
 
 }
