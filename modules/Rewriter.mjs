@@ -271,22 +271,24 @@ class Rewriter {
 	* (LeastRecentEdge + RuleOrdering + RuleIndex)
 	*/
 	orderWM() {
+		// Pre-calculate values to sort by
+		this.M.forEach( m => {
+			let ids = m.hit.map( (e,i) => e.id );
+			m.sort2 = Array.from( Array(ids.length).keys() ).sort( (x,y) => ids[x] - ids[y] );
+			m.sort1 = ids.sort().reverse();
+		});
+
+		// Sort indices
 		let arr = this.orderRandom();
 		arr.sort( (a,b) => {
-			let am = this.M[a];
-			let bm = this.M[b];
-			let ai = am.hit.map( (e,i) => e.id );
-			let bi = bm.hit.map( (e,i) => e.id );
-			let ar = Array.from( Array(ai.length).keys() ).sort( (x,y) => ai[x] - ai[y] );
-			let br = Array.from( Array(bi.length).keys() ).sort( (x,y) => bi[x] - bi[y] );
-			let av = ai.sort().reverse();
-			let bv = bi.sort().reverse();
-			const len = Math.min( av.length, bv.length );
+			const am = this.M[a];
+			const bm = this.M[b];
+			const len = Math.min( am.sort1.length, bm.sort1.length );
 			for(let i = 0; i < len; i++ ) {
-				if ( av[i] !== bv[i] ) return av[i] - bv[i];
+				if ( am.sort1[i] !== bm.sort1[i] ) return am.sort1[i] - bm.sort1[i];
 			}
 			for(let i = 0; i < len; i++ ) {
-				if ( ar[i] !== br[i] ) return ar[i] - br[i];
+				if ( am.sort2[i] !== bm.sort2[i] ) return am.sort2[i] - bm.sort2[i];
 			}
 			return am.rule.id - bm.rule.id;
 		});
