@@ -147,7 +147,8 @@ If `Phase` is selected, hyper-dimensional branchial coordinates are projected
 into 3D/2D and new forces are applied to nodes based on the projected
 coordinates. Note: Multidimensional scaling is a CPU intensive task, so
 it can not be used while the simulation is running. EXPERIMENTAL,
-FUNCTIONALITY LIKELY TO CHANGE.
+FUNCTIONALITY LIKELY TO CHANGE. See also [Appendix A](#appendix-a):
+Coordinatization of a Local Multiway System by using Hyper-dimensional Vectors.
 
 The two sliders change the visual appearance of the graph by tuning the
 parameters of the underlying force engine. Note: Changing the viewpoint
@@ -222,3 +223,31 @@ atomist teachings were rediscovered in the 14th century.
 > which, though they are few, yet, by being placed together in different ways,
 > produce innumerable words.”
 > -- Epicurus (according to Lactantius)
+
+## Appendix A
+
+### Coordinatization of Local Multiway System using Hyperdimensional Vectors
+
+The following outline is based on Pentti Kanerva's work on Hyperdimensional
+computing [1]. The key idea is the fact that in hyperdimensional spaces
+a randomly chosen vector (hypervector) is approximately orthogonal to any
+other previously generated hypervector.
+
+- Let the coordinate of the initial event in a local multiway system be a
+randomly generated 10,240-dimensional dense bipolar vector.
+
+- Let the coordinate of each new token/event be the sum of its parents'
+coordinates so that the 'sum' is the element-wise majority with random bipolar
+values for ties.
+
+- Whenever there is a new branch so that two or more events use an overlapping
+set of tokens, separate the events by adding random hypervectors to their
+coordinates.
+
+- The distance between any two tokens/events is the Hamming distance of their
+hypervector coordinates.
+
+The local multiway system can be projected into some lower dimension by
+calculating its distance matrix and by using multidimensional scaling.
+
+*[1] Kanerva, P. (2019). Computing with High-Dimensional Vectors. IEEE Design & Test, 36(3):7–14.*
