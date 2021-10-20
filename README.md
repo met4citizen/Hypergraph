@@ -28,17 +28,16 @@ hypergraph, it is replaced with a new subhypergraph having the form of the
 right-hand side pattern `(x,v,u)(y,v,z)(v,v,u)`.
 
 Sometimes matches overlap. For example, when using the previous rule
-with the initial state `(1,1,2)(2,2,3)(3,3,4)`, there are two overlapping
-matches `(x=1,y=2,z=2,u=3)` and `(x=2,y=3,z=3,u=4)`. One way to resolve this
-conflict is to pick just one of the two overlapping matches (critical pair)
-according to some ordering scheme and ignore the other (single-way evolution).
-Another approach is to rewrite both by allowing the system to branch
-(multiway evolution).
+with the initial state `(1,1,2)(2,2,3)(3,3,4)` there are two overlapping
+matches `(x=1,y=2,z=2,u=3)` and `(x=2,y=3,z=3,u=4)` (critical pair). One way
+to resolve this conflict is to pick just one of the two according to some
+ordering scheme and ignore the other (single-way evolution). Another approach
+is to rewrite both by allowing the system to branch (multiway evolution).
 
 As the multiway system branches and diverges (quantum mechanics), the
 probability of ending up in some particular end state is related to the number
-of different evolutionary paths to that state (path counting). However, there
-can also be rules that make two branches merge (critical pair completion).
+of different evolutionary paths to that state (path count). However, there
+can also be rules that make branches merge (critical pair completion).
 This makes certain end states more/less likely
 (constructive/destructive interference). In the end we (observers) are likely
 to find ourselves in the part of the system in which the branches always merge

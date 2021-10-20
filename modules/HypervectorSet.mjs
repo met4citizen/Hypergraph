@@ -94,7 +94,11 @@ class HypervectorSet extends Set {
         for (let k = vs.length-1; k>=0; k--) {
 					sum += (vs[k][i] & mask) ? 1 : -1;
         }
-				if (sum>0) v[i] |= mask;
+				if (sum>0) {
+					v[i] |= mask;
+				} else if (sum < 0) {
+					v[i] &= ~mask;
+				}
 			}
 		}
 		return v;

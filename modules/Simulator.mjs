@@ -18,7 +18,7 @@ class Simulator extends Rewriter {
 	*/
 
 	/**
-	* Creates an instance of Multiway3D.
+	* Creates an instance of Simulator.
 	* @param {Object} element DOM element of the canvas
 	* @param {Object} status DOM element of the status
 	* @constructor
@@ -268,12 +268,15 @@ class Simulator extends Rewriter {
 		while ( steps > 0 && this.pos < this.multiway.EV.length ) {
 			let ev = this.multiway.EV[ this.pos ];
 			let changed = false;
-			if ( this.observer.view === 1 ) {
-				changed = this.processSpatialEvent( ev );
-			} else if ( this.observer.view === 2 ) {
-				changed = this.processCausalEvent( ev );
-			} else if ( this.observer.view === 3 ) {
-				changed = this.processPhaseEvent( ev );
+			switch( this.observer.view ) {
+				case 1:
+					changed = this.processSpatialEvent( ev );
+					break;
+				case 2:
+					changed = this.processCausalEvent( ev );
+					break;
+				case 3:
+					changed = this.processPhaseEvent( ev );
 			}
 			if ( changed ) {
 				steps--;
@@ -421,6 +424,18 @@ class Simulator extends Rewriter {
 					ret = this.G.geodesic( parseInt(c.params[0]), parseInt(c.params[1]), c.params.includes("dir"), c.params.includes("rev"), c.params.includes("all") ).flat();
 					r.push( ret.length );
 					e.push( ret );
+					break;
+
+				case "bdist":
+					if ( c.params.length < 2 ) throw new TypeError("Bdist: Invalid number of parameters.");
+					let a = this.G.V.get( parseInt(c.params[0]) );
+					let b = this.G.V.get( parseInt(c.params[1]) );
+					if ( a && b ) {
+						p.push( parseInt(c.params[0]), parseInt(c.params[1]) );
+						r.push( this.ham.d( a.bc,b.bc ) );
+						ret = this.G.geodesic( parseInt(c.params[0]), parseInt(c.params[1]), c.params.includes("dir"), c.params.includes("rev"), c.params.includes("all") ).flat();
+						e.push( ret );
+					}
 					break;
 
 				case "curv": case "curvature":
@@ -746,16 +761,15 @@ class Simulator extends Rewriter {
 				if ( phaseref ) {
 					if ( this.observer.view === 1 ) {
 						for ( const t of this.G.T.keys() ) {
-							setfn( t, this.multiway.d( t, phaseref ) );
+							setfn( t, this.ham.d( t.bc, phaseref.bc ) );
 						}
 					} else if ( this.observer.view === 2 ) {
 						for ( const t of this.G.T.keys() ) {
-							let ev = t.ev[ t.ev.length-1 ];
-							setfn( t, this.multiway.d( t.ev[ t.ev.length-1 ], phaseref ) );
+							setfn( t, this.ham.d( t.ev[ t.ev.length-1 ].bc, phaseref.bc ) );
 						}
 					} else if ( this.observer.view === 3 ) {
 						for ( const t of this.G.T.keys() ) {
-							setfn( t, this.multiway.d( t.t[ t.t.length-1 ], phaseref ) );
+							setfn( t, this.ham.d( t.t[ t.t.length-1 ].bc, phaseref.bc ) );
 						}
 					}
 				}
