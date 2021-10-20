@@ -338,7 +338,15 @@ class Rulial {
 
     // Run the given rule in singleway spacelike mode for n events
     let h = new Rewriter();
-    h.run( str, { evolution: 1, interactions: 1, maxevents: n } );
+    h.run( str, {
+      evolution: 1,
+      interactions: 1,
+      maxevents: n,
+      deduplicate: false,
+      merge: false,
+      pathcnts: false,
+			bcoordinates: false
+    });
     let leafs = h.multiway.T.filter( t => t.child.length === 0 ).map( t => t.edge );
 
     return leafs;
