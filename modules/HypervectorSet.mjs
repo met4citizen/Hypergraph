@@ -89,10 +89,13 @@ class HypervectorSet extends Set {
 		let v = new Uint8Array(this.bytes);
 		if ( v.length % 2 === 0 ) window.crypto.getRandomValues(v); // Solve ties with random bits
 		for( let i=this.bytes-1; i>=0; i-- ) {
-			v[i] = [1,2,4,8,16,32,64,128].reduce( (a,x) => {
-				let sum = vs.reduce( (a,b) => a + (Boolean(b[i] & x) ? 1 : -1), 0) || (Boolean(v[i] & x) ? 1 : -1 );
-				return a + (sum > 0 ? x : 0);
-			}, 0);
+      for (let mask = 1; mask <= 128; mask <<= 1) {
+        let sum = 0;
+        for (let k = vs.length-1; k>=0; k--) {
+					sum += (vs[k][i] & mask) ? 1 : -1;
+        }
+				if (sum>0) v[i] |= mask;
+			}
 		}
 		return v;
 	}
