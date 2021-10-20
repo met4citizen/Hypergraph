@@ -241,7 +241,7 @@ class Simulator extends Rewriter {
 					}
 
 					// Add links to nearest neighbours with appropriate weights
-					if ( n[0].d < 1000 ) {
+					if ( n[0].d < 500 ) {
 						this.G.add( { t: [ n[0].t ], edge: [ n[0].t.id ], w: 1 }, 3 );
 					} else {
 						this.G.add( { t: [ n[0].t, t ], edge: [ n[0].t.id, t.id ], w: n[0].d }, 3 );
@@ -426,8 +426,8 @@ class Simulator extends Rewriter {
 					e.push( ret );
 					break;
 
-				case "bdist":
-					if ( c.params.length < 2 ) throw new TypeError("Bdist: Invalid number of parameters.");
+				case "mwdist": case "bdist":
+					if ( c.params.length < 2 ) throw new TypeError("Mwdist: Invalid number of parameters.");
 					let a = this.G.V.get( parseInt(c.params[0]) );
 					let b = this.G.V.get( parseInt(c.params[1]) );
 					if ( a && b ) {
