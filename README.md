@@ -4,22 +4,22 @@
 
 **Run it: https://met4citizen.github.io/Hypergraph/**
 
-This is a hypergraph rewriting system that supports both singleway and
-multiway evolutions and can visualize them in 3D. The app uses
+A hypergraph rewriting system able to visualize both single-way and multiway
+evolutions in 3D.
+
+The app uses
 [3d Force-Directed Graph](https://github.com/vasturiano/3d-force-graph)
 for representing graph structures,
 [ThreeJS](https://github.com/mrdoob/three.js/)/WebGL for 3D rendering and
 [d3-force-3d](https://github.com/vasturiano/d3-force-3d) for the force engine.
-Singular value decomposition function adapted from
-[svdjs](https://github.com/stardisblue/svdjs).
 
 ## Introduction
 
-A hypergraph is a generalization of a regular graph. Whereas an edge typically
-connects only two nodes, a hyperedge can join any number of nodes.
-In a hypergraph rewriting system some initial state is transformed
+In a Hypergraph Rewriting System some initial hypergraph is transformed
 incrementally by making a series of updates that follow some abstract
-rewriting rule.
+rewriting rule. A hypergraph is a generalization of a regular graph so that
+whereas an edge typically connects only two nodes, a hyperedge can join
+any number of nodes.
 
 As an example, consider a rewriting rule
 `(x,x,y)(y,z,u)->(x,v,u)(y,v,z)(v,v,u)`. Wherever and whenever a subhypergraph
@@ -29,20 +29,19 @@ right-hand side pattern `(x,v,u)(y,v,z)(v,v,u)`.
 
 Sometimes matches overlap. For example, when using the previous rule
 with the initial state `(1,1,2)(2,2,3)(3,3,4)`, there are two overlapping
-matches `(x=1,y=2,z=2,u=3)` and `(x=2,y=3,z=3,u=4)`.
-
-One way to resolve the conflict is to pick just one of the matches
+matches `(x=1,y=2,z=2,u=3)` and `(x=2,y=3,z=3,u=4)`. One way to resolve this
+conflict is to pick just one of the two overlapping matches (critical pair)
 according to some ordering scheme and ignore the other (single-way evolution).
-Another approach is to rewrite the two overlapping matches (critical pair)
-by allowing the system to branch (multiway evolution).
+Another approach is to rewrite both by allowing the system to branch
+(multiway evolution).
 
 As the multiway system branches and diverges (quantum mechanics), the
 probability of ending up in some particular end state is related to the number
 of different evolutionary paths to that state (path counting). However, there
 can also be rules that make two branches merge (critical pair completion).
 This makes certain end states more/less likely
-(constructive/destructive interference). In the end we are likely to find
-ourselves in the part of the system in which the branches always merge
+(constructive/destructive interference). In the end we (observers) are likely
+to find ourselves in the part of the system in which the branches always merge
 (confluence) and the evolution converges (classical mechanics).
 
 For more information about hypergraph rewriting systems and their potential to
@@ -124,31 +123,27 @@ Option | Description
 
 ## Simulation/Observer
 
-Simulation can be run in two different modes: `Space` and `Time`.
+Simulation can be run in three different modes: `Space`, `Time` or `Phase`.
 
-In `Space` mode the system shows the evolution of the spatial hypergraph.
+- In `Space` mode the system shows the evolution of the spatial hypergraph.
 According to the Wolfram Model, the spatial hypergraph represents
 a spacelike state of the universe with nodes as "atoms of space".
-
-In `Time` mode the system builds up the transitive reduction of the causal
+- In `Time` mode the system builds up the transitive reduction of the causal
 graph. In this view nodes represent updating events and directed
 edges their causal relations. According to the Wolfram Model, the flux of
 causal edges through spacelike and timelike hypersurfaces is related to
 energy and momentum respectively.
+- In `Phase` mode hyperdimensional multiway ("branchial") coordinates are
+projected into 3D. See [Appendix A](#appendix-a): Coordinatization of a Local
+Multiway System by using Hyper-dimensional Vectors. Note: Calculating distances
+in hyperdimensional space is a CPU intensive task, so the simulation slows down
+quickly.
 
 Media buttons let you reset the mode, start/pause the simulation and
 skip to the end. Whenever the system has branches, the first four
-branches can be shown separately or in any combination.
-
-If `Past` is selected, the full history of the local multiway system is
-shown in space mode. By default only the leaf edges of the system are visible.
-
-If `Phase` is selected, hyper-dimensional branchial coordinates are projected
-into 3D/2D and new forces are applied to nodes based on the projected
-coordinates. Note: Multidimensional scaling is a CPU intensive task, so
-it can not be used while the simulation is running. EXPERIMENTAL,
-FUNCTIONALITY LIKELY TO CHANGE. See also [Appendix A](#appendix-a):
-Coordinatization of a Local Multiway System by using Hyper-dimensional Vectors.
+branches can be shown separately or in any combination. If `Past` is selected,
+the full history of the local multiway system is shown in space mode.
+By default only the leaf edges of the system are visible.
 
 The two sliders change the visual appearance of the graph by tuning the
 parameters of the underlying force engine. Note: Changing the viewpoint
@@ -194,7 +189,7 @@ Scalar Field | Description
 `mass` | The part of `energy` in which the right hand side edges connect pre-existing vertices.
 `momentum` | The part of `energy` in which the right hand side edges have new vertices.
 `pathcnt` | The number of paths leading to specific edge.
-`phase` | The branchial distance to a single token in branch 1. Branchial coordinates are calculated using 10240-dimensional dense bipolar hypervectors. NOTE: Hyperdimensional computing is CPU intensive, so when used in real-time it will slow down the animation. EXPERIMENTAL, LIKELY TO CHANGE.
+`phase(x)` | The branchial distance to a single token `x`. Branchial coordinates are calculated using 10240-dimensional dense bipolar hypervectors. NOTE: Hyperdimensional computing is CPU intensive, so when used in real-time it will slow down the animation. EXPERIMENTAL, LIKELY TO CHANGE.
 `probability` | Normalized path count for each edge in each step.
 `step` | Rewriting step.
 
@@ -242,12 +237,12 @@ values for ties.
 
 - Whenever there is a new branch so that two or more events use an overlapping
 set of tokens, separate the events by adding random hypervectors to their
-coordinates.
+previously calculated coordinates.
 
 - The distance between any two tokens/events is the Hamming distance of their
-hypervector coordinates.
+hypervectors.
 
 The local multiway system can be projected into some lower dimension by
-calculating its distance matrix and by using multidimensional scaling.
+calculating its distance matrix and then doing multidimensional scaling.
 
 *[1] Kanerva, P. (2019). Computing with High-Dimensional Vectors. IEEE Design & Test, 36(3):7–14.*

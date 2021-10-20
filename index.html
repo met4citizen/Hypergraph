@@ -44,7 +44,7 @@
   div.settings a { display: inline-block; color: inherit; text-decoration: inherit; pointer-events: auto; }
   #rule-opt { display: block; margin:0 0 4px 46px; padding:0; pointer-events: none; white-space: nowrap; clear:both; }
   #rule-opt span { display: inline-block; margin: 0 1px; padding: 0 2px; height:12px; background-color: transparent; color: grey; border: 1px solid grey; border-radius: 3px; font-size: 7px; font-weight: bold; line-height: 12px; text-align: center; vertical-align: middle; }
-  #visual { display:block; text-align: left; margin: 2px 0 0 0; width: 145px; padding:0; line-height: 10px; }
+  #visual { display:block; text-align: left; margin: 2px 0 0 0; width: 110px; padding:0; line-height: 10px; }
   input[type=range] { width: 100%; margin: 0; }
   #distance-range, #decay-range { cursor: pointer; pointer-events: auto; }
   .option { display: inline-block; margin: 0; padding: 0 1px; height:14px; background-color: transparent; color: black;  border: 1px solid transparent; border-radius: 3px; font-size: 8px; font-weight: bold; line-height: 14px; text-align: center; vertical-align: middle; cursor: pointer; pointer-events: auto; }
@@ -373,6 +373,10 @@ $(document).ready(function() {
   decay.set("time",50);
   cameraz.set("time", 750 );
 
+  distance.set("phase",30);
+  decay.set("phase",80);
+  cameraz.set("phase", 750 );
+
   $("#distance-range").val( distance.get( "space" ) );
   $("#decay-range").val( decay.get("space") );
 
@@ -390,13 +394,10 @@ $(document).ready(function() {
     // Reset graph
     view = $(this).data("value");
     let past = Boolean( $(".past.selected").length );
-    $(".phase").removeClass("selected");
-    phasechanged = true;
     let branches = $(".branches.selected").toArray().reduce( (a,x) => a | $(x).data("value"), 0 );
     sim.setRefFrame( {
       view: view,
       leaves: !past,
-      phase: false,
       branches: branches
     });
 
@@ -423,58 +424,6 @@ $(document).ready(function() {
     resumeTimeout();
   });
 
-  let phasechanged = true;
-
-  $(".phase").on("click", function(e) {
-    $(this).toggleClass("selected");
-    if ( $(this).hasClass("selected") ) {
-
-      if ( phasechanged ) {
-        if ( $("#stop").is(":visible") ) {
-          sim.stop();
-          $("#playstop").css("background-color","black");
-          $("#play, #stop").toggle();
-        }
-
-        $("#progress2-bar-fill").css("width", "0");
-        $("#progress2").show();
-
-        // Run rules
-        let opt = {
-          dimensions: ($(".view.selected").data("value") === 'space' ? 3 : 2)
-        };
-
-        sim.phase.run( function(o) {
-          $("#progress2-bar-fill").css("width", Math.min(100, Math.round( 100 * o.progress) )+"%" );
-          let status = "";
-          Object.keys(o).forEach( k => {
-            if ( k !== 'progress' ) {
-              status += '<span class="label down">'+k
-                        +'</span><span class="label status">'+o[k]+'</span>';
-            }
-          });
-    			$("#progress2-status").html( status );
-        }, function() {
-          sim.setRefFrame( { phase: true });
-          $("#progress2").hide();
-          resumeTimeout();
-        });
-        phasechanged = false;
-      } else {
-        sim.setRefFrame( { phase: true });
-        resumeTimeout();
-      }
-    } else {
-      sim.setRefFrame( { phase: false });
-      resumeTimeout();
-    }
-  });
-
-  // Cancel calculating the phase
-  $("#cancel2").on("click", function() {
-    sim.phase.cancel();
-  });
-
   $(".branches").on("click", function(e) {
     let all = $(this).data("value") === 0;
     if ( all ) {
@@ -499,7 +448,6 @@ $(document).ready(function() {
   $("#playstop").on("click", function() {
     try {
       if ( $("#play").is(":visible") ) {
-        phasechanged = true;
         sim.play( function() { $("#finalreheat").click(); } );
         $("#playstop").css("background-color","darkred");
         $("#play, #stop").toggle();
@@ -526,7 +474,6 @@ $(document).ready(function() {
   // Final state
   $("#finalreheat").on("click", function() {
     try {
-      phasechanged = true;
       sim.final();
       $("#playstop").addClass("button-disabled").css("background-color","black");;
       $("#play, #reheat").show();
@@ -691,7 +638,7 @@ $(document).ready(function() {
         <a href="//momentum" data-value="momentum">momentum</a><br>
         <span class="label down">Scalar field</span>
         <a href="//pathcnt" data-value="pathcnt">pathcnt</a>
-        <a href="//phase" data-value="phase">phase</a>
+        <a href="//phase" data-value="phase(0)">phase</a>
         <a href="//probability" data-value="probability">probability</a>
         <a href="//step" data-value="step">step</a>
       </span>&nbsp;&nbsp;
@@ -701,11 +648,11 @@ $(document).ready(function() {
   </div>
 
   <div id="topright" class="controls noselect">
-    <span class="label down">Mode/reset</span>
     <span id="space" title="Spatial graph" class="option view selected" data-value="space">SPACE</span>
     <span id="time" title="Causal graph" class="option view" data-value="time">TIME</span>
+    <span id="phase" title="Branchial graph" class="option view" data-value="phase">PHASE</span><br>
 
-    <span class="label down">Simulation</span>
+    <span class="label down">Mode/simulation</span>
     <span title="Play/pause" id="playstop" class="button button-disabled">
       <svg id="play" viewBox="0 0 32 16"><polygon fill="white" points="14,3 14,11 20,7"/></svg>
       <svg id="stop" viewBox="0 0 32 14"><polygon fill="white" points="12,3 15,3 15,11 12,11"/><polygon fill="white" points="17,3 20,3 20,11 17,11"/></svg>
@@ -723,10 +670,9 @@ $(document).ready(function() {
     <span title="Branch #4" class="option branches" data-value="8">4</span>
     <span style="color: lightgrey">|</span>
     <span title="Show past" class="option past">PAST</span>
-    <span title="Show phase" class="option phase">PHASE</span>
     <div id="visual">
       <input id="distance-range" type="range" value="20" min="0" max="100"><br>
-      <span class="label down">Observer</span>
+      <span class="label down">Observer/shape</span>
       <input id="decay-range" type="range" value="20" min="0" max="100"><br>
     </div>
 
@@ -761,13 +707,6 @@ $(document).ready(function() {
     <div id="progress-bar"><span id="progress-bar-fill"></span></div>
     <span id="cancel" class="button">STOP</span><br>
     <span id="progress-status"></span>
-  </div>
-
-  <div id="progress2" class="noselect">
-    <span id="progress2-label" class="label">|Multidimensional scaling</span><br>
-    <div id="progress2-bar"><span id="progress2-bar-fill"></span></div>
-    <span id="cancel2" class="button">STOP</span><br>
-    <span id="progress2-status"></span>
   </div>
 
   <img id="logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAABTQAAAU0Bu8Ff3QAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAjcSURBVHic7Zp7sFZVFcB/6z7gyuVp6b0wloooMmJeX1gMZgw4iqIwRkXW+Bg1SfMyI3/QjMIEkpM3tcamRPNBKaLWmCamQgFZI4RKlpnIQ0BKAoV7uYASj7v6Y63D3RzO+e537vd9fM1w18yec/bea++99jp7PfcRVeVIhopyE1Bu6GJAuQkoN3QxoNwElBu6GFBuAgBE5GYRWSsiow732v8XDADGAAOBLx/uhasO94IpcBuwDmg63AtLlyd4hMMRz4CS6wAROQr4EnAxcK6vKbQzfxXwF2A5sEJVd+eY63zgRqAa+C/wtKrOL4i+UuoAEekBvA2ckOeQvcBbwDJgKbBUVdcG8w0DPgB2Ysz8LTA0xMlMY4kZcAdwe4HTbMGYsQnoA/QF6oAhwJ2qOqug2VW1JMWJ/QDQWNkJtCW0ZynPAQOLQmeJNt8TeN2JXQx8AzgWqPL+KqA/cDbwZsbNbwUqi0Vr0ZWgiAjwS6AB+C7QpDE5U9V92JHeJCKXAxu863fASuyI1wH1wKd8423APuDnqrq/aPSWQgeIyELgGFVtyBP/I2yjQ1R1ZdEJygGl8gMmAgtE5MQ88f/pz+0loicVSsIAVd0KTANGicgzIrJKRNaLyGoReVxExsSGvOPP1lLQkxNKpAQvA/5NbmX2MjDY8WcD+2JzVADnATOBVzHdsAHYDKzHLMHtQM+SWgGgOzAMODoP3FrggQ42HpZm3+R8r3fzeRqAtXnOsQpoyHMfvTvDgGMwU7YbeAYYHxEawxvmxGS16a3Af/x9APB1YFfGOTYDdQk09QAa/bQ9AZyVmQHBZKcD9wEfAhuBSUC1913pDMpF5H7HyYW3OKEtX6fphYDWfph4rAEmAz06LQIJjKj2U7ARS2I8kkLQOmAGsMTrT8WYOR2T5aSx7wI3ACf7V5wA7An69wILgd87HVF7k6+5HZgL1BesA3Iw4jRgW46vPcTxfuBt9ybM8ZnYBhSYGp2sGO4M79+I+Rhh332xOW4tmhLsgAlfyXEkF2Eu70yvT0mZ46JgzIM51vqm4yxL6OtGux6ZmmUPhfoBS4L314CHg/pIYAEw1Os1KXMsAD729wdzrLXNn1vjHaq6Bwu8AO7JMcchUFAsoKofisgG4HjgTuB5LMi5xFFGBuiJXqGqqojswGT9vRzLbY0949ACtKjFGXlDMTzBdViQskgtSJlIu2cXwikeKKVBq6puCxtE5CwRmebVXRFeyvgW4KP8yTYoiAG+oeOAZlVtBVDVHcA4JyiE84H1IjJTRAYHc3TDQuX43F8DXgFuEZGeWCIEoFZEzhORKSJSGwzpFAMyi4CIdAfOAM4BLgQGAa0iUqGqbQCqulpExgO/whypCD6LxQjTRORdzJ19H8sR9vQY4dNY/vBKH1OL6Zanvd7H8Ud530xvb6YTDMii8fsD8zjYHoflJaBfbEwd8GIKftay2Z9vYG5tXywpGq01DXgssyXLaPYEGIsFJ0lEvgeMSBgzCXNeisGIyBf4IzA8WOcOYG5WBmTSAWowX1WHOyMiOVfMURkNXBofgzlNkbjtxY5+I5YSu4p2BXc98JTjpJLhOBep6qtBe1/MH8gGBTpCVzhBb+bAuZr2L/cOcE4CzhaCcBjTAZGotQGzMDOrwK9T1nkceC7rHg4oQdfoZ2Jf8EzaLcQSYLYmX1g8C3xC7kzOZf78F3C2qn6cgFPlG40+yksicg0wB7hWVeeKSORbpPkB/bA4JROEVuBG4H7MK3sY+A2mcRuBK0RkjKruCgeraptr8x051jjXn01Jm3er0guoEpEeEY6qPiEir6vqKkdtiT3j0A/4nIjUhnS6yf0ido+wB/Mol6nqK3CwH/A8cC0wQFUbVXWxqj6LyXUVMN9veuJQg6XBDwERqcNMH5jcJsHptH+IurAj2DxYgAXBSYlBP8wsfj/W/iPgZu/b7mssEpHp0SJpsluF2flHMU9PsfCzJsAZ5O1vxcZej5nFS72/OejrA1yAxenzOPjyZCN2+qZgP00MCMaNcZz7E2i9OKBRgYfIcXeAXamtSjSDwBeAn2GKKckEvYx91ROxAEixJMdx2Ilq8rY/YTG/OnGPYAmKrCZvgzPqBa/Pi9F7qn/Z+Lj3sVD8JuAazE94FFjh/bcdYIAfj+nA6k4QGJWdsfFXY+auWLY/Ks3AsIABaT5JUnkN+F5sPIIdV8W07gPAPyjs/m4N5t+nJUzCsjuhdDSmFRjpG7iAjjPQSsxBO8AAn+THmCb/NiY/12FKZRx2dNPEIan8AfPn7wnadmAm817gFsyJGgrUpsjoOB/3NpYOuwH4BRZ5hoyb4PhHY9dwK1M+3N2p+kDb3dXRWGAxGr8yCwiqAEYAPwT+jOXywphgA6ZYpgCVWC5vDyZvk4BeGR2sU3zeJxP6xmI/VChmGc6I9ddgeqEBU9J1QEVOBnSmOFP6A30T+iYRyFmsb7B/1UZMMU0ATorhnOQb/GnKHJXYPwMKzOjsHlQLSImpapuqblLVQxwTVZ2tqsujuohUi8hNIvIGdkwbsZvftZhZ/JuIzBGRiJ7I1vdOWXs/ZhnA8gydhsPxj9BYTPZP9qYtwChV3RvgzMB8hl6YSYtc2hNEpB4T0YFeTsVukz7vOJ8UQl9JGSAikzFPLEyFLQ0373AVsFxVd3q93p8jsP8IwBTpCuDvwJPAXVj6rbC0XiHy04GOiPL48bIFOLaDsRMD/IXYdVlNDKcSc44GFURnCTYuwE9SNh+Vv5IQFgdz3Op4S3OscTdwXcH0FnnzlcBjWMi6GnNY0pjQhvkch3xBTGck2m8sVI8SIgXTXLRfZESkGtPMLcBkVd0lIr2BbwHfwe4O0qAF+1lqHXbLfJq3L8Jc6kosRrkQ8y+mqmehC4ZOfuk52HVzvde7e/2rOU7GeExms159K6YIZwHHF1tkO3UCRGQqcDmmrV/Egqm7NI8fnDwBMhzzOEdgfsBRXmowF3cNJkJrsLhkoWa88ckXun6XLzcB5YYuBpSbgHJDFwPKTUC54YhnwP8Aqxr3d8ZeZd8AAAAASUVORK5CYII=" alt="" />

@@ -64,10 +64,10 @@ class Graph {
 	/**
 	* Add a multiway hyperedge.
 	* @param {Token} t Token.
-	* @param {boolean} [dag=false] If true, this is a directed acyclic graph
+	* @param {number} [view=1] 1=space, 2=time, 3=phase
 	* @return {Node[]} Array of nodes.
 	*/
-	add( t, dag = false ) {
+	add( t, view = 1 ) {
 		// Add the edge
 		if ( this.T.has(t) ) return []; // Already added
 
@@ -75,7 +75,10 @@ class Graph {
 		const edge = t.edge;
 		let k = edge.join(",");
 		let es = this.L.get( k );
-		if ( dag && es ) return []; // Edge already exists, return (transitive closure)
+		if ( es ) {
+			if ( view === 2 ) return []; // Edge already exists, return (transitive closure)
+			if ( view === 3 && edge.length > 1 ) return []; // Edge already exists, return (transitive closure)
+		}
 		es ? es.push( t ) : this.L.set( k, [ t ] );
 		for( let i = edge.length-1; i>=0; i-- ) {
 			k = edge.map( (x,j) => ( j === i ? x : "*" ) ).join(",");
@@ -113,7 +116,11 @@ class Graph {
 			let v = this.V.get( id );
 			if ( v ) {
 				v.refs++;
-				v.bc = dag ? t.ev[ t.ev.length - 1 ].bc : t.bc;
+				if ( view === 1 ) v.bc = t.bc; // In space view, update vertex bc to latest
+				if ( view === 3 ) { // In phase view, update bc and t
+					v.bc = t.t[ i ].bc;
+					v.t = t.t[i];
+				}
 			} else {
         // New vertex
         v = {
@@ -122,10 +129,12 @@ class Graph {
 					in: [], out: [],
 					source: [], target: [],
 					style: 0,
-					x: (p.x + (dag ? (Math.sign(p.x)*Math.random()) : ((Math.random()-0.5)/100))),
-					y: (p.y + (dag ? (Math.sign(p.y)*Math.random()) : ((Math.random()-0.5)/100))),
-					z: (p.z + (dag ? (10*Math.sign(p.z)*Math.random()) : ((Math.random()-0.5)/100))),
-					bc: (dag ? t.ev[ t.ev.length - 1 ].bc : t.bc)
+					x: (p.x + (view === 2 ? (Math.sign(p.x)*Math.random()) : ((Math.random()-0.5)/100))),
+					y: (p.y + (view === 2 ? (Math.sign(p.y)*Math.random()) : ((Math.random()-0.5)/100))),
+					z: (p.z + (view === 2 ? (10*Math.sign(p.z)*Math.random()) : ((Math.random()-0.5)/100))),
+					bc: (view === 1 ? t.bc : (view === 3 ? t.t[i].bc : t.ev[i].bc)),
+					ev: (view === 2 ? t.ev[i] : null ),
+					t: (view === 3 ? t.t[i] : null )
 				};
 				this.V.set( id, v );
         this.nodes.push( v );
@@ -160,7 +169,9 @@ class Graph {
 					target: v,
 					style: 0,
           curvature: curv,
-					rotation: 0
+					rotation: 0,
+					bc: (view === 1 ? t.bc : (view === 3 ? t.t[ t.t.length -1 ].bc : t.ev[ t.ev.length - 1 ].bc )),
+					w: ( t.hasOwnProperty("w") ? t.w : 1 ) // weight
         };
 				vprev.source.push( l );
 				v.target.push( l );
@@ -170,8 +181,8 @@ class Graph {
       vprev = v;
 		}
 
-		// Hyperedges
-		if ( !dag && (vs.length === 1 || vs.length > 2) ) {
+		// Hyperedges (in space mode only)
+		if ( view === 1 && (vs.length === 1 || vs.length > 2) ) {
 			const hl = {
 				source: vs[ vs.length - 1 ],
 				target: vs[0],
@@ -260,7 +271,7 @@ class Graph {
       }
 		}
 
-		// Remove edge
+		// Remove token
 		this.T.delete( t );
 
 	}

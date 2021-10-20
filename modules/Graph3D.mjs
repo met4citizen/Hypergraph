@@ -5,7 +5,6 @@ import {
 import { ConvexGeometry } from './ConvexGeometry.mjs';
 
 import "https://unpkg.com/3d-force-graph@1.70.5";
-
 import { Graph } from "./Graph.mjs";
 
 /**
@@ -39,6 +38,13 @@ class Graph3D extends Graph {
 		  {  nColor: "purple", lColor: "hotpink", nVal: 8, lWidth: 9, fill: "hotpink", opacity: 0.2 }, // 1 Red
 		  {  nColor: "blue", lColor: "deepskyblue", nVal: 8, lWidth: 9, fill: "deepskyblue", opacity: 0.2 }, // 2 Blue
 		  {  nColor: "darkblue", lColor: "darkblue", nVal: 8, lWidth: 9 } // 3 Red + Blue
+		];
+
+		this.phaseStyles = [
+		  {  nColor: "black", lColor: "grey", nVal: 4, lWidth: 1, bgColor: "white", nRelSize: 3 }, // 0 defaults
+		  {  nColor: "purple", lColor: "hotpink", nVal: 7, lWidth: 6, fill: "hotpink", opacity: 0.2 }, // 1 Red
+		  {  nColor: "blue", lColor: "deepskyblue", nVal: 7, lWidth: 6, fill: "deepskyblue", opacity: 0.2 }, // 2 Blue
+		  {  nColor: "darkblue", lColor: "darkblue", nVal: 7, lWidth: 6 } // 3 Red + Blue
 		];
 
 		// Material for hyperedges
@@ -86,9 +92,7 @@ class Graph3D extends Graph {
 	    .cooldownTime( 5000 )
 			.nodeVisibility( true )
 			.linkVisibility( true )
-			.linkPositionUpdate( Graph3D.linkPositionUpdate.bind(this) )
 			.onEngineTick( Graph3D.onEngineTick.bind(this) )
-			.linkThreeObject( Graph3D.linkThreeObject.bind(this) )
 			.linkThreeObjectExtend( false );
 
 	}
@@ -263,7 +267,9 @@ class Graph3D extends Graph {
 	      .linkColor( l => (l.hasOwnProperty("grad") && !l.style) ? Graph3D.colorGradient( l.grad ) : this.spaceStyles[l.style].lColor )
 	      .linkCurvature( 'curvature' )
 	      .linkCurveRotation( 'rotation' )
-	      .linkDirectionalArrowLength(0);
+	      .linkDirectionalArrowLength(0)
+				.linkPositionUpdate( Graph3D.linkPositionUpdate.bind(this) )
+				.linkThreeObject( Graph3D.linkThreeObject.bind(this) );
 
 			// Set forces
 			this.FG.d3Force("link").iterations( 15 );
@@ -271,7 +277,9 @@ class Graph3D extends Graph {
 				let refs = Math.min(l.source.refs, l.target.refs) + 1;
 				return 1 / refs;
 			});
+			this.FG.d3Force("link").distance( 50 );
 			this.FG.d3Force("center").strength( 1 );
+			this.FG.d3Force("charge").strength( -600 );
 			this.FG.d3Force("charge").distanceMin( 20 );
 			this.force(50,50);
 		} else if ( view === 2 ) { // Set view "TIME"
@@ -290,7 +298,9 @@ class Graph3D extends Graph {
 			.linkCurvature( 0 )
 			.linkCurveRotation( 0 )
 			.linkDirectionalArrowLength( 20 )
-			.linkDirectionalArrowRelPos(1);
+			.linkDirectionalArrowRelPos(1)
+			.linkPositionUpdate( null )
+			.linkThreeObject( null );
 
 			// Set forces
 			this.FG.d3Force("link").iterations( 2 );
@@ -303,6 +313,35 @@ class Graph3D extends Graph {
 			this.FG.d3Force("charge").strength( -200 );
 			this.FG.d3Force("charge").distanceMin( 1 );
 			this.force(50,50);
+		} else if ( view === 3 ) {
+			this.view = 3;
+
+	    this.FG
+	      .numDimensions( 3 )
+	      .dagMode( null )
+	      .backgroundColor( this.phaseStyles[0].bgColor )
+	      .nodeLabel( n => `<span class="nodeLabelGraph3d">${ n.id }</span>` )
+	      .nodeRelSize( this.phaseStyles[0].nRelSize )
+	      .nodeVal( n => (n.big ? 10 : 5 ) * n.refs  )
+	      .nodeColor( n => (n.hasOwnProperty("grad") && !n.style) ? Graph3D.colorGradient( n.grad ) : this.phaseStyles[n.style].nColor )
+	      .linkWidth( l => this.phaseStyles[l.style].lWidth )
+	      .linkColor( l => (l.hasOwnProperty("grad") && !l.style) ? Graph3D.colorGradient( l.grad ) : this.phaseStyles[l.style].lColor )
+				.linkCurvature( 0 )
+	      .linkCurveRotation( 0 )
+	      .linkDirectionalArrowLength(0)
+				.linkPositionUpdate( null )
+				.linkThreeObject( null );
+
+			// Set forces
+			this.FG.d3Force("link").iterations( 15 );
+			this.FG.d3Force("link").strength( l => {
+				let refs = (Math.min(l.source.refs, l.target.refs) + (10240-l.w)/10240);
+				return 1 / refs;
+			});
+			this.FG.d3Force("link").distance( 50 );
+			this.FG.d3Force("center").strength( 1 );
+			this.FG.d3Force("charge").strength( -600 );
+			this.FG.d3Force("charge").distanceMin( 20 );
 		}
 	}
 
@@ -326,6 +365,14 @@ class Graph3D extends Graph {
 				this.FG.dagLevelDistance( 10 * dist );
 				this.FG.d3Force("link").distance( dist/10 );
 				this.FG.d3Force("charge").strength( -300 );
+			}
+			if ( decay >=0 && decay <=100 ) {
+				this.FG.d3VelocityDecay( decay / 100 );
+			}
+		} else if ( this.view === 3 ) {
+			if ( dist >= 0 && dist <= 100 ) {
+				this.FG.d3Force("link").distance( dist );
+				this.FG.d3Force("charge").strength( -10 * (dist + 10) );
 			}
 			if ( decay >=0 && decay <=100 ) {
 				this.FG.d3VelocityDecay( decay / 100 );

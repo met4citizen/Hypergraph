@@ -1,9 +1,7 @@
 import { Rulial } from "./Rulial.mjs";
 import { Rewriter } from "./Rewriter.mjs";
 import { Graph3D } from "./Graph3D.mjs";
-
-import {forceX,forceY,forceZ} from "https://cdn.skypack.dev/d3-force-3d";
-import { Phase } from "./Phase.mjs"; // Multidimensional scaling
+import { HypervectorSet } from "./HypervectorSet.mjs";
 
 /**
 * @class User interface for rewriter
@@ -45,7 +43,7 @@ class Simulator extends Rewriter {
 		this.H = new Map(); // Highlights
 		this.F = null; // Fields
 
-		this.phase = new Phase( this.G ); // Branchial distances
+		this.ham = new HypervectorSet(); // Hyperdimensional Associative Memory
 	}
 
 	/**
@@ -65,7 +63,20 @@ class Simulator extends Rewriter {
 	*/
 	setRefFrame( rf ) {
 		if ( rf.hasOwnProperty("view") ) {
-			this.observer.view = ( rf.view === "time" ) ? 2 : 1;
+			let initlen;
+			switch( rf.view ) {
+				case "time":
+					this.observer.view = 2;
+					initlen = 1;
+					break;
+				case "phase":
+					this.observer.view = 3;
+					initlen = this.rulial.initial.length;
+					break;
+				default: // space
+					this.observer.view = 1;
+					initlen = this.rulial.initial.length;
+			}
 
 			// Stop animation and set position to start
 			this.stop();
@@ -76,78 +87,42 @@ class Simulator extends Rewriter {
 			this.G.reset( this.observer.view );
 
 			// First additions
-			this.tick( this.rulial.initial.length );
-		}
-
-		if ( rf.hasOwnProperty("phase") && rf.phase !== this.observer.phase ) {
-			this.observer.phase = rf.phase;
-			// Add/remove x,y,z forces
-			if ( this.observer.phase ) {
-				this.G.FG.d3Force("x", forceX() );
-				this.G.FG.d3Force("x").x( n => {
-					return n.bx || 0;
-				});
-				this.G.FG.d3Force("x").strength( 0.5 );
-				this.G.FG.d3Force("z", forceZ() );
-				this.G.FG.d3Force("z").z( n => {
-					return n.by || 0; // Note: This by is not an error, in time mode z is fixed
-				});
-				this.G.FG.d3Force("z").strength( 0.5 );
-				if ( this.observer.view === 1 ) {
-					this.G.FG.d3Force("y", forceY() );
-					this.G.FG.d3Force("y").y( n => {
-						return n.bz || 0; // Note: This bz is not an error, in time mode z is fixed
-					});
-					this.G.FG.d3Force("y").strength( 0.5 );
-				}
-				this.G.FG.d3Force("link").strength( 0 );
-			} else {
-				this.G.FG.d3Force("x", null );
-				this.G.FG.d3Force("y", null );
-				this.G.FG.d3Force("z", null );
-				if ( this.observer.view === 1 ) {
-					this.G.FG.d3Force("link").strength( l => {
-						let refs = Math.min(l.source.refs, l.target.refs) + 1;
-						return 1 / refs;
-					});
-				} else {
-					this.G.FG.d3Force("link").strength( l => {
-						let refs = 4 * (Math.min(l.source.refs, l.target.refs) + 1);
-						return 1 / refs;
-					});
-				}
-			}
-			this.refresh();
+			this.tick( initlen );
 		}
 
 		if ( ( rf.hasOwnProperty("branches") && rf.branches !== this.observer.branches ) ||
 	 			 ( rf.hasOwnProperty("leaves") && rf.leaves !== this.observer.leaves ) ) {
+			let update = false;
 			if ( rf.hasOwnProperty("branches") ) {
 				this.observer.branches = rf.branches;
+				update = true;
 			}
 			if ( rf.hasOwnProperty("leaves") ) {
 				this.observer.leaves = rf.leaves;
+				if ( this.observer.view === 1 ) update = true;
 			}
+			if ( update ) {
+				switch( this.observer.view ) {
+					case 1: // Space
+						for( let i=0; i<this.pos; i++ ) {
+							this.processSpatialEvent( this.multiway.EV[ i ] );
+						}
+						break;
+					case 2: // Time
+						// Rewind
+						if ( this.observer.branches > 0 ) {
+							let rm = [];
+							for( let t of this.G.T.keys() ) {
+								if ( t.ev.some( ev => !( ev.b & this.observer.branches ) ) ) rm.push( t );
+							}
+							rm.forEach( this.G.del, this.G );
+						}
 
-			if ( this.observer.view === 1 ) {
-				for( let i=0; i<this.pos; i++ ) {
-					let ev = this.multiway.EV[ i ];
-					this.processSpatialEvent( ev );
-				}
-			} else if ( this.observer.view === 2 ) {
-				// Rewind
-				if ( this.observer.branches > 0 ) {
-					let rm = [];
-					for( let t of this.G.T.keys() ) {
-						if ( t.ev.some( ev => !( ev.b & this.observer.branches ) ) ) rm.push( t );
-					}
-					rm.forEach( this.G.del, this.G );
-				}
-
-				// Forward
-				for( let i = 0; i < this.pos; i++ ) {
-					let ev = this.multiway.EV[ i ];
-					this.processCausalEvent( ev );
+						// Forward
+						for( let i = 0; i < this.pos; i++ ) {
+							this.processCausalEvent( this.multiway.EV[ i ] );
+						}
+						break;
 				}
 			}
 			this.refresh();
@@ -190,7 +165,7 @@ class Simulator extends Rewriter {
 				}
 				if ( b & this.observer.branches ) {
 					if ( !this.G.T.has( t ) ) {
-						this.G.add(t,false);
+						this.G.add(t,1);
 						change = true;
 					}
 				} else {
@@ -209,7 +184,7 @@ class Simulator extends Rewriter {
 					}
 				} else {
 					if ( !this.G.T.has( t ) ) {
-						this.G.add(t,false);
+						this.G.add(t,1);
 						change = true;
 					}
 				}
@@ -228,17 +203,59 @@ class Simulator extends Rewriter {
 		let change = false;
 		if ( this.observer.branches && !( ev.b & this.observer.branches ) ) return change;
 		if ( ev.parent.length === 0 ) {
-			this.G.add( { ev: [ ev ], edge: [ ev.id ] }, true );
+			this.G.add( { ev: [ ev ], edge: [ ev.id ] }, 2 );
 			change = true;
 		} else {
 			let pev = [ ...new Set( ev.parent.map( x => x.parent ).flat() ) ];
 			pev.forEach( x => {
 				if ( x.id < ev.id && ( !this.observer.branches || (x.b & this.observer.branches)) ) {
-					this.G.add( { ev: [ x, ev ], edge: [ x.id, ev.id ] }, true );
+					this.G.add( { ev: [ x, ev ], edge: [ x.id, ev.id ] }, 2 );
 					change = true;
 				}
 			});
 		}
+		return change;
+	}
+
+	/**
+	* Show of hide edges in phase graph.
+	* @param {Object} ev Event reference
+	* @return {boolean} True, if change was made
+	*/
+	processPhaseEvent( ev ) {
+		const tokens = [ ...ev.child, ...ev.parent ];
+		let change = false;
+		tokens.forEach( t => {
+			if ( !this.G.T.has( t ) ) {
+				if ( this.G.nodes.length === 0 ) {
+					this.G.add( { t: [ t ], edge: [ t.id ], w: 1 }, 3 );
+					change = true;
+				} else {
+					let n = [ { d: Infinity }, { d: Infinity }, { d: Infinity } ];
+					for( let v of this.G.nodes ) {
+						let d = this.ham.d( v.bc, t.bc );
+						if ( d < n[2].d ) {
+							n[2] = { t: v.t, d: d };
+							n.sort( (a,b) => a.d - b.d );
+						}
+					}
+
+					// Add links to nearest neighbours with appropriate weights
+					if ( n[0].d < 1000 ) {
+						this.G.add( { t: [ n[0].t ], edge: [ n[0].t.id ], w: 1 }, 3 );
+					} else {
+						this.G.add( { t: [ n[0].t, t ], edge: [ n[0].t.id, t.id ], w: n[0].d }, 3 );
+						if ( n[1].d < 2560 ) {
+							this.G.add( { t: [ n[1].t, t ], edge: [ n[1].t.id, t.id ], w: n[1].d }, 3 );
+						}
+						if ( n[2].d < 2560 ) {
+							this.G.add( { t: [ n[2].t, t ], edge: [ n[2].t.id, t.id ], w: n[2].d }, 3 );
+						}
+					}
+					change = true;
+				}
+			}
+		});
 		return change;
 	}
 
@@ -255,6 +272,8 @@ class Simulator extends Rewriter {
 				changed = this.processSpatialEvent( ev );
 			} else if ( this.observer.view === 2 ) {
 				changed = this.processCausalEvent( ev );
+			} else if ( this.observer.view === 3 ) {
+				changed = this.processPhaseEvent( ev );
 			}
 			if ( changed ) {
 				steps--;
@@ -310,11 +329,7 @@ class Simulator extends Rewriter {
 	*/
 	final() {
 		this.stop();
-		if ( this.observer.view === 1 ) {
-			this.G.force(-1,10);
-		} else {
-			this.G.force(-1,10);
-		}
+		this.G.force(-1,10);
 		this.tick( this.multiway.EV.length );
 	}
 
@@ -585,22 +600,32 @@ class Simulator extends Rewriter {
 			let digits = 1;
 			let min, max;
 
+			// Phase reference point
+			let phaseref;
+			let pndx = 0;
+			if ( c.cmd === 'phase' && c.params[pndx] ) {
+				let id = parseInt( c.params[pndx] );
+				phaseref = this.G.V.get( id );
+				pndx++;
+			}
+
 			// Limits
 			let minp, minv;
-			if ( c.params[0] ) {
-				if ( c.params[0].slice(-1)==="%" ) {
-					minp = parseFloat( c.params[0] ) / 100;
+			if ( c.params[pndx] ) {
+				if ( c.params[pndx].slice(-1)==="%" ) {
+					minp = parseFloat( c.params[pndx] ) / 100;
 				} else {
-					minv = parseFloat( c.params[0] );
+					minv = parseFloat( c.params[pndx] );
 					min = minv;
 				}
+				pndx++;
 			}
 			let maxp, maxv;
-			if ( c.params[1] ) {
-				if ( c.params[1].slice(-1)==="%" ) {
-					maxp = parseFloat( c.params[1] ) / 100;
+			if ( c.params[pndx] ) {
+				if ( c.params[pndx].slice(-1)==="%" ) {
+					maxp = parseFloat( c.params[pndx] ) / 100;
 				} else {
-					maxv = parseFloat( c.params[1] );
+					maxv = parseFloat( c.params[pndx] );
 					max = maxv;
 				}
 			}
@@ -641,6 +666,14 @@ class Simulator extends Rewriter {
 							setfn( t, val.reduce( (a,x) => a+x, 0 )/val.length + 1 );
 						}
 					}
+				} else if ( this.observer.view === 3 ) {
+					for ( const t of this.G.T.keys() ) {
+						let b = t.t[ t.t.length - 1 ].parent.reduce( (a,x) => a | x.b, 0 );
+						if ( b > 0 ) {
+							let val = bits.filter( (x,i) => b & nums[i] );
+							setfn( t, val.reduce( (a,x) => a+x, 0 )/val.length + 1 );
+						}
+					}
 				}
 				min = min || 1;
 				max = max || this.opt.evolution || 4;
@@ -668,6 +701,11 @@ class Simulator extends Rewriter {
 						let ev = t.ev[ t.ev.length-1 ];
 						if ( ev.rule ) setfn( t, ev.rule[c.cmd] );
 					}
+				} else if ( this.observer.view === 3 ) {
+					for ( const t of this.G.T.keys() ) {
+						let evs = [ ...t.t[ t.t.length-1 ].parent, ...t.t[ t.t.length-1 ].child ].filter( x => x.rule );
+						if ( evs.length ) setfn( t, evs.reduce( (a,x) => a + x.rule[c.cmd],0 ) / evs.length );
+					}
 				}
 				break;
 
@@ -681,6 +719,10 @@ class Simulator extends Rewriter {
 						let ev = t.ev[ t.ev.length-1 ];
 						setfn( t, ev.step );
 					}
+				} else if ( this.observer.view === 3 ) {
+					for ( const t of this.G.T.keys() ) {
+						setfn( t, t.t[ t.t.length -1 ].parent.reduce( (a,x) => a + x.step,0 ) / t.t[ t.t.length -1 ].parent.length );
+					}
 				}
 				break;
 
@@ -691,41 +733,29 @@ class Simulator extends Rewriter {
 					}
 				} else if ( this.observer.view === 2 ) {
 					for ( const t of this.G.T.keys() ) {
-						let ev = t.ev[ t.ev.length-1 ];
-						setfn( t, ev.pathcnt );
+						setfn( t, t.ev[ t.ev.length-1 ].pathcnt );
+					}
+				} else if ( this.observer.view === 3 ) {
+					for ( const t of this.G.T.keys() ) {
+						setfn( t, t.t[ t.t.length-1 ].pathcnt );
 					}
 				}
 				break;
 
 			case "phase":
-				if ( this.observer.view === 1 ) {
-					// Find token from branch #1
-					let tref;
-					for ( const t of this.G.T.keys() ) {
-						if ( t.parent.every( x => x.b === 1 ) ) {
-							tref = t;
-							break;
-						}
-					}
-					if ( tref ) {
+				if ( phaseref ) {
+					if ( this.observer.view === 1 ) {
 						for ( const t of this.G.T.keys() ) {
-							setfn( t, this.multiway.d( t, tref ) );
+							setfn( t, this.multiway.d( t, phaseref ) );
 						}
-					}
-				} else if ( this.observer.view === 2 ) {
-					// Find event from branch #1
-					let evref;
-					for ( const t of this.G.T.keys() ) {
-						let ev = t.ev[ t.ev.length-1 ];
-						if ( ev.b === 1 ) {
-							evref = ev;
-							break;
-						}
-					}
-					if ( evref ) {
+					} else if ( this.observer.view === 2 ) {
 						for ( const t of this.G.T.keys() ) {
 							let ev = t.ev[ t.ev.length-1 ];
-							setfn( t, this.multiway.d( ev, evref ) );
+							setfn( t, this.multiway.d( t.ev[ t.ev.length-1 ], phaseref ) );
+						}
+					} else if ( this.observer.view === 3 ) {
+						for ( const t of this.G.T.keys() ) {
+							setfn( t, this.multiway.d( t.t[ t.t.length-1 ], phaseref ) );
 						}
 					}
 				}
@@ -750,6 +780,13 @@ class Simulator extends Rewriter {
 						let ev = t.ev[ t.ev.length-1 ];
 						let pc = ev.pathcnt;
 						setfn( t, pc / s[ ev.step ] );
+					}
+				} else if ( this.observer.view === 3 ) {
+					for ( const t of this.G.T.keys() ) {
+						sum += t.t[ t.t.length -1 ].pathcnt;
+					}
+					for ( const t of this.G.T.keys() ) {
+						setfn( t, t.t[ t.t.length -1 ].pathcnt / sum );
 					}
 				}
 				digits = 4;
