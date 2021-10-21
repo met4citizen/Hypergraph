@@ -44,6 +44,33 @@ class Simulator extends Rewriter {
 		this.F = null; // Fields
 
 		this.ham = new HypervectorSet(); // Hyperdimensional Associative Memory
+
+		// Variables x and y
+		this.x = 0;
+		this.y = 0;
+		this.G.FG
+			.onNodeClick( Simulator.onNodeClick.bind(this) )
+			.onNodeRightClick( Simulator.onNodeRightClick.bind(this) );
+	}
+
+	/**
+	* Click on node
+	* @param {Object} n Node object
+	* @param {Object} event Event object
+	*/
+	static onNodeClick( n, event) {
+		this.x = n.id;
+		this.refresh();
+	}
+
+	/**
+	* Right click on node
+	* @param {Object} n Node object
+	* @param {Object} event Event object
+	*/
+	static onNodeRightClick( n, event) {
+		this.y = n.id;
+		this.refresh();
 	}
 
 	/**
@@ -415,46 +442,53 @@ class Simulator extends Rewriter {
 
 		if ( cmds ) {
 			cmds.forEach( (c,i) => {
+				let ps = c.params.map( x => {
+					if ( x === 'x' ) return this.x;
+					if ( x === 'y' ) return this.y;
+					return x;
+				});
+
+
 				let ret;
 
 				switch( c.cmd ) {
 				case "geodesic": case "line": case "path":
-					if ( c.params.length < 2 ) throw new TypeError("Geodesic: Invalid number of parameters.");
-					p.push( parseInt(c.params[0]), parseInt(c.params[1]) );
-					ret = this.G.geodesic( parseInt(c.params[0]), parseInt(c.params[1]), c.params.includes("dir"), c.params.includes("rev"), c.params.includes("all") ).flat();
+					if ( ps.length < 2 ) throw new TypeError("Geodesic: Invalid number of parameters.");
+					p.push( parseInt(ps[0]), parseInt(ps[1]) );
+					ret = this.G.geodesic( parseInt(ps[0]), parseInt(ps[1]), ps.includes("dir"), ps.includes("rev"), ps.includes("all") ).flat();
 					r.push( ret.length );
 					e.push( ret );
 					break;
 
-				case "mwdist": case "bdist":
-					if ( c.params.length < 2 ) throw new TypeError("Mwdist: Invalid number of parameters.");
-					let a = this.G.V.get( parseInt(c.params[0]) );
-					let b = this.G.V.get( parseInt(c.params[1]) );
+				case "phase":
+					if ( ps.length < 2 ) throw new TypeError("Phase: Invalid number of parameters.");
+					let a = this.G.V.get( parseInt(ps[0]) );
+					let b = this.G.V.get( parseInt(ps[1]) );
 					if ( a && b ) {
-						p.push( parseInt(c.params[0]), parseInt(c.params[1]) );
+						p.push( parseInt(ps[0]), parseInt(ps[1]) );
 						r.push( this.ham.d( a.bc,b.bc ) );
-						ret = this.G.geodesic( parseInt(c.params[0]), parseInt(c.params[1]), c.params.includes("dir"), c.params.includes("rev"), c.params.includes("all") ).flat();
+						ret = this.G.geodesic( parseInt(ps[0]), parseInt(ps[1]), ps.includes("dir"), ps.includes("rev"), ps.includes("all") ).flat();
 						e.push( ret );
 					}
 					break;
 
 				case "curv": case "curvature":
-					if ( c.params.length < 2 ) throw new TypeError("Curv: Invalid number of parameters.");
-					p.push( parseInt(c.params[0]), parseInt(c.params[1]) );
-					let curv = this.G.orc( parseInt(c.params[0]), parseInt(c.params[1]) );
+					if ( ps.length < 2 ) throw new TypeError("Curv: Invalid number of parameters.");
+					p.push( parseInt(ps[0]), parseInt(ps[1]) );
+					let curv = this.G.orc( parseInt(ps[0]), parseInt(ps[1]) );
 					curv = curv.toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 });
 					r.push( curv );
-					e.push( this.G.geodesic( parseInt(c.params[0]), parseInt(c.params[1]), c.params.includes("dir"), c.params.includes("rev"), c.params.includes("all") ).flat() );
-					v.push( this.G.nsphere( parseInt(c.params[0]), 1 ) );
-					v.push( this.G.nsphere( parseInt(c.params[1]), 1 ) );
+					e.push( this.G.geodesic( parseInt(ps[0]), parseInt(ps[1]), ps.includes("dir"), ps.includes("rev"), ps.includes("all") ).flat() );
+					v.push( this.G.nsphere( parseInt(ps[0]), 1 ) );
+					v.push( this.G.nsphere( parseInt(ps[1]), 1 ) );
 					break;
 
 				case "dim": case "dimension":
 					let origin = this.G.nodes[ Math.floor( this.G.nodes.length / 2 ) ].id;
-					if ( c.params.length ) origin = parseInt(c.params[0]);
+					if ( ps.length ) origin = parseInt(ps[0]);
 					let tree = this.G.tree( origin );
 					let radius = Math.max(1,Math.floor( tree.length/4 ));
-					if ( c.params.length > 1 ) radius = parseInt(c.params[1]);
+					if ( ps.length > 1 ) radius = parseInt(ps[1]);
 					if ( (radius+3) < tree.length ) {
 						let dfn = (rad) => (Math.log(tree.slice(0,rad+1).flat().length)/Math.log(rad));
 						let rads = Array(4).fill().map((x,j) => j+radius);
@@ -468,35 +502,35 @@ class Simulator extends Rewriter {
 					break;
 
 				case "nsphere": case "sphere":
-					if ( c.params.length < 2 ) throw new TypeError("Nsphere: Invalid number of parameters.");
-					p.push( parseInt(c.params[0]) );
-					ret = this.G.nsphere( parseInt(c.params[0]), parseInt(c.params[1]), c.params.includes("dir"), c.params.includes("rev") );
+					if ( ps.length < 2 ) throw new TypeError("Nsphere: Invalid number of parameters.");
+					p.push( parseInt(ps[0]) );
+					ret = this.G.nsphere( parseInt(ps[0]), parseInt(ps[1]), ps.includes("dir"), ps.includes("rev") );
 					r.push( ret.length );
 					v.push( ret );
 					break;
 
 				case "nball": case "ball": case "tree":
-					if ( c.params.length < 2 ) throw new TypeError("Nball: Invalid number of parameters.");
-					p.push( parseInt(c.params[0]) );
-					ret = this.G.nball( parseInt(c.params[0]), parseInt(c.params[1]), c.params.includes("dir"), c.params.includes("rev") );
+					if ( ps.length < 2 ) throw new TypeError("Nball: Invalid number of parameters.");
+					p.push( parseInt(ps[0]) );
+					ret = this.G.nball( parseInt(ps[0]), parseInt(ps[1]), ps.includes("dir"), ps.includes("rev") );
 					r.push( ret.length );
 					e.push( ret );
 					v.push( [ ...new Set( ret.flat() ) ] );
 					break;
 
 				case "random": case "walk":
-					if ( c.params.length < 2 ) throw new TypeError("Random: Invalid number of parameters.");
-					p.push( parseInt(c.params[0]) );
-					ret = this.G.random( parseInt(c.params[0]), parseInt(c.params[1]), c.params.includes("dir"), c.params.includes("rev") );
+					if ( ps.length < 2 ) throw new TypeError("Random: Invalid number of parameters.");
+					p.push( parseInt(ps[0]) );
+					ret = this.G.random( parseInt(ps[0]), parseInt(ps[1]), ps.includes("dir"), ps.includes("rev") );
 					r.push( ret.length );
 					e.push( ret );
 					break;
 
 				case "worldline": case "timeline":
 					if ( this.observer.view === 2 ) {
-						if ( c.params.length < 1 ) throw new TypeError("Worldline: Invalid number of parameters.");
+						if ( ps.length < 1 ) throw new TypeError("Worldline: Invalid number of parameters.");
 						let maxv = this.G.nodes.length;
-						ret = this.multiway.worldline( [ ...c.params.map( x => parseInt(x) ) ] ).filter( e => {
+						ret = this.multiway.worldline( [ ...ps.map( x => parseInt(x) ) ] ).filter( e => {
 							return (e[0] < maxv) && (e[1] < maxv);
 						});
 						r.push( ret.length );
@@ -509,9 +543,9 @@ class Simulator extends Rewriter {
 
 				case "lightcone":
 					if ( this.observer.view === 2 ) {
-						if ( c.params.length < 2 ) throw new TypeError("Lightcone: Invalid number of parameters.");
-						p.push( parseInt(c.params[0]) );
-						ret = this.G.lightcone( parseInt(c.params[0]), parseInt(c.params[1]) );
+						if ( ps.length < 2 ) throw new TypeError("Lightcone: Invalid number of parameters.");
+						p.push( parseInt(ps[0]) );
+						ret = this.G.lightcone( parseInt(ps[0]), parseInt(ps[1]) );
 						r.push( ret["past"].length + ret["future"].length );
 						e.push( [ ...ret["past"], ...ret["future"] ] );
 						v.push( [ ...new Set( ret["past"].flat() ) ] );
@@ -520,8 +554,8 @@ class Simulator extends Rewriter {
 					break;
 
 				case "surface": case "hypersurface":
-					if ( c.params.length < 2 ) throw new TypeError("Surface: Invalid number of parameters.");
-					ret = this.G.surface( parseInt(c.params[0]), parseInt(c.params[1]) );
+					if ( ps.length < 2 ) throw new TypeError("Surface: Invalid number of parameters.");
+					ret = this.G.surface( parseInt(ps[0]), parseInt(ps[1]) );
 					r.push( ret.length );
 					v.push( ret );
 					break;
@@ -619,7 +653,14 @@ class Simulator extends Rewriter {
 			let phaseref;
 			let pndx = 0;
 			if ( c.cmd === 'phase' && c.params[pndx] ) {
-				let id = parseInt( c.params[pndx] );
+				let id;
+				if ( c.params[pndx] === 'x' ) {
+					id = this.x;
+				} else if ( c.params[pndx] === 'y' ) {
+					id = this.y;
+				} else {
+					id = parseInt( c.params[pndx] );
+				}
 				phaseref = this.G.V.get( id );
 				pndx++;
 			}

@@ -534,8 +534,8 @@ $(document).ready(function() {
       $(s).html($("<p>").html(v||d).text().split(";").join("<br>") );
     }
     tfn("#rule-text","rule","(1,2)(1,3)->(1,2)(1,4)(2,4)(3,4)");
-    tfn("#red-text","red","nball(0,2)");
-    tfn("#blue-text","blue","geodesic(0,100)");
+    tfn("#red-text","red","nball(x,2)");
+    tfn("#blue-text","blue","geodesic(y,100)");
     tfn("#grad-text","grad","branch");
 
     let ofn = (p,d,s) => parseInt(getUrlParameter(p)||d) ? $("."+s).addClass("selected") :$("."+s).removeClass("selected");
@@ -638,7 +638,7 @@ $(document).ready(function() {
         <a href="//momentum" data-value="momentum">momentum</a><br>
         <span class="label down">Scalar field</span>
         <a href="//pathcnt" data-value="pathcnt">pathcnt</a>
-        <a href="//phase" data-value="phase(0)">phase</a>
+        <a href="//phase" data-value="phase(x)">phase</a>
         <a href="//probability" data-value="probability">probability</a>
         <a href="//step" data-value="step">step</a>
       </span>&nbsp;&nbsp;
