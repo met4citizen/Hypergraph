@@ -132,11 +132,12 @@ graph. In this view nodes represent updating events and directed
 edges their causal relations. According to the Wolfram Model, the flux of
 causal edges through spacelike and timelike hypersurfaces is related to
 energy and momentum respectively.
-- In `Phase` mode hyperdimensional multiway ("branchial") coordinates are
-projected into 3D. See [Appendix A](#appendix-a): Coordinatization of a Local
-Multiway System by using Hyper-dimensional Vectors. Note: Calculating distances
-in hyperdimensional space is a CPU intensive task, so the simulation slows down
-quickly.
+- In `Phase` mode hyperdimensional multiway space is projected in 3D.
+According to Wolfram Model, the positions in this "branchial" space are
+related to quantum phase. See [Appendix A](#appendix-a): Coordinatization
+of a Local Multiway System by using Hyper-dimensional Vectors.
+Note: Calculating distances in hyperdimensional space is a CPU intensive task,
+so the simulation slows down quickly.
 
 Media buttons let you reset the mode, start/pause the simulation and
 skip to the end. Whenever the system has branches, the first four
@@ -161,7 +162,7 @@ Command | Highlighted | Status Bar
 `dim([x],[radius])` | N-dimensional ball with an origin `x` (random, if not specified) and radius `r` (automatically scaled if not specified). | The effective dimension `d` based on nearby n-ball volumes fitted to `r^d`.
 `geodesic(x,y,[dir],[rev],[all])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction<br/>`all` = all shortest paths | Shortest path(s) between two nodes.<br/><br/> | Path distance as the number of edges.
 `lightcone(x,length)` | Lightcone centered at node `x` with size `length`. `TIME` mode only. | Size of the cones as the number of edges.
-`mwdist(x,y)` | Multiway distance between two nodes. | Multiway distance 0-10240. Mid-point 5120 corresponds to orthogonal vectors (phase difference PI).
+`phase(x,y)` | Multiway distance between two nodes. | Multiway distance 0-10240. Mid-point 5120 corresponds to orthogonal vectors (phase difference PI).
 `nball(x,radius,[dir],[rev])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | N-dimensional ball is a set of nodes and edges within a distance `radius` from a given node `x`. | Volume as the number of edges.
 `nsphere(x,radius,[dir],[rev])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | N-dimensional sphere/hypersurface within a distance `radius` from a given node `x`. | Area as the number of nodes.
 `random(x,distance,[dir],[rev])`<br/><br/>`dir` = directed edges<br/>`rev` = reverse direction | Random walk starting from a specific node `x` with maximum `distance`. | Path distance as the number of edges.
@@ -169,6 +170,10 @@ Command | Highlighted | Status Bar
 `worldline(x,...)` | Time-like curve of space-like node/nodes. `TIME` mode only. | Distance as the number of edges.
 `(x,y)(y,z)`<br>`(x,y)(y,z)\(z)->(x,y)` | Subhypergraphs matching the given rule-based pattern. The right hand side pattern can be used to specify which part of the match is highlighted. `SPACE` mode only. | The number of rule-based matches.
 
+The node parameters can be specified with identifiers you can find by
+hovering the mouse pointer over nodes. It is also possible to use
+variables `x` and `y`. To set variable `x` click on any node and to set `y`
+use right click.
 
 
 ## Scalar Fields
@@ -189,7 +194,7 @@ Scalar Field | Description
 `mass` | The part of `energy` in which the right hand side edges connect pre-existing vertices.
 `momentum` | The part of `energy` in which the right hand side edges have new vertices.
 `pathcnt` | The number of paths leading to specific edge.
-`phase(x)` | Multiway distance to a given token `x`. Multiway coordinates are calculated using 10240-dimensional dense bipolar hypervectors. NOTE: Hyperdimensional computing is CPU intensive, so when used in real-time it will slow down the animation. EXPERIMENTAL, LIKELY TO CHANGE.
+`phase(x)` | Multiway distance to a given token `x`. Multiway coordinates are calculated using 10,240-dimensional dense bipolar hypervectors. NOTE: Hyperdimensional computing is CPU intensive, so when used in real-time it will slow down the animation. EXPERIMENTAL
 `probability` | Normalized path count for each edge in each step.
 `step` | Rewriting step.
 
