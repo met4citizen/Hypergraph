@@ -89,17 +89,19 @@ class HypervectorSet extends Set {
 		let v = new Uint8Array(this.bytes);
 		if ( v.length % 2 === 0 ) window.crypto.getRandomValues(v); // Solve ties with random bits
 		for( let i=this.bytes-1; i>=0; i-- ) {
+			let val = 0;
       for (let mask = 1; mask <= 128; mask <<= 1) {
         let sum = 0;
         for (let k = vs.length-1; k>=0; k--) {
 					sum += (vs[k][i] & mask) ? 1 : -1;
         }
-				if (sum>0) {
-					v[i] |= mask;
-				} else if (sum < 0) {
-					v[i] &= ~mask;
+				if ( sum > 0 ) {
+					val += mask;
+				} else if ( sum === 0 ){
+					val += v[i] & mask;
 				}
 			}
+			v[i] = val;
 		}
 		return v;
 	}
@@ -156,7 +158,11 @@ class HypervectorSet extends Set {
 				 !(v2 instanceof Uint8Array && v2.length === this.bytes) ) {
 			throw new TypeError("Not a hypervector.");
 		}
-		return v1.reduce( (a,x,i) => a + this.hamm[x][v2[i]], 0);
+		let sum = 0;
+		for( let i=v1.length-1; i>=0; i--) {
+			sum += this.hamm[v1[i]][v2[i]];
+		}
+		return sum;
 	}
 
 	/**
@@ -175,7 +181,10 @@ class HypervectorSet extends Set {
 		let n=[];
 		for( let v2 of this ) {
 			if ( v === v2 ) continue;
-			let d = v.reduce( (a,x,i) => a + this.hamm[x][v2[i]], 0);
+			let d = 0;
+			for( let i=v.length-1; i>=0; i--) {
+				d += this.hamm[v[i]][v2[i]];
+			}
 			if ( d <= maxd ) n.push( { v: v2, d: d } );
 		}
 		n.sort( (a,b) => a.d - b.d );
