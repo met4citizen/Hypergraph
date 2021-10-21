@@ -15,11 +15,12 @@ class Graph3D extends Graph {
 
 	/**
 	* Creates an instance of Hypergraph.
-	* @param {Object} element DOM element of the canvas
+	* @param {Object} canvas DOM element of the canvas
 	* @constructor
 	*/
 	constructor( element ) {
     super();
+		this.element = element;
 		this.FG = ForceGraph3D({ rendererConfig: { antialias: true, precision: "lowp" }});
 		this.HS = []; // Array of highlighted hypersurfaces
 		this.HL = []; // Array of extra highlighted link objs
@@ -41,7 +42,7 @@ class Graph3D extends Graph {
 		];
 
 		this.phaseStyles = [
-		  {  nColor: "black", lColor: "grey", nVal: 4, lWidth: 1, bgColor: "white", nRelSize: 3 }, // 0 defaults
+		  {  nColor: "black", lColor: "grey", nVal: 4, lWidth: 1, bgColor: "white", nRelSize: 5 }, // 0 defaults
 		  {  nColor: "purple", lColor: "hotpink", nVal: 7, lWidth: 6, fill: "hotpink", opacity: 0.2 }, // 1 Red
 		  {  nColor: "blue", lColor: "deepskyblue", nVal: 7, lWidth: 6, fill: "deepskyblue", opacity: 0.2 }, // 2 Blue
 		  {  nColor: "darkblue", lColor: "darkblue", nVal: 7, lWidth: 6 } // 3 Red + Blue
@@ -168,7 +169,6 @@ class Graph3D extends Graph {
 		}
 		return true;
 	}
-
 
 	/**
 	* Update hypersurfaces
