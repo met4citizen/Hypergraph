@@ -677,6 +677,7 @@ class Graph {
 		try {
 			ns1 = this.nsphere( v1, Math.abs(radius), dir, true );
 			ns2 = this.nsphere( v2, Math.abs(radius), dir, false );
+			if ( ns1.length === 0 || ns2.length === 0 ) return 0;
 		}
 		catch( e ) {
 			return 0;
