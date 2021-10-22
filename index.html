@@ -308,6 +308,11 @@ $(document).ready(function() {
         }
       }
     });
+    $(x+"-settings a").on("click", function(e) {
+      e.preventDefault();
+      $(x+"-text").html( $(this).data("value") );
+      $(x+"-show").click();
+    });
   });
 
   // Show fields
@@ -610,6 +615,18 @@ $(document).ready(function() {
     <div id="red-settings" class="settings">
       <span title="Show red" id="red-show" class="button">RUN</span>
       <span title="Hide red" id="red-hide" class="button">HIDE</span>&nbsp;
+      <span>
+        <a href="//curv" data-value="curv(x,y)">curv</a>
+        <a href="//dim" data-value="dim(x)">dim</a>
+        <a href="//geodesic" data-value="geodesic(x,y)">geodesic</a>
+        <a href="//lightcone" data-value="lightcone(x,1)">lightcone</a>
+        <a href="//phase" data-value="phase(x,y)">phase</a>
+        <a href="//nball" data-value="nball(x,1)">nball</a><br/>
+        <a href="//nsphere" data-value="nsphere(x,1)">nsphere</a>
+        <a href="//random" data-value="random(x,10)">random</a>
+        <a href="//surface" data-value="surface(x,y)">surface</a>
+        <a href="//worldline" data-value="worldline(x)">worldline</a>
+      </span>&nbsp;&nbsp;
       <span class="label down">Options</span>
       <span title="Show background" class="option background selected">BACK</span>
       <span title="Show hypersurfaces" class="option red-surface selected">FACES</span>&nbsp;
@@ -619,6 +636,18 @@ $(document).ready(function() {
     <div id="blue-settings" class="settings">
       <span title="Show blue" id ="blue-show" class="button">RUN</span>
       <span title="Hide blue" id ="blue-hide" class="button">HIDE</span>&nbsp;
+      <span>
+        <a href="//curv" data-value="curv(x,y)">curv</a>
+        <a href="//dim" data-value="dim(x)">dim</a>
+        <a href="//geodesic" data-value="geodesic(x,y)">geodesic</a>
+        <a href="//lightcone" data-value="lightcone(x,1)">lightcone</a>
+        <a href="//phase" data-value="phase(x,y)">phase</a>
+        <a href="//nball" data-value="nball(x,1)">nball</a><br/>
+        <a href="//nsphere" data-value="nsphere(x,1)">nsphere</a>
+        <a href="//random" data-value="random(x,10)">random</a>
+        <a href="//surface" data-value="surface(x,y)">surface</a>
+        <a href="//worldline" data-value="worldline(x)">worldline</a>
+      </span>&nbsp;&nbsp;
       <span class="label down">Options</span>
       <span title="Show background" class="option background selected">BACK</span>
       <span title="Show hypersurfaces" class="option blue-surface selected">FACES</span>&nbsp;
@@ -636,7 +665,6 @@ $(document).ready(function() {
         <a href="//energy" data-value="energy">energy</a>
         <a href="//mass" data-value="mass">mass</a>
         <a href="//momentum" data-value="momentum">momentum</a><br>
-        <span class="label down">Scalar field</span>
         <a href="//pathcnt" data-value="pathcnt">pathcnt</a>
         <a href="//phase" data-value="phase(x)">phase</a>
         <a href="//probability" data-value="probability">probability</a>
