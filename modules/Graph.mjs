@@ -117,10 +117,11 @@ class Graph {
 			if ( v ) {
 				v.refs++;
 				if ( view === 1 ) v.bc = t.bc; // In space view, update vertex bc to latest
-				if ( view === 3 ) { // In phase view, update bc and t
+				// TODO: Think this over!
+				/* if ( view === 3 ) { // In phase view, update bc and t
 					v.bc = t.t[ i ].bc;
 					v.t = t.t[i];
-				}
+				} */
 			} else {
         // New vertex
         v = {
@@ -132,9 +133,8 @@ class Graph {
 					x: (p.x + (view === 2 ? (Math.sign(p.x)*Math.random()) : ((Math.random()-0.5)/100))),
 					y: (p.y + (view === 2 ? (Math.sign(p.y)*Math.random()) : ((Math.random()-0.5)/100))),
 					z: (p.z + (view === 2 ? (10*Math.sign(p.z)*Math.random()) : ((Math.random()-0.5)/100))),
-					bc: (view === 1 ? t.bc : (view === 3 ? t.t[i].bc : t.ev[i].bc)),
-					ev: (view === 2 ? t.ev[i] : null ),
-					t: (view === 3 ? t.t[i] : null )
+					bc: (view === 1 ? t.bc : t.mw[i].bc),
+					mw: (view === 1 ? null : t.mw[i])
 				};
 				this.V.set( id, v );
         this.nodes.push( v );
@@ -170,7 +170,7 @@ class Graph {
 					style: 0,
           curvature: curv,
 					rotation: 0,
-					bc: (view === 1 ? t.bc : (view === 3 ? t.t[ t.t.length -1 ].bc : t.ev[ t.ev.length - 1 ].bc )),
+					bc: ( view === 1 ? t.bc : t.mw[ t.mw.length -1 ].bc ),
 					w: ( t.hasOwnProperty("w") ? t.w : 1 ) // weight
         };
 				vprev.source.push( l );

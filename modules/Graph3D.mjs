@@ -261,7 +261,7 @@ class Graph3D extends Graph {
 	      .backgroundColor( this.spaceStyles[0].bgColor )
 	      .nodeLabel( n => `<span class="nodeLabelGraph3d">${ n.id }</span>` )
 	      .nodeRelSize( this.spaceStyles[0].nRelSize )
-	      .nodeVal( n => (n.big ? 10 : 1 ) * this.spaceStyles[n.style].nVal  )
+	      .nodeVal( n => (n.big ? 8 : 1 ) * this.spaceStyles[n.style].nVal  )
 	      .nodeColor( n => (n.hasOwnProperty("grad") && !n.style) ? Graph3D.colorGradient( n.grad ) : this.spaceStyles[n.style].nColor )
 	      .linkWidth( l => this.spaceStyles[l.style].lWidth )
 	      .linkColor( l => (l.hasOwnProperty("grad") && !l.style) ? Graph3D.colorGradient( l.grad ) : this.spaceStyles[l.style].lColor )
@@ -269,7 +269,8 @@ class Graph3D extends Graph {
 	      .linkCurveRotation( 'rotation' )
 	      .linkDirectionalArrowLength(0)
 				.linkPositionUpdate( Graph3D.linkPositionUpdate.bind(this) )
-				.linkThreeObject( Graph3D.linkThreeObject.bind(this) );
+				.linkThreeObject( Graph3D.linkThreeObject.bind(this) )
+				.nodeThreeObject( null );
 
 			// Set forces
 			this.FG.d3Force("link").iterations( 15 );
@@ -291,7 +292,7 @@ class Graph3D extends Graph {
 			.backgroundColor( this.timeStyles[0].bgColor )
 			.nodeLabel( n => `<span class="nodeLabelGraph3d">${ n.id }</span>` )
 			.nodeRelSize( this.timeStyles[0].nRelSize )
-			.nodeVal( n => (n.big ? 10 : 1 ) * this.timeStyles[n.style].nVal )
+			.nodeVal( n => (n.big ? 8 : 1 ) * this.timeStyles[n.style].nVal )
 			.nodeColor( n => (n.hasOwnProperty("grad") && !n.style) ? Graph3D.colorGradient( n.grad ) : this.timeStyles[n.style].nColor )
 			.linkWidth( l => this.timeStyles[l.style].lWidth )
 			.linkColor( l => (l.hasOwnProperty("grad") && !l.style) ? Graph3D.colorGradient( l.grad ) : this.timeStyles[l.style].lColor )
@@ -300,7 +301,8 @@ class Graph3D extends Graph {
 			.linkDirectionalArrowLength( 20 )
 			.linkDirectionalArrowRelPos(1)
 			.linkPositionUpdate( null )
-			.linkThreeObject( null );
+			.linkThreeObject( null )
+			.nodeThreeObject( null );
 
 			// Set forces
 			this.FG.d3Force("link").iterations( 2 );
@@ -322,7 +324,7 @@ class Graph3D extends Graph {
 	      .backgroundColor( this.phaseStyles[0].bgColor )
 	      .nodeLabel( n => `<span class="nodeLabelGraph3d">${ n.id }</span>` )
 	      .nodeRelSize( this.phaseStyles[0].nRelSize )
-	      .nodeVal( n => (n.big ? 10 : 5 ) * n.refs  )
+	      .nodeVal( n => (n.big ? 8 : 4 ) * n.refs  )
 	      .nodeColor( n => (n.hasOwnProperty("grad") && !n.style) ? Graph3D.colorGradient( n.grad ) : this.phaseStyles[n.style].nColor )
 	      .linkWidth( l => this.phaseStyles[l.style].lWidth )
 	      .linkColor( l => (l.hasOwnProperty("grad") && !l.style) ? Graph3D.colorGradient( l.grad ) : this.phaseStyles[l.style].lColor )
@@ -330,7 +332,8 @@ class Graph3D extends Graph {
 	      .linkCurveRotation( 0 )
 	      .linkDirectionalArrowLength(0)
 				.linkPositionUpdate( null )
-				.linkThreeObject( null );
+				.linkThreeObject( null )
+				.nodeThreeObject( null );
 
 			// Set forces
 			this.FG.d3Force("link").iterations( 15 );

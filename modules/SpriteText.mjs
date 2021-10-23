@@ -3,7 +3,13 @@ import { LinearFilter, Sprite, SpriteMaterial, Texture } from 'https://unpkg.com
 class SpriteText extends Sprite {
 
   constructor(text, textHeight, color) {
-    super( new SpriteMaterial({ map: new Texture() }) );
+    super( new SpriteMaterial({
+      map: new Texture(),
+      color: 0xffffff,
+			transparent: true,
+			depthTest: false,
+			depthWrite: false
+    }) );
 
     this.text = `${text}`;
     this.textHeight = textHeight;
@@ -11,7 +17,7 @@ class SpriteText extends Sprite {
 
     this.fontFace = 'Arial';
     this.fontSize = 40; // defines text resolution
-    this.fontWeight = 'normal';
+    this.fontWeight = 'bold';
 
     this.canvas = document.createElement('canvas');
     this.texture = this.material.map;
@@ -26,7 +32,7 @@ class SpriteText extends Sprite {
     const font = `${this.fontWeight} ${this.fontSize}px ${this.fontFace}`;
 
     ctx.font = font; // measure canvas with appropriate font
-    const innerWidth = Math.max(...lines.map(line => ctx.measureText(line).width));
+    const innerWidth = Math.max(...lines.map(line => ctx.measureText(line).width)) + 110;
     const innerHeight = this.fontSize * lines.length;
     this.canvas.width = innerWidth;
     this.canvas.height = innerHeight;
@@ -34,6 +40,7 @@ class SpriteText extends Sprite {
     ctx.font = font;
     ctx.fillStyle = this.color;
     ctx.textBaseline = 'bottom';
+    ctx.translate( 55,0 );
 
     lines.forEach((line, index) => {
       const lineX = (innerWidth - ctx.measureText(line).width) / 2;
@@ -45,7 +52,7 @@ class SpriteText extends Sprite {
     this.texture.needsUpdate = true;
 
     const yScale = this.textHeight * lines.length;
-    this.scale.set(yScale * this.canvas.width / this.canvas.height, yScale, 0);
+    this.scale.set( yScale * this.canvas.width / this.canvas.height, yScale, 0);
   }
 }
 

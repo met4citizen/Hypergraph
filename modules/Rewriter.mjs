@@ -529,7 +529,7 @@ class Rewriter {
 	* @param {Object} g Generator for rewrite
 	*/
 	timer(g) {
-		if ( this.interrupt || g.next().done ) {
+		if ( g.next().done ) {
 			this.interrupt = false;
 			if ( this.finishedfn ) {
 				this.finishedfn();

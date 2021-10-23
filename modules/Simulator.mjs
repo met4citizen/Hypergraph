@@ -2,6 +2,7 @@ import { Rulial } from "./Rulial.mjs";
 import { Rewriter } from "./Rewriter.mjs";
 import { Graph3D } from "./Graph3D.mjs";
 import { HypervectorSet } from "./HypervectorSet.mjs";
+import { SpriteText } from "./SpriteText.mjs";
 
 /**
 * @class User interface for rewriter
@@ -50,27 +51,52 @@ class Simulator extends Rewriter {
 		this.y = 0;
 		this.G.FG
 			.onNodeClick( Simulator.onNodeClick.bind(this) )
-			.onNodeRightClick( Simulator.onNodeRightClick.bind(this) );
+			.onNodeRightClick( Simulator.onNodeRightClick.bind(this) )
+			.nodeThreeObjectExtend( true );
 	}
 
 	/**
-	* Click on node
+	* Click on node, set x
 	* @param {Object} n Node object
 	* @param {Object} event Event object
 	*/
 	static onNodeClick( n, event) {
 		this.x = n.id;
+		this.G.FG.nodeThreeObject( Simulator.nodeThreeObject.bind(this) );
 		this.refresh();
 	}
 
 	/**
-	* Right click on node
+	* Right click on node, set y
 	* @param {Object} n Node object
 	* @param {Object} event Event object
 	*/
 	static onNodeRightClick( n, event) {
 		this.y = n.id;
+		this.G.FG.nodeThreeObject( Simulator.nodeThreeObject.bind(this) );
 		this.refresh();
+	}
+
+	/**
+	* Display x and/or y.
+	* @param {Object} n Node object
+	*/
+	static nodeThreeObject( n ) {
+		if ( n.id === this.x ) {
+			if ( n.id === this.y ) {
+				n.big = true;
+				return new SpriteText("x=y",26,"DarkSlateGray");
+			} else {
+				n.big = true;
+				return new SpriteText("x",26,"DarkSlateGray");
+			}
+		} else if ( n.id === this.y ) {
+			n.big = true;
+			return new SpriteText("y",26,"DarkSlateGray");
+		} else {
+			n.big = false;
+			return false;
+		}
 	}
 
 	/**
@@ -140,7 +166,7 @@ class Simulator extends Rewriter {
 						if ( this.observer.branches > 0 ) {
 							let rm = [];
 							for( let t of this.G.T.keys() ) {
-								if ( t.ev.some( ev => !( ev.b & this.observer.branches ) ) ) rm.push( t );
+								if ( t.mw.some( ev => !( ev.b & this.observer.branches ) ) ) rm.push( t );
 							}
 							rm.forEach( this.G.del, this.G );
 						}
@@ -230,13 +256,13 @@ class Simulator extends Rewriter {
 		let change = false;
 		if ( this.observer.branches && !( ev.b & this.observer.branches ) ) return change;
 		if ( ev.parent.length === 0 ) {
-			this.G.add( { ev: [ ev ], edge: [ ev.id ] }, 2 );
+			this.G.add( { mw: [ ev ], edge: [ ev.id ] }, 2 );
 			change = true;
 		} else {
 			let pev = [ ...new Set( ev.parent.map( x => x.parent ).flat() ) ];
 			pev.forEach( x => {
 				if ( x.id < ev.id && ( !this.observer.branches || (x.b & this.observer.branches)) ) {
-					this.G.add( { ev: [ x, ev ], edge: [ x.id, ev.id ] }, 2 );
+					this.G.add( { mw: [ x, ev ], edge: [ x.id, ev.id ] }, 2 );
 					change = true;
 				}
 			});
@@ -252,31 +278,44 @@ class Simulator extends Rewriter {
 	processPhaseEvent( ev ) {
 		const tokens = [ ...ev.child, ...ev.parent ];
 		let change = false;
+		const bclen = ev.bc.length - 1;
 		tokens.forEach( t => {
 			if ( !this.G.T.has( t ) ) {
 				if ( this.G.nodes.length === 0 ) {
-					this.G.add( { t: [ t ], edge: [ t.id ], w: 1 }, 3 );
+					this.G.add( { mw: [ t ], edge: [ t.id ], w: 1 }, 3 );
 					change = true;
 				} else {
-					let n = [ { d: Infinity }, { d: Infinity }, { d: Infinity } ];
-					for( let v of this.G.nodes ) {
-						let d = this.ham.d( v.bc, t.bc );
-						if ( d < n[2].d ) {
-							n[2] = { t: v.t, d: d };
-							n.sort( (a,b) => a.d - b.d );
+					let nn = t.nn; // Use cache
+					if ( !nn ) {
+						nn = [ { d: Infinity }, { d: Infinity }, { d: Infinity } ];
+						const hamm = this.ham.hamm;
+						let limit = Infinity;
+						const nodes = this.G.nodes.reverse(); // Faster in reverse
+						for( let v of nodes ) {
+							let d = 0;
+							for( let i=bclen; i>=0 && d<limit; i--) {
+								d += hamm[v.bc[i]][t.bc[i]];
+							}
+							if ( d < limit ) {
+								nn[2].mw = v.mw;
+								nn[2].d = d;
+								nn.sort( (a,b) => a.d - b.d );
+								limit = nn[2].d;
+							}
 						}
+						t.nn = nn;
 					}
 
 					// Add links to nearest neighbours with appropriate weights
-					if ( n[0].d < 500 ) {
-						this.G.add( { t: [ n[0].t ], edge: [ n[0].t.id ], w: 1 }, 3 );
+					if ( nn[0].d < 200 ) {
+						this.G.add( { mw: [ nn[0].mw ], edge: [ nn[0].mw.id ], w: 1 }, 3 );
 					} else {
-						this.G.add( { t: [ n[0].t, t ], edge: [ n[0].t.id, t.id ], w: n[0].d }, 3 );
-						if ( n[1].d < 2560 ) {
-							this.G.add( { t: [ n[1].t, t ], edge: [ n[1].t.id, t.id ], w: n[1].d }, 3 );
+						this.G.add( { mw: [ nn[0].mw, t ], edge: [ nn[0].mw.id, t.id ], w: nn[0].d }, 3 );
+						if ( nn[1].d < 2560 ) {
+							this.G.add( { mw: [ nn[1].mw, t ], edge: [ nn[1].mw.id, t.id ], w: nn[1].d }, 3 );
 						}
-						if ( n[2].d < 2560 ) {
-							this.G.add( { t: [ n[2].t, t ], edge: [ n[2].t.id, t.id ], w: n[2].d }, 3 );
+						if ( nn[2].d < 2560 ) {
+							this.G.add( { mw: [ nn[2].mw, t ], edge: [ nn[2].mw.id, t.id ], w: nn[2].d }, 3 );
 						}
 					}
 					change = true;
@@ -716,7 +755,7 @@ class Simulator extends Rewriter {
 					}
 				} else if ( this.observer.view === 2 ) {
 					for ( const t of this.G.T.keys() ) {
-						let b = t.ev.reduce( (a,x) => a | x.b, 0 );
+						let b = t.mw.reduce( (a,x) => a | x.b, 0 );
 						if ( b > 0 ) {
 							let val = bits.filter( (x,i) => b & nums[i] );
 							setfn( t, val.reduce( (a,x) => a+x, 0 )/val.length + 1 );
@@ -724,7 +763,7 @@ class Simulator extends Rewriter {
 					}
 				} else if ( this.observer.view === 3 ) {
 					for ( const t of this.G.T.keys() ) {
-						let b = t.t[ t.t.length - 1 ].parent.reduce( (a,x) => a | x.b, 0 );
+						let b = t.mw[ t.mw.length - 1 ].parent.reduce( (a,x) => a | x.b, 0 );
 						if ( b > 0 ) {
 							let val = bits.filter( (x,i) => b & nums[i] );
 							setfn( t, val.reduce( (a,x) => a+x, 0 )/val.length + 1 );
@@ -754,12 +793,12 @@ class Simulator extends Rewriter {
 					}
 				} else if ( this.observer.view === 2 ) {
 					for ( const t of this.G.T.keys() ) {
-						let ev = t.ev[ t.ev.length-1 ];
+						let ev = t.mw[ t.mw.length-1 ];
 						if ( ev.rule ) setfn( t, ev.rule[c.cmd] );
 					}
 				} else if ( this.observer.view === 3 ) {
 					for ( const t of this.G.T.keys() ) {
-						let evs = [ ...t.t[ t.t.length-1 ].parent, ...t.t[ t.t.length-1 ].child ].filter( x => x.rule );
+						let evs = [ ...t.mw[ t.mw.length-1 ].parent, ...t.mw[ t.mw.length-1 ].child ].filter( x => x.rule );
 						if ( evs.length ) setfn( t, evs.reduce( (a,x) => a + x.rule[c.cmd],0 ) / evs.length );
 					}
 				}
@@ -772,12 +811,11 @@ class Simulator extends Rewriter {
 					}
 				} else if ( this.observer.view === 2 ) {
 					for ( const t of this.G.T.keys() ) {
-						let ev = t.ev[ t.ev.length-1 ];
-						setfn( t, ev.step );
+						setfn( t, t.mw[ t.mw.length-1 ].step );
 					}
 				} else if ( this.observer.view === 3 ) {
 					for ( const t of this.G.T.keys() ) {
-						setfn( t, t.t[ t.t.length -1 ].parent.reduce( (a,x) => a + x.step,0 ) / t.t[ t.t.length -1 ].parent.length );
+						setfn( t, t.mw[ t.mw.length -1 ].parent.reduce( (a,x) => a + x.step,0 ) / t.mw[ t.mw.length -1 ].parent.length );
 					}
 				}
 				break;
@@ -787,13 +825,9 @@ class Simulator extends Rewriter {
 					for ( const t of this.G.T.keys() ) {
 						setfn( t, t.pathcnt );
 					}
-				} else if ( this.observer.view === 2 ) {
+				} else if ( this.observer.view === 2 || this.observer.view === 3 ) {
 					for ( const t of this.G.T.keys() ) {
-						setfn( t, t.ev[ t.ev.length-1 ].pathcnt );
-					}
-				} else if ( this.observer.view === 3 ) {
-					for ( const t of this.G.T.keys() ) {
-						setfn( t, t.t[ t.t.length-1 ].pathcnt );
+						setfn( t, t.mw[ t.mw.length-1 ].pathcnt );
 					}
 				}
 				break;
@@ -804,13 +838,9 @@ class Simulator extends Rewriter {
 						for ( const t of this.G.T.keys() ) {
 							setfn( t, this.ham.d( t.bc, phaseref.bc ) );
 						}
-					} else if ( this.observer.view === 2 ) {
+					} else if ( this.observer.view === 2 || this.observer.view === 3 ) {
 						for ( const t of this.G.T.keys() ) {
-							setfn( t, this.ham.d( t.ev[ t.ev.length-1 ].bc, phaseref.bc ) );
-						}
-					} else if ( this.observer.view === 3 ) {
-						for ( const t of this.G.T.keys() ) {
-							setfn( t, this.ham.d( t.t[ t.t.length-1 ].bc, phaseref.bc ) );
+							setfn( t, this.ham.d( t.mw[ t.mw.length-1 ].bc, phaseref.bc ) );
 						}
 					}
 				}
@@ -827,21 +857,21 @@ class Simulator extends Rewriter {
 					}
 				} else if ( this.observer.view === 2 ) {
 					for ( const t of this.G.T.keys() ) {
-						let ev = t.ev[ t.ev.length-1 ];
+						let ev = t.mw[ t.mw.length-1 ];
 						let pc = ev.pathcnt;
 						s[ ev.step ] ? s[ ev.step ] += pc : s[ ev.step ] = pc;
 					}
 					for ( const t of this.G.T.keys() ) {
-						let ev = t.ev[ t.ev.length-1 ];
+						let ev = t.mw[ t.mw.length-1 ];
 						let pc = ev.pathcnt;
 						setfn( t, pc / s[ ev.step ] );
 					}
 				} else if ( this.observer.view === 3 ) {
 					for ( const t of this.G.T.keys() ) {
-						sum += t.t[ t.t.length -1 ].pathcnt;
+						sum += t.mw[ t.mw.length -1 ].pathcnt;
 					}
 					for ( const t of this.G.T.keys() ) {
-						setfn( t, t.t[ t.t.length -1 ].pathcnt / sum );
+						setfn( t, t.mw[ t.mw.length -1 ].pathcnt / sum );
 					}
 				}
 				digits = 4;

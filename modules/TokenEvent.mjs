@@ -1,3 +1,4 @@
+import { HypervectorSet } from "./HypervectorSet.mjs";
 
 /**
 * @class Token-Event graph
@@ -11,6 +12,7 @@ class TokenEvent {
 	* @property {Event[]} parent Parent events
 	* @property {Event[]} child Child events
 	* @property {Object[]} past Past causal cone
+	* @property {Hypervector} bc Branchial coordinate
 	*/
 
 	/**
@@ -18,6 +20,7 @@ class TokenEvent {
 	* @property {number} id Identifier
 	* @property {Token[]} parent Parent tokens
 	* @property {Token[]} child Child tokens
+	* @property {Hypervector} bc Branchial coordinate
 	*/
 
 	/**
@@ -27,6 +30,7 @@ class TokenEvent {
 		this.T = []; // Tokens
 		this.EV = []; // Events
 		this.id = -1; // Maximum id
+		this.ham = new HypervectorSet(); // Hyperdimensional Associative Memory
 	}
 
 
@@ -231,6 +235,73 @@ class TokenEvent {
 			}
 		}
 		return true;
+	}
+
+	/**
+	* Calculate and update the path count of the given token/event.
+	* @param {(Token|Event)} ts Array of tokens.
+	*/
+	updatePathcnt( x ) {
+		if ( x.hasOwnProperty("past") ) {
+			// This is a token
+			let pc = 0;
+			x.parent.forEach( ev => {
+				if ( !ev.hasOwnProperty("pathcnt") ) this.updatePathcnt( ev );
+				pc += ev.pathcnt;
+			});
+			// The sum of parent events
+			x.pathcnt = pc || 1;
+		} else {
+			let g = x.parent.slice();
+			let cs = []; // branchlike counts
+			while ( g.length ) {
+				let t = g.pop();
+				if ( !t.hasOwnProperty("pathcnt") ) this.updatePathcnt( t );
+				let c = t.pathcnt;
+				for( let i = g.length-1; i>=0; i-- ) {
+					let s = this.separation( t, g[i] );
+					if ( s !== 4 ) {
+						// Max of spacelike/timelike tokens
+						if ( !g[i].hasOwnProperty("pathcnt") ) this.updatePathcnt( g[i] );
+						c = Math.max( c, g[i].pathcnt );
+						g.splice( i, 1 );
+					}
+				}
+				cs.push( c );
+			}
+
+			// The sum of branchlike tokens
+			x.pathcnt = cs.reduce( (a,x) => a + x, 0 ) || 1;
+		}
+	}
+
+	/**
+	* Calculate and update the branchial coordinate of the given token/event.
+	* @param {(Token|Event)} x
+	*/
+	updateBc( x ) {
+		if ( x.parent.length ) {
+			const bcs = []; // Branchial coordinates of parents
+			let overlap = false;
+			x.parent.forEach( y => {
+				if ( !y.hasOwnProperty("bc") ) this.updateBc( y );
+				bcs.push( y.bc );
+				if ( y.child.length > 1 ) overlap = true;
+			});
+			if ( bcs.every( (y,_,arr) => y === arr[0] ) ) {
+				// If all the coordinates are the same, reuse the object
+				x.bc = bcs[0];
+			} else {
+				// Hypervector sum (majority)
+				x.bc = this.ham.maj( bcs );
+			}
+			if ( !x.past && overlap ) {
+				// Overlapping event, make a new branch
+				x.bc = this.ham.maj( [ x.bc, this.ham.random() ] );
+			}
+		} else {
+			x.bc = this.ham.random();
+		}
 	}
 
 }
