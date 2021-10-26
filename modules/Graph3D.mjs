@@ -42,7 +42,7 @@ class Graph3D extends Graph {
 		];
 
 		this.phaseStyles = [
-		  {  nColor: "black", lColor: "grey", nVal: 4, lWidth: 1, bgColor: "white", nRelSize: 5 }, // 0 defaults
+		  {  nColor: "black", lColor: "grey", nVal: 4, lWidth: 3, bgColor: "white", nRelSize: 5 }, // 0 defaults
 		  {  nColor: "purple", lColor: "hotpink", nVal: 7, lWidth: 6, fill: "hotpink", opacity: 0.2 }, // 1 Red
 		  {  nColor: "blue", lColor: "deepskyblue", nVal: 7, lWidth: 6, fill: "deepskyblue", opacity: 0.2 }, // 2 Blue
 		  {  nColor: "darkblue", lColor: "darkblue", nVal: 7, lWidth: 6 } // 3 Red + Blue
@@ -365,7 +365,7 @@ class Graph3D extends Graph {
 			}
 		} else if ( this.view === 2 ){
 			if ( dist >= 0 && dist <= 100 ) {
-				this.FG.dagLevelDistance( 10 * dist );
+				this.FG.dagLevelDistance( (dist * dist) / 2 + 1 );
 				this.FG.d3Force("link").distance( dist/10 );
 				this.FG.d3Force("charge").strength( -300 );
 			}
