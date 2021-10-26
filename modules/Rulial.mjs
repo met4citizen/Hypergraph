@@ -345,7 +345,8 @@ class Rulial {
       deduplicate: false,
       merge: false,
       pathcnts: false,
-			bcoordinates: false
+			bcoordinates: false,
+      knn: 0
     });
     let leafs = h.multiway.T.filter( t => t.child.length === 0 ).map( t => t.edge );
 

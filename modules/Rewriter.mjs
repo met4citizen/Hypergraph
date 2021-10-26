@@ -24,6 +24,8 @@ class Rewriter {
 	* @property {boolean} noduplicates If true, duplicate edges in rules are ignored
 	* @property {boolean} pathcnts If true, calculate path counts
 	* @property {boolean} bcoordinates If true, calculate branchial coordinates
+	* @property {number} knn Number of nearest historical neighbours (k-NN) to calculate
+	* @property {number} phasecutoff Hamming cutoff distance to consider the same
 	* @property {boolean} deduplicate If true, de-duplicate new edges
 	* @property {boolean} merge If true, merge identical edges
 	* @property {boolean} wolfram If true, use Wolfram default order/reverse for branches 1/2
@@ -73,6 +75,8 @@ class Rewriter {
 			noduplicates: false,
 			pathcnts: true,
 			bcoordinates: true,
+			knn: 3,
+			phasecutoff: 200,
 			deduplicate: false,
 			merge: true,
 			wolfram: false,
@@ -438,7 +442,9 @@ class Rewriter {
 		// Finalize multiway system
 		g = this.multiway.postProcess( {
 			pathcnts: this.opt.pathcnts,
-			bcoordinates: this.opt.bcoordinates
+			bcoordinates: this.opt.bcoordinates,
+			knn: this.opt.knn,
+			phasecutoff: this.opt.phasecutoff
 		});
 		vs = g.next();
 		while( !vs.done ) {
@@ -461,6 +467,7 @@ class Rewriter {
 			// New step
 			this.step++;
 			this.progress.step = "" + this.step;
+			this.progress.matches = "" + 0;
 
 			// Find matches
 			let g = this.findMatches();
@@ -571,7 +578,9 @@ class Rewriter {
 			deduplicate: false,
 			merge: false,
 			pathcnts: this.opt.pathcnts,
-			bcoordinates: this.opt.bcoordinates
+			bcoordinates: this.opt.bcoordinates,
+			knn: this.opt.knn,
+			phasecutoff: this.opt.phasecutoff
 		}); // No de-duplication
 		while ( !f.next().done );
 

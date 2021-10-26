@@ -1,4 +1,4 @@
-import { HypervectorSet } from "./HypervectorSet.mjs";
+import { HDC } from "./HDC.mjs";
 
 /**
 * @class Token-Event graph
@@ -30,7 +30,6 @@ class TokenEvent {
 		this.T = []; // Tokens
 		this.EV = []; // Events
 		this.id = -1; // Maximum id
-		this.ham = new HypervectorSet(); // Hyperdimensional Associative Memory
 	}
 
 
@@ -238,31 +237,34 @@ class TokenEvent {
 	}
 
 	/**
-	* Calculate and update the path count of the given token/event.
+	* Calculate and set the path count of the given token/event.
 	* @param {(Token|Event)} ts Array of tokens.
+	* @param {boolean} [reset=false] If true, recalculate and reset.
 	*/
-	updatePathcnt( x ) {
+	setPathcnt( x, reset=false ) {
+		if ( !reset && x.hasOwnProperty("pathcnt") ) return; // Already set
 		if ( x.hasOwnProperty("past") ) {
 			// This is a token
 			let pc = 0;
 			x.parent.forEach( ev => {
-				if ( !ev.hasOwnProperty("pathcnt") ) this.updatePathcnt( ev );
+				if ( !ev.hasOwnProperty("pathcnt") ) this.setPathcnt( ev );
 				pc += ev.pathcnt;
 			});
 			// The sum of parent events
 			x.pathcnt = pc || 1;
 		} else {
+			// This is an event
 			let g = x.parent.slice();
 			let cs = []; // branchlike counts
 			while ( g.length ) {
 				let t = g.pop();
-				if ( !t.hasOwnProperty("pathcnt") ) this.updatePathcnt( t );
+				if ( !t.hasOwnProperty("pathcnt") ) this.setPathcnt( t );
 				let c = t.pathcnt;
 				for( let i = g.length-1; i>=0; i-- ) {
 					let s = this.separation( t, g[i] );
 					if ( s !== 4 ) {
 						// Max of spacelike/timelike tokens
-						if ( !g[i].hasOwnProperty("pathcnt") ) this.updatePathcnt( g[i] );
+						if ( !g[i].hasOwnProperty("pathcnt") ) this.setPathcnt( g[i] );
 						c = Math.max( c, g[i].pathcnt );
 						g.splice( i, 1 );
 					}
@@ -276,15 +278,17 @@ class TokenEvent {
 	}
 
 	/**
-	* Calculate and update the branchial coordinate of the given token/event.
+	* Calculate and set the branchial coordinate of the given token/event.
 	* @param {(Token|Event)} x
-	*/
-	updateBc( x ) {
+	* @param {boolean} [reset=false] If true, recalculate and reset.
+ 	*/
+	setBc( x, reset = false ) {
+		if ( !reset && x.hasOwnProperty("bc") ) return; // Already set
 		if ( x.parent.length ) {
 			const bcs = []; // Branchial coordinates of parents
 			let overlap = false;
 			x.parent.forEach( y => {
-				if ( !y.hasOwnProperty("bc") ) this.updateBc( y );
+				if ( !y.hasOwnProperty("bc") ) this.setBc( y );
 				bcs.push( y.bc );
 				if ( y.child.length > 1 ) overlap = true;
 			});
@@ -293,15 +297,57 @@ class TokenEvent {
 				x.bc = bcs[0];
 			} else {
 				// Hypervector sum (majority)
-				x.bc = this.ham.maj( bcs );
+				x.bc = HDC.maj( bcs );
 			}
 			if ( !x.past && overlap ) {
 				// Overlapping event, make a new branch
-				x.bc = this.ham.maj( [ x.bc, this.ham.random() ] );
+				x.bc = HDC.maj( [ x.bc, HDC.random() ] );
 			}
 		} else {
-			x.bc = this.ham.random();
+			x.bc = HDC.random();
 		}
+	}
+
+	/**
+	* Calculate and set k Nearest Neighbours (k-NN).
+	* Note: Only calculated for tokens.
+	* @param {Token} x
+	* @param {number} k Number of nearest neighbours to calculate.
+	* @param {number} cutoff Below this Hamming distance, consider the same
+	* @param {boolean} [reset=false] If true, recalculate and reset.
+	*/
+	setNN( x, k, cutoff, reset = false ) {
+		if ( !reset && x.hasOwnProperty("nn") ) return; // Already set
+
+		const nn = new Array(k).fill().map( _ => {
+			return { t:null, d: Infinity }
+		});
+		let limit = nn[k-1].d;
+		let ndx = this.T.indexOf(x);
+		for( let i=ndx-1; i>=0; i-- ) {
+			if ( !this.T[i].hasOwnProperty("nn") ) {
+				this.setNN( this.T[i], k, reset, cutoff );
+			}
+
+			// Ignore tokens below cutoff Hamming dist to some other token
+			if ( this.T[i].nn[0].d < cutoff ) continue;
+
+			// k-NN using Hamming distances
+			let d = 0;
+			for( let j=0; j<320 && d<limit; j++ ) {
+				let n = (x.bc[j] ^ this.T[i].bc[j]) >>> 0;
+				n = n - ((n >>> 1) & 0x55555555) >>> 0;
+				n = (n & 0x33333333) >>> 0 + ((n >>> 2) & 0x33333333) >>> 0;
+				d += ((n + (n >>> 4) & 0xF0F0F0F) * 0x1010101) >>> 24;
+			}
+			if ( d < limit ) {
+				nn[k-1].t = this.T[i];
+				nn[k-1].d = d;
+				nn.sort( (a,b) => a.d - b.d );
+				limit = d;
+			}
+		}
+		x.nn = nn;
 	}
 
 }

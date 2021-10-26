@@ -1,7 +1,7 @@
 import { Rulial } from "./Rulial.mjs";
 import { Rewriter } from "./Rewriter.mjs";
 import { Graph3D } from "./Graph3D.mjs";
-import { HypervectorSet } from "./HypervectorSet.mjs";
+import { HDC } from "./HDC.mjs";
 import { SpriteText } from "./SpriteText.mjs";
 
 /**
@@ -29,6 +29,8 @@ class Simulator extends Rewriter {
     this.G = new Graph3D(canvas);
 		this.dom = status; // DOM element for status
 
+		this.maxtokenid = -1; // Max token id shown in phase view
+
     this.pos = 0; // Event log position
 		this.playpos = 0; // Play position
 		this.playing = false; // Is play on?
@@ -43,8 +45,6 @@ class Simulator extends Rewriter {
 
 		this.H = new Map(); // Highlights
 		this.F = null; // Fields
-
-		this.ham = new HypervectorSet(); // Hyperdimensional Associative Memory
 
 		// Variables x and y
 		this.x = 0;
@@ -125,6 +125,7 @@ class Simulator extends Rewriter {
 				case "phase":
 					this.observer.view = 3;
 					initlen = this.rulial.initial.length;
+					this.maxtokenid = -1;
 					break;
 				default: // space
 					this.observer.view = 1;
@@ -276,50 +277,26 @@ class Simulator extends Rewriter {
 	* @return {boolean} True, if change was made
 	*/
 	processPhaseEvent( ev ) {
-		const tokens = [ ...ev.child, ...ev.parent ];
 		let change = false;
-		const bclen = ev.bc.length - 1;
-		tokens.forEach( t => {
-			if ( !this.G.T.has( t ) ) {
-				if ( this.G.nodes.length === 0 ) {
+		ev.child.forEach( t => {
+			if ( t.id > this.maxtokenid ) {
+				if ( t.nn[0].t === null ) {
 					this.G.add( { mw: [ t ], edge: [ t.id ], w: 1 }, 3 );
-					change = true;
 				} else {
-					let nn = t.nn; // Use cache
-					if ( !nn ) {
-						nn = [ { d: Infinity }, { d: Infinity }, { d: Infinity } ];
-						const hamm = this.ham.hamm;
-						let limit = Infinity;
-						const nodes = this.G.nodes.reverse(); // Faster in reverse
-						for( let v of nodes ) {
-							let d = 0;
-							for( let i=bclen; i>=0 && d<limit; i--) {
-								d += hamm[v.bc[i]][t.bc[i]];
-							}
-							if ( d < limit ) {
-								nn[2].mw = v.mw;
-								nn[2].d = d;
-								nn.sort( (a,b) => a.d - b.d );
-								limit = nn[2].d;
-							}
-						}
-						t.nn = nn;
-					}
-
-					// Add links to nearest neighbours with appropriate weights
-					if ( nn[0].d < 200 ) {
-						this.G.add( { mw: [ nn[0].mw ], edge: [ nn[0].mw.id ], w: 1 }, 3 );
+					if ( t.nn[0].d < this.opt.phasecutoff ) {
+						this.G.add( { mw: [ t.nn[0].t ], edge: [ t.nn[0].t.id ], w: 1 }, 3 );
 					} else {
-						this.G.add( { mw: [ nn[0].mw, t ], edge: [ nn[0].mw.id, t.id ], w: nn[0].d }, 3 );
-						if ( nn[1].d < 2560 ) {
-							this.G.add( { mw: [ nn[1].mw, t ], edge: [ nn[1].mw.id, t.id ], w: nn[1].d }, 3 );
+						this.G.add( { mw: [ t.nn[0].t, t ], edge: [ t.nn[0].t.id, t.id ], w: t.nn[0].d }, 3 );
+						if ( t.nn[1].d < 2560 ) {
+							this.G.add( { mw: [ t.nn[1].t, t ], edge: [ t.nn[1].t.id, t.id ], w: t.nn[1].d }, 3 );
 						}
-						if ( nn[2].d < 2560 ) {
-							this.G.add( { mw: [ nn[2].mw, t ], edge: [ nn[2].mw.id, t.id ], w: nn[2].d }, 3 );
+						if ( t.nn[2].d < 2560 ) {
+							this.G.add( { mw: [ t.nn[2].t, t ], edge: [ t.nn[2].t.id, t.id ], w: t.nn[2].d }, 3 );
 						}
 					}
-					change = true;
 				}
+				this.maxtokenid = t.id;
+				change = true;
 			}
 		});
 		return change;
@@ -505,7 +482,7 @@ class Simulator extends Rewriter {
 					let b = this.G.V.get( parseInt(ps[1]) );
 					if ( a && b ) {
 						p.push( parseInt(ps[0]), parseInt(ps[1]) );
-						r.push( this.ham.d( a.bc,b.bc ) );
+						r.push( HDC.d( a.bc,b.bc ) );
 						ret = this.G.geodesic( parseInt(ps[0]), parseInt(ps[1]), ps.includes("dir"), ps.includes("rev"), ps.includes("all") ).flat();
 						e.push( ret );
 					}
@@ -836,11 +813,11 @@ class Simulator extends Rewriter {
 				if ( phaseref ) {
 					if ( this.observer.view === 1 ) {
 						for ( const t of this.G.T.keys() ) {
-							setfn( t, this.ham.d( t.bc, phaseref.bc ) );
+							setfn( t, HDC.d( t.bc, phaseref.bc ) );
 						}
 					} else if ( this.observer.view === 2 || this.observer.view === 3 ) {
 						for ( const t of this.G.T.keys() ) {
-							setfn( t, this.ham.d( t.mw[ t.mw.length-1 ].bc, phaseref.bc ) );
+							setfn( t, HDC.d( t.mw[ t.mw.length-1 ].bc, phaseref.bc ) );
 						}
 					}
 				}

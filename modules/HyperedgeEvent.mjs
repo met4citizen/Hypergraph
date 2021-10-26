@@ -13,6 +13,8 @@ class HyperedgeEvent extends TokenEvent {
 	* @property {boolean} deduplicate If true, de-duplicate new edges
 	* @property {boolean} merge If true, merge identical edges
 	* @property {boolean} pathcnts If true, calculate path counts
+	* @property {number} knn Number of nearest historical neighbours (k-NN) to calculate
+	* @property {number} phasecutoff Hamming cutoff distance to consider identical
 	*/
 
 	/**
@@ -247,8 +249,8 @@ class HyperedgeEvent extends TokenEvent {
 		if ( opt.hasOwnProperty("pathcnts") && opt.pathcnts ) {
 			let total = this.EV.length - this.limitevndx;
 			for( let i = this.limitevndx; i < this.EV.length; i++ ) {
-				this.updatePathcnt( this.EV[i] );
-				this.EV[i].child.forEach( t => this.updatePathcnt( t ) );
+				this.setPathcnt( this.EV[i] );
+				this.EV[i].child.forEach( t => this.setPathcnt(t) );
 
 				yield "PATHCNT ["+ Math.floor( (i-this.limitevndx) / total * 100) + "%]";
 			}
@@ -258,10 +260,20 @@ class HyperedgeEvent extends TokenEvent {
 		if ( opt.hasOwnProperty("bcoordinates") && opt.bcoordinates ) {
 			let total = this.EV.length - this.limitevndx;
 			for( let i = this.limitevndx; i < this.EV.length; i++ ) {
-				this.updateBc( this.EV[i] );
-				this.EV[i].child.forEach( t => this.updateBc( t ) );
+				this.setBc( this.EV[i] );
+				this.EV[i].child.forEach( t => this.setBc(t) );
 
 				yield "BC ["+ Math.floor( (i-this.limitevndx) / total * 100) + "%]";
+			}
+		}
+
+		// Calculate k-NN (for tokens only)
+		if ( opt.hasOwnProperty("knn") && opt.knn ) {
+			let total = this.T.length - this.limittndx;
+			for( let i = this.limittndx; i < this.T.length; i++ ) {
+				this.setNN( this.T[i], opt.knn, opt.phasecutoff );
+
+				yield "k-NN ["+ Math.floor( (i-this.limittndx) / total * 100) + "%]";
 			}
 		}
 

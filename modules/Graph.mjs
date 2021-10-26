@@ -117,11 +117,6 @@ class Graph {
 			if ( v ) {
 				v.refs++;
 				if ( view === 1 ) v.bc = t.bc; // In space view, update vertex bc to latest
-				// TODO: Think this over!
-				/* if ( view === 3 ) { // In phase view, update bc and t
-					v.bc = t.t[ i ].bc;
-					v.t = t.t[i];
-				} */
 			} else {
         // New vertex
         v = {
