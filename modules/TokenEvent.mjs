@@ -319,14 +319,25 @@ class TokenEvent {
 	setNN( x, k, cutoff, reset = false ) {
 		if ( !reset && x.hasOwnProperty("nn") ) return; // Already set
 
-		const nn = new Array(k).fill().map( _ => {
-			return { t:null, d: Infinity }
+		let limit = Infinity;
+		let nn = new Array(k).fill().map( _ => {
+			return { t:null, d: limit };
 		});
-		let limit = nn[k-1].d;
 		let ndx = this.T.indexOf(x);
 		for( let i=ndx-1; i>=0; i-- ) {
 			if ( !this.T[i].hasOwnProperty("nn") ) {
 				this.setNN( this.T[i], k, reset, cutoff );
+			}
+
+			// Identical tokens
+			if ( x.bc === this.T[i].bc ) {
+				if ( this.T[i].nn[0].d < cutoff ) {
+					nn = this.T[i].nn;
+				} else {
+					nn[0].t = this.T[i];
+					nn[0].d = 0;
+				}
+				break;
 			}
 
 			// Ignore tokens below cutoff Hamming dist to some other token
@@ -335,9 +346,9 @@ class TokenEvent {
 			// k-NN using Hamming distances
 			let d = 0;
 			for( let j=0; j<320 && d<limit; j++ ) {
-				let n = (x.bc[j] ^ this.T[i].bc[j]) >>> 0;
-				n = n - ((n >>> 1) & 0x55555555) >>> 0;
-				n = (n & 0x33333333) >>> 0 + ((n >>> 2) & 0x33333333) >>> 0;
+				let n = (x.bc[j] ^ this.T[i].bc[j]);
+				n = n - ((n >>> 1) & 0x55555555);
+				n = (n & 0x33333333) + ((n >>> 2) & 0x33333333);
 				d += ((n + (n >>> 4) & 0xF0F0F0F) * 0x1010101) >>> 24;
 			}
 			if ( d < limit ) {
