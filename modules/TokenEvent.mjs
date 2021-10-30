@@ -77,7 +77,7 @@ class TokenEvent {
 		t.past.add( t );
 		if ( ev ) {
 			t.past.add( ev );
-			ev.parent.forEach( x => t.past.add( ...x.past ) );
+			ev.parent.forEach( x => x.past.forEach( y => t.past.add( y ) ) );
 		}
 
 		this.T.push( t );
@@ -158,10 +158,11 @@ class TokenEvent {
 					t.parent.splice( t.parent.indexOf( ev ), 1);
 
 					// Update past cone
+					t.past = new Set();
 					t.past.add( t );
 					t.parent.forEach( x => {
 						t.past.add( x );
-						x.parent.forEach( x => t.past.add( ...x.past ) );
+						x.parent.forEach( x => x.past.forEach( y => t.past.add( y ) ) );
 					});
 				}
 			});
@@ -196,7 +197,7 @@ class TokenEvent {
 		t2.parent.length = 0;
 
 		// Update the past, path count and branchial coordinate
-		t1.past.add( ...t2.past );
+		t2.past.forEach( y => t1.past.add( y ) );
 		t1.past.delete( t2 );
 
 		// Remove the extra token
