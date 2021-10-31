@@ -356,7 +356,7 @@ class TokenEvent {
 				nn[k-1].t = this.T[i];
 				nn[k-1].d = d;
 				nn.sort( (a,b) => a.d - b.d );
-				limit = d;
+				limit = nn[k-1].d;
 			}
 		}
 		x.nn = nn;
