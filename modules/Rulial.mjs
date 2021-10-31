@@ -456,8 +456,9 @@ class Rulial {
     // Normalize initial states
     let u = [];
     this.initial.forEach( i => {
+      let v = i.edges.flat().sort((a,b) => a-b ).map(String);
+      u = [ ...new Set( [...u, ...v ] ) ]
       i.edges = i.edges.map( e => e.map(String) );
-      u = [ ...new Set( [...u, ...i.edges.flat() ] ) ]
     });
     this.initial.forEach( i => {
       i.edges = i.edges.map( e => e.map( x => u.indexOf( x ) ) );
