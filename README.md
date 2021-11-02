@@ -228,8 +228,8 @@ atomist teachings were rediscovered in the 14th century.
 
 ### Coordinatization of Local Multiway System using Hyperdimensional Vectors
 
-The following specification/outline is based on Pentti Kanerva's work on
-Hyperdimensional computing [1]. The central idea is the fact that in a
+The following idea/specification is based on Pentti Kanerva's work on
+Hyperdimensional computing [1]. It is based on the fact that in a
 hyperdimensional space (>10,000-D) a randomly chosen vector (hypervector)
 is quasi-orthogonal to all previously generated hypervectors.
 
@@ -240,17 +240,21 @@ randomly generated 10,240-dimensional dense bipolar {-1,1} vector.
 coordinates so that the 'sum' is the element-wise majority with random bipolar
 values for ties.
 
+- Whenever the parents are timelike/branchlike separated, instead of summing up
+their own coordinates, use the coordinates of their lowest common ancestors.
+
 - Whenever there is a new branch so that two or more events use an overlapping
-set of tokens, separate the events by adding random hypervectors to their
-previously calculated coordinates.
+set of tokens, separate the events in orthogonal branches by adding random
+hypervectors to their previously calculated coordinates.
 
 - The distance between the coordinates of any two tokens/events is the
-Hamming distance between their hypervectors.
+Hamming distance between their hypervectors. If the distance is close to
+1/2 of the used dimension, the two hypervectors are quasi-orthogonal.
 
-The local multiway system can be projected into some lower dimension by
-calculating its distance matrix and then doing multidimensional scaling.
+The local multiway coordinates can be projected into some lower dimension by
+first calculating the distance matrix and then doing multidimensional scaling.
 One possible way to do the projection is to build a graph in which
 each node represents a group of close-by tokens/events. These groups can then
-be connected to their nearest neighbours by using some k-NN algorithm.
+be connected to their 1-3 nearest neighbours by using k-NN algorithm.
 
 *[1] Kanerva, P. (2019). Computing with High-Dimensional Vectors. IEEE Design & Test, 36(3):7–14.*

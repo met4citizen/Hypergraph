@@ -34,31 +34,20 @@ class TokenEvent {
 
 
 	/**
-	* Lowest common ancestors of two arrays.
+	* Lowest common ancestors of the given arrays.
 	* @static
-	* @param {Set} s1
-	* @param {Set} s2
+	* @param {Set[]} s
+	* @return {(Token|Event)[]} Lower common ancestors.
 	*/
-	static lca( s1, s2 ) {
+	static lca( s ) {
 		// Intersection
-		const is = new Set();
-		for( let x of s1 ) {
-			if ( s2.has(x) ) {
-				is.add( x );
-			}
-		}
+		const is = s.reduce((a,b) => [...b].filter(x => a.includes(x) ), [ ...s[0] ]);
 
-		// Lowest common ancestors, outdegree = 0
-		const lca = [];
-		for( let x of is ) {
-			if ( x.child.every( y => !is.has(y) ) ) {
-				lca.push( x );
-			}
-		}
+		// Outdegree = 0
+		const lca = is.filter(x => x.child.every( y => !is.includes(y) ));
 
 		return lca;
 	}
-
 
 	/**
 	* Add a new token.
@@ -214,7 +203,7 @@ class TokenEvent {
 		if ( t1 === t2 ) return 0; // same
 
 		// Lowest Common Ancestors
-		let lca = TokenEvent.lca( t1.past, t2.past );
+		let lca = TokenEvent.lca( [ t1.past, t2.past ] );
 
 		if ( lca.includes(t1) || lca.includes(t2) ) return 2; // timelike
 		if ( lca.some( l => l.hasOwnProperty("past") ) ) return 4; // branchlike
@@ -285,27 +274,58 @@ class TokenEvent {
  	*/
 	setBc( x, reset = false ) {
 		if ( !reset && x.hasOwnProperty("bc") ) return; // Already set
-		if ( x.parent.length ) {
-			const bcs = []; // Branchial coordinates of parents
-			let overlap = false;
-			x.parent.forEach( y => {
-				if ( !y.hasOwnProperty("bc") ) this.setBc( y );
-				bcs.push( y.bc );
-				if ( y.child.length > 1 ) overlap = true;
-			});
-			if ( bcs.every( (y,_,arr) => y === arr[0] ) ) {
-				// If all the coordinates are the same, reuse the object
-				x.bc = bcs[0];
+		x.parent.forEach( y => {
+			if (!y.hasOwnProperty("bc") ) this.setBc( y ); // Make sure parents have coordinates
+		});
+		if ( x.hasOwnProperty("past") ) {
+			if ( x.parent.length === 1 ) {
+				// One parent event, reuse coordinate
+				x.bc = x.parent[0].bc;
 			} else {
-				// Hypervector sum (majority)
-				x.bc = HDC.maj( bcs );
-			}
-			if ( !x.past && overlap ) {
-				// Overlapping event, make a new branch
-				x.bc = HDC.maj( [ x.bc, HDC.random() ] );
+				// Majority of the lowest common ancestors of parent's parents
+				const pps = [ ...new Set( x.parent.map( y => y.parent ).flat() ) ];
+				if ( pps.length === 0 || this.isSeparation( pps, 1 ) ) {
+					x.bc = x.parent[0].bc;
+				} else {
+					const lca = TokenEvent.lca( pps.map( y => y.past ) );
+					if ( lca.length === 0 ) {
+						x.bc = x.parent[0].bc;
+					} else if ( lca.length === 1 ) {
+						x.bc = lca[0].bc;
+					} else {
+						x.bc = HDC.maj( lca.map( y => y.bc ) );
+					}
+				}
 			}
 		} else {
-			x.bc = HDC.random();
+			if ( x.parent.length === 0 ) {
+				// Initial event
+				x.bc = HDC.random();
+			} else {
+				// Majority of the lowest common ancestors of parents
+				if ( x.parent.length === 1 ) {
+					x.bc = x.parent[0].bc;
+				} else if ( this.isSeparation( x.parent, 1 ) ) {
+					if ( x.parent.every( y => y.bc === x.parent[0].bc ) ) {
+						x.bc = x.parent[0].bc;
+					} else {
+						x.bc = HDC.maj( x.parent.map( y => y.bc ) );
+					}
+				} else {
+					const lca = TokenEvent.lca( x.parent.map( y => y.past ) );
+					if ( lca.length === 0 ) {
+						x.bc = x.parent[0].bc;
+					} else if ( lca.length === 1 ) {
+						x.bc = lca[0].bc;
+					} else {
+						x.bc = HDC.maj( lca.map( y => y.bc ) );
+					}
+				}
+				// If overlapping event, separate branches
+				if ( x.parent.some( y => y.child.length > 1 ) ) {
+					x.bc = HDC.maj( [ x.bc, HDC.random() ] );
+				}
+			}
 		}
 	}
 

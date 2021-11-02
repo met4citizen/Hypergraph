@@ -55,7 +55,7 @@ class HDC {
 		}
 		switch( vs.length ) {
 			case 1:
-				v = vs[0];
+				for( let i=0; i<320; i++ ) v[i] = vs[0][i];
 				break;
 			case 3:
 				for( let i=0; i<320; i++ ) {
