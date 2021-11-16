@@ -252,7 +252,9 @@ class HyperedgeEvent extends TokenEvent {
 				this.setPathcnt( this.EV[i] );
 				this.EV[i].child.forEach( t => this.setPathcnt(t) );
 
-				yield "PATHCNT ["+ Math.floor( (i-this.limitevndx) / total * 100) + "%]";
+				if ( i % 100 === 0 ) {
+					yield "PATHCNT ["+ Math.floor( (i-this.limitevndx) / total * 100) + "%]";
+				}
 			}
 		}
 
@@ -263,7 +265,9 @@ class HyperedgeEvent extends TokenEvent {
 				this.setBc( this.EV[i] );
 				this.EV[i].child.forEach( t => this.setBc(t) );
 
-				yield "BC ["+ Math.floor( (i-this.limitevndx) / total * 100) + "%]";
+				if ( i % 100 === 0 ) {
+					yield "BC ["+ Math.floor( (i-this.limitevndx) / total * 100) + "%]";
+				}
 			}
 		}
 
@@ -273,7 +277,9 @@ class HyperedgeEvent extends TokenEvent {
 			for( let i = this.limittndx; i < this.T.length; i++ ) {
 				this.setNN( this.T[i], opt.knn, opt.phasecutoff );
 
-				yield "k-NN ["+ Math.floor( (i-this.limittndx) / total * 100) + "%]";
+				if ( i % 100 === 0 ) {
+					yield "k-NN ["+ Math.floor( (i-this.limittndx) / total * 100) + "%]";
+				}
 			}
 		}
 

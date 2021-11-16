@@ -274,58 +274,39 @@ class TokenEvent {
  	*/
 	setBc( x, reset = false ) {
 		if ( !reset && x.hasOwnProperty("bc") ) return; // Already set
+
+		// Make sure all parents have coordinates
 		x.parent.forEach( y => {
-			if (!y.hasOwnProperty("bc") ) this.setBc( y ); // Make sure parents have coordinates
+			if (!y.hasOwnProperty("bc") ) this.setBc( y );
 		});
-		if ( x.hasOwnProperty("past") ) {
-			if ( x.parent.length === 1 ) {
-				// One parent event, reuse coordinate
-				x.bc = x.parent[0].bc;
-			} else {
-				// Majority of the lowest common ancestors of parent's parents
-				const pps = [ ...new Set( x.parent.map( y => y.parent ).flat() ) ];
-				if ( pps.length === 0 || this.isSeparation( pps, 1 ) ) {
-					x.bc = x.parent[0].bc;
-				} else {
-					const lca = TokenEvent.lca( pps.map( y => y.past ) );
-					if ( lca.length === 0 ) {
-						x.bc = x.parent[0].bc;
-					} else if ( lca.length === 1 ) {
-						x.bc = lca[0].bc;
-					} else {
-						x.bc = HDC.maj( lca.map( y => y.bc ) );
-					}
-				}
-			}
+
+		// Find out parent coordinates
+		let bcs;
+		if ( x.parent.length === 0 ) {
+			bcs = [ HDC.random() ]; // Initial event, use random
+		} else if ( x.parent.length === 1 ) {
+			bcs = [ x.parent[0].bc ]; // Single parent, inherit
 		} else {
-			if ( x.parent.length === 0 ) {
-				// Initial event
-				x.bc = HDC.random();
-			} else {
-				// Majority of the lowest common ancestors of parents
-				if ( x.parent.length === 1 ) {
-					x.bc = x.parent[0].bc;
-				} else if ( this.isSeparation( x.parent, 1 ) ) {
-					if ( x.parent.every( y => y.bc === x.parent[0].bc ) ) {
-						x.bc = x.parent[0].bc;
-					} else {
-						x.bc = HDC.maj( x.parent.map( y => y.bc ) );
-					}
-				} else {
-					const lca = TokenEvent.lca( x.parent.map( y => y.past ) );
-					if ( lca.length === 0 ) {
-						x.bc = x.parent[0].bc;
-					} else if ( lca.length === 1 ) {
-						x.bc = lca[0].bc;
-					} else {
-						x.bc = HDC.maj( lca.map( y => y.bc ) );
-					}
-				}
-				// If overlapping event, separate branches
-				if ( x.parent.some( y => y.child.length > 1 ) ) {
-					x.bc = HDC.maj( [ x.bc, HDC.random() ] );
+			bcs = x.parent.map( y => y.bc ); // Use immediate parents by default
+			const ps = x.hasOwnProperty("past") ? [ ...new Set( x.parent.map( y => y.parent ).flat() ) ] : x.parent;
+			if ( ps.length ) {
+				const lca = TokenEvent.lca( ps.map( y => y.past ) );
+				if ( lca.length ) {
+					bcs = lca.map( y => y.bc ); // Lowest common ancestors
 				}
 			}
+		}
+
+		// Use majority rule
+		if ( bcs.length === 1 || bcs.every( y => y === bcs[0] ) ) {
+			x.bc = bcs[0];
+		} else {
+			x.bc = HDC.maj( bcs );
+		}
+
+		// If overlaps in rewrites, randomize
+		if ( !x.hasOwnProperty("past") && x.parent.some( y => y.child.length > 1 ) ) {
+			x.bc = HDC.maj( [ x.bc, HDC.random() ] );
 		}
 	}
 
@@ -357,6 +338,10 @@ class TokenEvent {
 				} else {
 					nn[0].t = this.T[i];
 					nn[0].d = 0;
+					for( let j=1; j<k; j++ ) {
+						nn[j].t = null;
+						nn[j].d = Infinity;
+					}
 				}
 				break;
 			}
@@ -372,7 +357,15 @@ class TokenEvent {
 				n = (n & 0x33333333) + ((n >>> 2) & 0x33333333);
 				d += ((n + (n >>> 4) & 0xF0F0F0F) * 0x1010101) >>> 24;
 			}
-			if ( d < limit ) {
+			if ( d < cutoff ) {
+				for( let j=1; j<k; j++ ) {
+					nn[j].t = null;
+					nn[j].d = Infinity;
+				}
+				nn[0].t = this.T[i];
+				nn[0].d = d;
+				break;
+			} else if ( d < limit ) {
 				nn[k-1].t = this.T[i];
 				nn[k-1].d = d;
 				nn.sort( (a,b) => a.d - b.d );
