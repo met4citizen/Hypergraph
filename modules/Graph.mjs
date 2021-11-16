@@ -77,7 +77,12 @@ class Graph {
 		let es = this.L.get( k );
 		if ( es ) {
 			if ( view === 2 ) return []; // Edge already exists, return (transitive closure)
-			if ( view === 3 && edge.length > 1 ) return []; // Edge already exists, return (transitive closure)
+			if ( view === 3 ) {
+			 if ( edge.length === 1 ) {
+				 this.V.get( edge[0] ).refs++; // Increase node size
+			 }
+			 return []; // Edge already exists, return (transitive closure)
+			}
 		}
 		es ? es.push( t ) : this.L.set( k, [ t ] );
 		for( let i = edge.length-1; i>=0; i-- ) {
