@@ -394,7 +394,7 @@ class Rewriter {
 
 			// Break when limit reached
 			if ( this.eventcnt >= this.opt.maxevents ||
-					 this.multiway.T.length >= this.opt.maxtokens ) break;
+					 (this.multiway.T.length+this.multiway.EV.length) >= this.opt.maxtokens ) break;
 
 			yield;
 		}
@@ -527,7 +527,7 @@ class Rewriter {
 			!this.interrupt &&
 			(this.step < this.opt.maxsteps) &&
 			(this.eventcnt < this.opt.maxevents) &&
-			(this.multiway.T.length < this.opt.maxtokens)
+			((this.multiway.T.length+this.multiway.EV.length) < this.opt.maxtokens)
 		);
 	}
 
@@ -546,7 +546,7 @@ class Rewriter {
 				this.progress.progress = Math.max(
 					(this.eventcnt / this.opt.maxevents) || 0,
 					(this.step / this.opt.maxsteps) || 0,
-					(this.multiway.T.length / this.opt.maxtokens) || 0
+					((this.multiway.T.length+this.multiway.EV.length) / this.opt.maxtokens) || 0
 				);
 				this.progressfn( this.progress );
 			}
