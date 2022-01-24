@@ -1,3 +1,4 @@
+import { HDC } from "./HDC.mjs";
 import { Rewriter } from "./Rewriter.mjs";
 
 /**
@@ -143,6 +144,10 @@ class Rulial {
   		r.momentum = r.energy * ( 1 - massratio );
       let lhsrevs = r.lhs.map( e => e.slice().reverse().join(",") );
       r.spin = lhsrevs.reduce( (a,b) => a + rhsall.includes(b) ? 1 : 0, 0 );
+
+      // Branchial coordinate (basis)
+      r.bc = HDC.random();
+
     }
 
     return rules;
@@ -424,7 +429,7 @@ class Rulial {
             break;
           case "grid": case "ngrid":
             if ( p.length < 1 ) throw new TypeError("Grid: Invalid number of parameters.");
-            edges = this.grid( p.map( x => parseInt(x) ) );
+            edges = this.grid( p.map( x => parseInt(x) ).filter(Boolean) );
             break;
           case "sphere":
             if ( p.length < 1 ) throw new TypeError("Sphere: Invalid number of parameters.");
@@ -440,6 +445,21 @@ class Rulial {
             break;
           default:
             throw new TypeError( "Unknown command: " + c.cmd );
+        }
+
+        // If oneway option specified, sort edges
+        if ( p.includes("oneway") ) {
+          edges = edges.map( x => x.sort() );
+        }
+
+        // If twoway option specified, make each edge a two-way edge
+        if ( p.includes("twoway") ) {
+          edges = edges.map( x => [x,x.slice().reverse()] ).flat();
+        }
+
+        // If inverse option specified, invert each edge
+        if ( p.includes("inverse") ) {
+          edges = edges.map( x => x.reverse() );
         }
 
         this.initial.push( { edges: edges, b: branch } );

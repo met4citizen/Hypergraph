@@ -4,7 +4,7 @@
 
 **Run it: https://met4citizen.github.io/Hypergraph/**
 
-This is a Hypergraph Rewriting System that is able to visualize both
+Hypergraph Rewriting System able to visualize both
 single-way and multiway evolutions in 3D.
 
 The app uses
@@ -15,22 +15,22 @@ for representing graph structures,
 
 ## Introduction
 
-A hypergraph is a generalization of a regular graph so that whereas an edge
+A hypergraph is a generalization of a regular graph. Whereas an edge
 typically connects only two nodes, a hyperedge can join any number of nodes.
 In a Hypergraph Rewriting System some initial hypergraph is transformed
 incrementally by making a series of updates that follow some abstract
 rewriting rule.
 
-As an example, consider a rewriting rule
-`(x,x,y)(y,z,u)->(x,v,u)(y,v,z)(v,v,u)`. Wherever/whenever a subhypergraph
+As an example, consider an abstract rewriting rule
+`(x,x,y)(y,z,u)->(x,v,u)(y,v,z)(v,v,u)`. Wherever and whenever a subhypergraph
 having the form of the left-hand side pattern `(x,x,y)(y,z,u)` is found in the
 hypergraph, it is replaced with a new subhypergraph having the form of the
-right-hand side pattern `(x,v,u)(y,v,z)(v,v,u)`.
+right-hand side pattern `(x,v,u)(y,v,z)(v,v,u)` introducing a new node `v`.
 
 Sometimes matches overlap. For example, when using the previous rule
 with the initial state `(1,1,2)(2,2,3)(3,3,4)` there are two overlapping
 matches `(x=1,y=2,z=2,u=3)` and `(x=2,y=3,z=3,u=4)` (critical pair). One way
-to resolve this conflict is to pick just one of the two according to some
+to resolve the conflict is to pick one of the two according to some
 ordering scheme and ignore the other (single-way evolution). Another approach
 is to rewrite both by allowing the system to branch (multiway evolution).
 
@@ -86,10 +86,12 @@ Initial graph | Description
 `rule('rule',n)` | Run rewriting rule `rule` for maximum `n` events in one branch (singleway).  The leaves of the result are used as an initial state.
 `sphere(n)` | Fibonacci sphere with `n` vertices.
 
-It is also possible to define some specific branch, or a combination of
-branches, for the initial state. As an example, `(1,1)(1,1)/7`, would specify
-branches 1-3 (the sum of the first three bits 1+2+4). By default, the initial
-state is set for all the tracked branches.
+By using options `twoway`, `oneway` and/or `inverse`, each edge produced can
+be made a two-way edge, sorted or reversed. It is also possible to define some
+specific branch, or a combination of branches, for the initial state. As an
+example, `(1,1)(1,1)/7`, would specify branches 1-3 (the sum of the first
+three bits 1+2+4). By default, the initial state is set for all the tracked
+branches.
 
 If the initial state is not specified, the left-hand side pattern of the first
 rule is used, but with only a single node. For example, a rule
@@ -132,11 +134,10 @@ graph. In this view nodes represent updating events and directed
 edges their causal relations. According to the Wolfram Model, the flux of
 causal edges through spacelike and timelike hypersurfaces is related to
 energy and momentum respectively.
-- In `Phase` mode hyper-dimensional multiway space is projected in 3D by
-first constructing a graph based on groups of hyperedges and their nearest
-neighbours (k-NN) using Hamming distances. See [Appendix A](#appendix-a):
-Coordinatization of Local Multiway System by using Hyper-dimensional Vectors.
-According to Wolfram Model, positions in this so-called "branchial" space are
+- In `Phase` mode the hyper-dimensional multiway space is projected in 3D by
+using Hamming distances and k-NN algorithm (see [Appendix A](#appendix-a):
+Coordinatization of Local Multiway System by using Hyper-dimensional Vectors).
+According to Wolfram Model, positions in so-called "branchial" space are
 related to quantum phase.
 
 Media buttons let you reset the mode, start/pause the simulation and
@@ -228,10 +229,13 @@ atomist teachings were rediscovered in the 14th century.
 
 ### Coordinatization of Local Multiway System using Hyperdimensional Vectors
 
-The following idea/specification is based on Pentti Kanerva's work on
-Hyperdimensional computing [1]. It is based on the fact that in a
-hyperdimensional space (>10,000-D) a randomly chosen vector (hypervector)
-is quasi-orthogonal to all previously generated hypervectors.
+The following procedure utilizes Pentti Kanerva's work on Hyperdimensional
+computing [1]. HDC is based on the fact that in hyperdimensional space
+(>10,000-D) a randomly chosen vector (hypervector) is quasi-orthogonal to
+all previously generated hypervectors.
+
+- For each rewriting rule, generate a random 10,240-dimensional dense bipolar
+{-1,1} seed vector.
 
 - Let the coordinate of the initial event in a local multiway system be a
 randomly generated 10,240-dimensional dense bipolar {-1,1} vector.
@@ -253,8 +257,8 @@ Hamming distance between their hypervectors. If the distance is close to
 
 The local multiway coordinates can be projected into some lower dimension by
 first calculating the distance matrix and then doing multidimensional scaling.
-One possible way to do the projection is to build a graph in which
+Al alternative way to do the projection is to build a graph in which
 each node represents a group of close-by tokens/events. These groups can then
-be connected to their 1-3 nearest neighbours by using k-NN algorithm.
+be connected to their 1-3 nearest neighbours by using a k-NN algorithm.
 
 *[1] Kanerva, P. (2019). Computing with High-Dimensional Vectors. IEEE Design & Test, 36(3):7–14.*
