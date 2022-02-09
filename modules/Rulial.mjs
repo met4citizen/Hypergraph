@@ -404,6 +404,7 @@ class Rulial {
       this.initial.push( { edges: edges, b: branch } );
     } else {
       // Process commands
+      let negedges = []; // Edges to be removed from the final set
       this.commands.forEach( c => {
         let cmd = c.cmd;
         let p = c.params;
@@ -413,7 +414,13 @@ class Rulial {
 
         switch( cmd ) {
           case "": // initial graph
-            edges = p[0].split("(").map( p => [ ...p.replace( /[^-a-z0-9,\.]+/g, "" ).split(",") ] ).slice(1);
+            let [pos,neg] = p[0].split("\\");
+            if ( pos ) {
+              edges = pos.split("(").map( p => [ ...p.replace( /[^-a-z0-9,\.]+/g, "" ).split(",") ] ).slice(1);
+            }
+            if ( neg ) {
+              negedges.push( { edges: neg.split("(").map( p => p.replace( /[^-a-z0-9,\.]+/g, "" ) ).slice(1), b: branch } );
+            }
             break;
           case "rule":
             if ( p.length < 2 ) throw new TypeError("Rule: Invalid number of parameters.");
@@ -449,7 +456,7 @@ class Rulial {
 
         // If oneway option specified, sort edges
         if ( p.includes("oneway") ) {
-          edges = edges.map( x => x.sort() );
+          edges = edges.map( x => x.sort( (a,b) => a - b ) );
         }
 
         // If twoway option specified, make each edge a two-way edge
@@ -464,6 +471,16 @@ class Rulial {
 
         this.initial.push( { edges: edges, b: branch } );
       });
+
+      // Remove negative edges
+      negedges.forEach( x => {
+        this.initial.forEach( y => {
+          if ( x.b === 0 || y.b === 0 || (x.b & y.b) ) {
+            y.edges = y.edges.filter( z => !x.edges.includes( z.join(",") ) );
+          }
+        })
+      });
+
     }
 
     // Use first lhs as the initial state, if not specified
