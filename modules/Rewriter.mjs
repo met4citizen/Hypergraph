@@ -279,7 +279,7 @@ class Rewriter {
 		this.M.forEach( m => {
 			let ids = m.hit.map( (e,i) => e.id );
 			m.sort2 = Array.from( Array(ids.length).keys() ).sort( (x,y) => ids[x] - ids[y] );
-			m.sort1 = ids.sort().reverse();
+			m.sort1 = ids.sort( (a,b) => a - b ).reverse();
 		});
 
 		// Sort indices
