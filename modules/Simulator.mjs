@@ -7,6 +7,7 @@ import { SpriteText } from "./SpriteText.mjs";
 /**
 * @class User interface for rewriter
 * @author Mika Suominen
+* @author Tuomas Sorakivi
 */
 class Simulator extends Rewriter {
 
@@ -204,9 +205,10 @@ class Simulator extends Rewriter {
 	/**
 	* Show of hide edges in spatial graph.
 	* @param {Object} ev Event reference
-	* @return {boolean} True, if some change was made
+	* @param {boolean} [reverse=false] If true, reverse the process of add and remove nodes
+	* @return {boolean} True, if some was made
 	*/
-	processSpatialEvent( ev ) {
+	processSpatialEvent( ev, reverse = false ) {
 		const tokens = [ ...ev.child, ...ev.parent ];
 
 		let change = false;
@@ -218,13 +220,19 @@ class Simulator extends Rewriter {
 					b &= ~t.child.reduce( bfn, 0 );
 				}
 				if ( b & this.observer.branches ) {
-					if ( !this.G.T.has( t ) ) {
+					if ( !this.G.T.has( t ) && !reverse) {
 						this.G.add(t,1);
+						change = true;
+					} else if ( this.G.T.has( t ) && reverse ) {
+						this.G.del(t);
 						change = true;
 					}
 				} else {
-					if ( this.G.T.has( t ) ) {
+					if ( this.G.T.has( t ) && !reverse) {
 						this.G.del(t);
+						change = true;
+					} else if ( !this.G.T.has( t ) && reverse) {
+						this.G.add(t,1);
 						change = true;
 					}
 				}
@@ -232,13 +240,20 @@ class Simulator extends Rewriter {
 		} else {
 			tokens.forEach( t => {
 				if ( this.observer.leaves && t.child.some( x => x.id <= ev.id ) ) {
-					if ( this.G.T.has( t ) ) {
+					if ( this.G.T.has( t ) && !reverse) {
 						this.G.del(t);
 						change = true;
 					}
-				} else {
-					if ( !this.G.T.has( t ) ) {
+					else if ( !this.G.T.has( t ) && reverse) {
 						this.G.add(t,1);
+						change = true;
+					}
+				} else {
+					if ( !this.G.T.has( t ) && !reverse) {
+						this.G.add(t,1);
+						change = true;
+					} else if ( this.G.T.has( t ) && reverse) {
+						this.G.del(t);
 						change = true;
 					}
 				}
@@ -305,15 +320,19 @@ class Simulator extends Rewriter {
 	/**
 	* Process events.
 	* @param {number} [steps=1] Number of steps to process
+	* @param {boolean} [reverse=false] If true, reverse the process of add and remove nodes
 	* @return {boolean} True there are more events to process.
 	*/
-	tick( steps = 1 ) {
-		while ( steps > 0 && this.pos < this.multiway.EV.length ) {
+	tick( steps = 1, reverse = false ) {
+		if (this.pos == 0 && reverse) {
+			return false;
+		}
+		while ( steps > 0 && this.pos < this.multiway.EV.length && this.pos >= 0 ) {
 			let ev = this.multiway.EV[ this.pos ];
 			let changed = false;
 			switch( this.observer.view ) {
 				case 1:
-					changed = this.processSpatialEvent( ev );
+					changed = this.processSpatialEvent( ev, reverse);
 					break;
 				case 2:
 					changed = this.processCausalEvent( ev );
@@ -323,9 +342,22 @@ class Simulator extends Rewriter {
 			}
 			if ( changed ) {
 				steps--;
+				if (reverse) {
+					this.playpos--;
+				} else {
 				this.playpos++;
 			}
+
+			}
+			if (reverse) {
+				this.pos--;
+				if (this.pos < 0) {
+					this.pos = 0;
+				}
+			}
+			else {
 			this.pos++;
+		}
 		}
 		this.refresh();
 
