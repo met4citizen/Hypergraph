@@ -4,6 +4,7 @@ import { Rewriter } from "./Rewriter.mjs";
 /**
 * @class The space of all rewriting rules.
 * @author Mika Suominen
+* @author Tuomas Sorakivi
 */
 class Rulial {
 
@@ -39,6 +40,7 @@ class Rulial {
     let qfn = () => { return q.shift(); };
 
     str = str.replace( req, "''" ).toLowerCase()
+    .replace( /\}\}\,\{\{/g, "}};{{")
     .replace( /\{|\[/g , "(" ).replace( /}|]/g , ")" )
     .replace( /(\()+/g , "(" ).replace( /(\))+/g , ")" )
     .replace( /(;)+/g , ";" ).replace( /;$/g ,"" )
