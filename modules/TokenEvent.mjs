@@ -41,12 +41,20 @@ class TokenEvent {
 	*/
 	static lca( s ) {
 		// Intersection
-		const is = s.reduce((a,b) => [...b].filter(x => a.includes(x) ), [ ...s[0] ]);
+		const is = s.reduce((a,b) => {
+			const c = new Set();
+			for( const v of a ) {
+				if ( b.has(v) ) {
+					c.add(v);
+				}
+			}
+      return c;
+		});
 
 		// Outdegree = 0
-		const lca = is.filter(x => x.child.every( y => !is.includes(y) ));
+		const z = [...is].filter( x => x.child.every( y => !is.has(y) ) );
 
-		return lca;
+		return z;
 	}
 
 	/**
@@ -226,44 +234,92 @@ class TokenEvent {
 		return true;
 	}
 
+
+	/**
+	* Calculate probability of a token t relative to the given token tref
+	* @param {Token} tref Reference token
+	* @param {Token} t Target token
+	* @param {Set} s Set of visible tokens
+	* @return {number} Probability 0-1
+	*/
+	probability( tref, t, s ) {
+		// Same token, probability 1
+		if ( tref === t ) return 1;
+
+		// Lowest Common Ancestors
+		let lca = TokenEvent.lca( [ tref.past, t.past ] );
+		if ( lca.includes(tref) || lca.includes(t) ) {
+			// timelike separated, probability to see t is 1
+			return 1;
+		} else if ( lca.some( x => x.hasOwnProperty("past") ) ) {
+			// branchlike separated, probability to see t is 0
+			return 0;
+		} else {
+			let a = 0;
+		  let b = 0;
+			for( const x of s.keys() ) {
+				if ( x === tref ) {
+					continue;
+				} else if ( x === t ) {
+					a = a + 1;
+					b = b + 1;
+					continue;
+				} else {
+					lca = TokenEvent.lca( [ tref.past, x.past ] );
+					if ( lca.every( x => !x.hasOwnProperty("past") ) ) {
+						lca = TokenEvent.lca( [ t.past, x.past ] );
+						if ( lca.every( x => !x.hasOwnProperty("past") ) ) {
+							b = b + 1;
+						}
+					}
+				}
+			}
+			return(b>0?a/b:1)
+		}
+
+		// calculate probability
+/*		let n = 0; // Count of t all spacelike separated pairs (tref,x)
+		let cnt = 0; // Count of times t is spacelike separated to pair (tref,x)
+		for( const x of s.keys() ) {
+			if ( x === tref ) continue;
+			if ( x === t ) {
+				n = n + 1;
+				cnt = cnt + 1;
+				continue;
+			}
+			lca = TokenEvent.lca( [ tref.past, x.past ] );
+			if ( lca.some( x => x.hasOwnProperty("past") ) ) continue;
+			let pairpast = new Set( [ ...tref.past, ...x.past ] );
+			n = n + 1;
+			lca = TokenEvent.lca( [ t.past, pairpast ] );
+			if ( lca.some( x => x.hasOwnProperty("past") ) ) continue;
+			cnt = cnt + 1;
+		}
+		return (n>0 ? cnt / n : 1); */
+	}
+
 	/**
 	* Calculate and set the path count of the given token/event.
-	* @param {(Token|Event)} ts Array of tokens.
+	* @param {(Token|Event)} x Token/event
 	* @param {boolean} [reset=false] If true, recalculate and reset.
 	*/
 	setPathcnt( x, reset=false ) {
 		if ( !reset && x.hasOwnProperty("pathcnt") ) return; // Already set
-		if ( x.hasOwnProperty("past") ) {
-			// This is a token
-			let pc = 0;
-			x.parent.forEach( ev => {
-				if ( !ev.hasOwnProperty("pathcnt") ) this.setPathcnt( ev );
-				pc += ev.pathcnt;
-			});
-			// The sum of parent events
-			x.pathcnt = pc || 1;
+		if ( x.parent.length === 0 ) {
+			// No parents -> 1
+			x.pathcnt = 1;
 		} else {
-			// This is an event
-			let g = x.parent.slice();
-			let cs = []; // branchlike counts
-			while ( g.length ) {
-				let t = g.pop();
-				if ( !t.hasOwnProperty("pathcnt") ) this.setPathcnt( t );
-				let c = t.pathcnt;
-				for( let i = g.length-1; i>=0; i-- ) {
-					let s = this.separation( t, g[i] );
-					if ( s !== 4 ) {
-						// Max of spacelike/timelike tokens
-						if ( !g[i].hasOwnProperty("pathcnt") ) this.setPathcnt( g[i] );
-						c = Math.max( c, g[i].pathcnt );
-						g.splice( i, 1 );
-					}
-				}
-				cs.push( c );
+			// Ensure all parents have been calculated
+			x.parent.forEach( p => {
+				if ( !p.hasOwnProperty("pathcnt") ) this.setPathcnt( p );
+			});
+			if ( x.hasOwnProperty("past") ) {
+				// This is a token -> sum of the parents path counts
+				x.pathcnt = x.parent.reduce( (a,y) => a + y.pathcnt, 0 );
+			} else {
+				// This is an event -> minimun of the parents' path counts
+				x.pathcnt = Math.min( ...x.parent.map( y => y.pathcnt ) );
 			}
-
-			// The sum of branchlike tokens
-			x.pathcnt = cs.reduce( (a,x) => a + x, 0 ) || 1;
 		}
 	}
 
@@ -304,7 +360,7 @@ class TokenEvent {
 			x.bc = HDC.maj( bcs );
 		}
 
-		// If overlaps in rewrites, randomize
+		// If overlaps in rewrites, separate based on random coordinate
 		if ( !x.hasOwnProperty("past") && x.parent.some( y => y.child.length > 1 ) ) {
 			x.bc = HDC.maj( [ x.bc, HDC.random() ] );
 		}

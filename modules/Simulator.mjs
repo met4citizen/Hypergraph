@@ -665,10 +665,10 @@ class Simulator extends Rewriter {
 			let digits = 1;
 			let min, max;
 
-			// Phase reference point
-			let phaseref;
+			// Reference point
+			let ref;
 			let pndx = 0;
-			if ( c.cmd === 'phase' && c.params[pndx] ) {
+			if ( ( c.cmd === 'phase' || c.cmd === 'probability' ) && c.params[pndx] ) {
 				let id;
 				if ( c.params[pndx] === 'x' ) {
 					id = this.x;
@@ -677,7 +677,7 @@ class Simulator extends Rewriter {
 				} else {
 					id = parseInt( c.params[pndx] );
 				}
-				phaseref = this.G.V.get( id );
+				ref = this.G.V.get( id );
 				pndx++;
 			}
 
@@ -810,48 +810,39 @@ class Simulator extends Rewriter {
 				break;
 
 			case "phase":
-				if ( phaseref ) {
+				if ( ref ) {
 					if ( this.observer.view === 1 ) {
 						for ( const t of this.G.T.keys() ) {
-							setfn( t, HDC.d( t.bc, phaseref.bc ) );
+							setfn( t, HDC.d( t.bc, ref.bc ) );
 						}
 					} else if ( this.observer.view === 2 || this.observer.view === 3 ) {
 						for ( const t of this.G.T.keys() ) {
-							setfn( t, HDC.d( t.mw[ t.mw.length-1 ].bc, phaseref.bc ) );
+							setfn( t, HDC.d( t.mw[ t.mw.length-1 ].bc, ref.bc ) );
 						}
 					}
 				}
 				break;
 
 			case "probability":
-				let sum = 0, s = [];
-				if ( this.observer.view === 1 ) {
-					for ( const t of this.G.T.keys() ) {
-						sum += t.pathcnt;
+				if ( ref ) {
+					let tref = ref.t[ ref.t.length - 1 ];
+					if ( this.observer.view === 1 ) {
+						for ( const t of this.G.T.keys() ) {
+							setfn( t, this.multiway.probability( tref, t, this.G.T ) );
+						}
+					} else if ( this.observer.view === 2 ) {
+						/* for ( const t of this.G.T.keys() ) {
+							let ev = t.mw[ t.mw.length-1 ];
+							let pc = ev.pathcnt;
+							setfn( t, pc / s[ ev.step ] );
+						} */
+					} else if ( this.observer.view === 3 ) {
+						/* for ( const t of this.G.T.keys() ) {
+							setfn( t, t.mw[ t.mw.length -1 ].pathcnt / sum );
+						} */
 					}
-					for ( const t of this.G.T.keys() ) {
-						setfn( t, t.pathcnt / sum );
-					}
-				} else if ( this.observer.view === 2 ) {
-					for ( const t of this.G.T.keys() ) {
-						let ev = t.mw[ t.mw.length-1 ];
-						let pc = ev.pathcnt;
-						s[ ev.step ] ? s[ ev.step ] += pc : s[ ev.step ] = pc;
-					}
-					for ( const t of this.G.T.keys() ) {
-						let ev = t.mw[ t.mw.length-1 ];
-						let pc = ev.pathcnt;
-						setfn( t, pc / s[ ev.step ] );
-					}
-				} else if ( this.observer.view === 3 ) {
-					for ( const t of this.G.T.keys() ) {
-						sum += t.mw[ t.mw.length -1 ].pathcnt;
-					}
-					for ( const t of this.G.T.keys() ) {
-						setfn( t, t.mw[ t.mw.length -1 ].pathcnt / sum );
-					}
+					digits = 4;
 				}
-				digits = 4;
 				break;
 
 			case "curvature":

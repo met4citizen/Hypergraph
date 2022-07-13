@@ -121,6 +121,7 @@ class Graph {
 			let v = this.V.get( id );
 			if ( v ) {
 				v.refs++;
+				v.t.push( t );
 				if ( view === 1 ) v.bc = t.bc; // In space view, update vertex bc to latest
 			} else {
         // New vertex
@@ -134,7 +135,8 @@ class Graph {
 					y: (p.y + (view === 2 ? (Math.sign(p.y)*Math.random()) : ((Math.random()-0.5)/100))),
 					z: (p.z + (view === 2 ? (10*Math.sign(p.z)*Math.random()) : ((Math.random()-0.5)/100))),
 					bc: (view === 1 ? t.bc : t.mw[i].bc),
-					mw: (view === 1 ? null : t.mw[i])
+					mw: (view === 1 ? null : t.mw[i]),
+					t: [t]
 				};
 				this.V.set( id, v );
         this.nodes.push( v );
@@ -264,6 +266,7 @@ class Graph {
 			if ( !v ) continue; // Already deleted, ignore
 			if ( i > 0 ) v.in.splice( v.in.indexOf( edge[i-1] ), 1 );
 			if ( i < (edge.length-1) ) v.out.splice( v.out.indexOf( edge[i+1] ), 1 );
+			v.t.splice( v.t.indexOf( t ), 1 )
 			v.refs--;
 			if ( v.refs <= 0 ) {
         this.V.delete( edge[i] );
