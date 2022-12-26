@@ -182,7 +182,7 @@ $(document).ready(function() {
       let i = $(".interactions.selected").toArray().reduce( (a,x) => a | $(x).data("value"), 0 );
       let e = $(".evolution.selected").data("value");
 
-      $("#playstop, #finalreheat").addClass('button-disabled');
+      $("#playstop, #playnext, #playprevious, #finalreheat").addClass('button-disabled');
 
       if ( $("#stop").is(":visible") ) {
         sim.stop();
@@ -414,6 +414,12 @@ $(document).ready(function() {
     sim.G.FG.cameraPosition( { x: 0, y: 0, z: z }, { x: 0, y: 0, z: 0 } );
 
     $("#playstop").removeClass("button-disabled").css("background-color","black");
+    if ( view === 'space' ) {
+      $("#playnext").removeClass('button-disabled');
+      $("#playprevious").addClass("button-disabled");
+    } else {
+      $("#playnext, #playprevious").addClass("button-disabled");
+    }
     $("#play, #final").show();
     $("#stop, #reheat").hide();
     resumeTimeout();
@@ -455,12 +461,25 @@ $(document).ready(function() {
       if ( $("#play").is(":visible") ) {
         sim.play( function() { $("#finalreheat").click(); } );
         $("#playstop").css("background-color","darkred");
+        $("#playnext, #playprevious").addClass("button-disabled");
         $("#play, #stop").toggle();
         force();
         resume();
       } else {
         sim.stop();
         $("#playstop").css("background-color","black");
+        if ( $(".view.selected").data("value") == 'space' ) {
+          if ( sim.pos >= sim.multiway.EV.length ) {
+            $("#playnext").addClass("button-disabled");
+          } else {
+            $("#playnext").removeClass("button-disabled");
+          }
+          if ( sim.pos > 0 ) {
+            $("#playprevious").removeClass("button-disabled");
+          } else {
+            $("#playprevious").addClass("button-disabled");
+          }
+        }
         $("#play, #stop").toggle();
         resumeTimeout();
       }
@@ -479,7 +498,11 @@ $(document).ready(function() {
   // Play next step
   $("#playnext").on("click", function() {
     try {
-        sim.tick();
+        if ( !sim.tick() ) {
+          $("#playnext").addClass("button-disabled");
+          $("#finalreheat").click();
+        }
+        $("#playprevious").removeClass("button-disabled");
         sim.stop();
         resume();
     }
@@ -497,7 +520,13 @@ $(document).ready(function() {
   // Play previous step
   $("#playprevious").on("click", function() {
     try {
-        sim.tick(1, true);
+        if ( !sim.tick(1, true) ) {
+          $("#playprevious").addClass("button-disabled");
+        }
+        $("#playnext").removeClass("button-disabled");
+        $("#playstop").removeClass("button-disabled").css("background-color","black");
+        $("#play, #final").show();
+        $("#stop, #reheat").hide();
         sim.stop();
         resume();
     }
@@ -516,7 +545,11 @@ $(document).ready(function() {
   $("#finalreheat").on("click", function() {
     try {
       sim.final();
-      $("#playstop").addClass("button-disabled").css("background-color","black");;
+      $("#playstop").addClass("button-disabled").css("background-color","black");
+      if ( $(".view.selected").data("value") == 'space' ) {
+        $("#playnext").addClass("button-disabled");
+        $("#playprevious").removeClass("button-disabled");
+      }
       $("#play, #reheat").show();
       $("#stop, #final").hide();
       resumeTimeout();
@@ -717,19 +750,19 @@ $(document).ready(function() {
     <span id="phase" title="Branchial graph" class="option view" data-value="phase">PHASE</span><br>
 
     <span class="label down">Mode/simulation</span>
-    <span title="Play/pause" id="playstop" class="button button-disabled">
-      <svg id="play" viewBox="0 0 32 16"><polygon fill="white" points="14,3 14,11 20,7"/></svg>
-      <svg id="stop" viewBox="0 0 32 14"><polygon fill="white" points="12,3 15,3 15,11 12,11"/><polygon fill="white" points="17,3 20,3 20,11 17,11"/></svg>
+    <span title="Play/pause" id="playstop" class="button button-disabled" style="width:24px;">
+      <svg id="play" viewBox="4 0 24 16"><polygon fill="white" points="14,3 14,11 20,7"/></svg>
+      <svg id="stop" viewBox="4 0 24 14"><polygon fill="white" points="12,3 15,3 15,11 12,11"/><polygon fill="white" points="17,3 20,3 20,11 17,11"/></svg>
     </span>
-    <span title="Previous" id="playprevious" class="button">
-		<svg id="previous" viewBox="0 0 32 16"><polygon fill="white" points="10,7 15,11 15,3"></polygon><polygon fill="white" points="18,3 20,3 20,11 18,11"></polygon></svg>
+    <span title="Previous" id="playprevious" class="button" style="width:24px;">
+		<svg id="previous" viewBox="4 0 24 16"><polygon fill="white" points="10,7 15,11 15,3"></polygon><polygon fill="white" points="18,3 20,3 20,11 18,11"></polygon></svg>
     </span>
-    <span title="Next" id="playnext" class="button">
-      <svg id="next" viewBox="0 0 32 16"><polygon fill="white" points="18,3 18,11 25,7"></polygon><polygon fill="white" points="12,3 14,3 14,11 12,11"></polygon></svg>
+    <span title="Next" id="playnext" class="button" style="width:26px;">
+      <svg id="next" viewBox="4 0 24 16"><polygon fill="white" points="17,3 17,11 22,7"></polygon><polygon fill="white" points="12,3 14,3 14,11 12,11"></polygon></svg>
     </span>
-    <span title="End/reheat" id="finalreheat" class="button button-disabled">
-      <svg id="reheat" viewBox="0 0 32 14"><path fill="white" d="M16.1 10.2c-2 0-3-1-3.1-3S14 4 15.7 3.9c1.8-.1 2.1 1.1 2.1 1.1L16.7 6.3h4V2.5l-1.3 1C18.4 2.4 17.5 2 16 2C13 2 11 4 11 7S12.9 11.8 16 12c3.1-.3 4.2-2 4.5-4h-2.1c-.3 1.2-1 2-2.3 2.2z"/></svg>
-      <svg id="final" viewBox="0 0 32 14"><polygon fill="white" points="12,3 12,11 18,7"/><polygon fill="white" points="18,3 20,3 20,11 18,11" /></svg>
+    <span title="End/reheat" id="finalreheat" class="button button-disabled" style="width:24px;">
+      <svg id="reheat" viewBox="4 0 24 14"><path fill="white" d="M16.1 10.2c-2 0-3-1-3.1-3S14 4 15.7 3.9c1.8-.1 2.1 1.1 2.1 1.1L16.7 6.3h4V2.5l-1.3 1C18.4 2.4 17.5 2 16 2C13 2 11 4 11 7S12.9 11.8 16 12c3.1-.3 4.2-2 4.5-4h-2.1c-.3 1.2-1 2-2.3 2.2z"/></svg>
+      <svg id="final" viewBox="4 0 24 14"><polygon fill="white" points="12,3 12,11 18,7"/><polygon fill="white" points="18,3 20,3 20,11 18,11" /></svg>
     </span>
     <br><br><hr>
 
