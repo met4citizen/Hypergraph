@@ -324,11 +324,8 @@ class Simulator extends Rewriter {
 	* @return {boolean} True there are more events to process.
 	*/
 	tick( steps = 1, reverse = false ) {
-		if (this.pos == 0 && reverse) {
-			return false;
-		}
-		while ( steps > 0 && this.pos < this.multiway.EV.length && this.pos >= 0 ) {
-			let ev = this.multiway.EV[ this.pos ];
+		while ( steps > 0 && (( reverse && this.pos > 0) || ( !reverse && this.pos < this.multiway.EV.length))) {
+			let ev = reverse ? this.multiway.EV[ this.pos - 1 ] : this.multiway.EV[ this.pos ];
 			let changed = false;
 			switch( this.observer.view ) {
 				case 1:
@@ -342,26 +339,21 @@ class Simulator extends Rewriter {
 			}
 			if ( changed ) {
 				steps--;
-				if (reverse) {
-					this.playpos--;
+				if ( reverse ) {
+					this.playpos = 0;
 				} else {
-				this.playpos++;
-			}
-
+					this.playpos++;
+				}
 			}
 			if (reverse) {
 				this.pos--;
-				if (this.pos < 0) {
-					this.pos = 0;
-				}
+			} else {
+				this.pos++;
 			}
-			else {
-			this.pos++;
-		}
 		}
 		this.refresh();
 
-		return (this.pos < this.multiway.EV.length);
+		return reverse ? (this.pos > 1) : (this.pos < this.multiway.EV.length);
 	}
 
 	/**
