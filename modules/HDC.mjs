@@ -49,7 +49,7 @@ class HDC {
 	*/
 	static maj(vs) {
 		let v = new Uint32Array(320);
-		if ( v.length % 2 === 0 ) {
+		if ( vs.length % 2 === 0 ) {
 			window.crypto.getRandomValues(v); // Solve ties with random bits
 			vs.push(v);
 		}
