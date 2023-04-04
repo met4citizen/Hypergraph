@@ -3,7 +3,7 @@ import {
 	Plane,
 	Triangle,
 	Vector3
-} from 'https://unpkg.com/three@0.130.1/build/three.module.js';
+} from 'https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.module.js';
 
 /**
  * Ported from: https://github.com/maurizzzio/quickhull3d/ by Mauricio Poppe (https://github.com/maurizzzio)

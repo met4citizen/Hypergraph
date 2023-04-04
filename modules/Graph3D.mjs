@@ -1,10 +1,10 @@
 import {
 	BufferGeometry, BufferAttribute, Sprite, SpriteMaterial, Texture,
 	MeshBasicMaterial, Mesh, DoubleSide, Vector3
-} from 'https://unpkg.com/three@0.130.1/build/three.module.js'
+} from 'https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.module.js'
 import { ConvexGeometry } from './ConvexGeometry.mjs';
 
-import "https://unpkg.com/3d-force-graph@1.70.5";
+import _3dForceGraph from 'https://cdn.jsdelivr.net/npm/3d-force-graph@1.70.5/+esm';
 import { Graph } from "./Graph.mjs";
 
 /**
@@ -21,7 +21,7 @@ class Graph3D extends Graph {
 	constructor( element ) {
     super();
 		this.element = element;
-		this.FG = ForceGraph3D({ rendererConfig: { antialias: true, precision: "lowp" }});
+		this.FG = _3dForceGraph({ rendererConfig: { antialias: true, precision: "lowp" }});
 		this.HS = []; // Array of highlighted hypersurfaces
 		this.HL = []; // Array of extra highlighted link objs
 		this.view = 1; // View, 1 = space, 2 = time
