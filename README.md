@@ -52,8 +52,9 @@ certain models reproduce key features of both relativity and quantum
 mechanics.
 
 If you are interested in quantum mechanics and graph theory, you might also
-want to take a look at my spin-off project
-[BigraphQM](https://github.com/met4citizen/BigraphQM).
+want to take a look at my spin-off projects
+[BigraphQM](https://github.com/met4citizen/BigraphQM) and
+[CliqueVM](https://github.com/met4citizen/CliqueVM).
 For a philosophical take on these ideas see my blog post
 [The Game of Algorithms](https://metacity.blogspot.com/).
 
