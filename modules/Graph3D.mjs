@@ -1,10 +1,10 @@
 import {
 	BufferGeometry, BufferAttribute, Sprite, SpriteMaterial, Texture,
 	MeshBasicMaterial, Mesh, DoubleSide, Vector3
-} from 'https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.module.js'
+} from 'three'
 import { ConvexGeometry } from './ConvexGeometry.mjs';
 
-import _3dForceGraph from 'https://cdn.jsdelivr.net/npm/3d-force-graph@1.70.5/+esm';
+import _3dForceGraph from 'forcegraph';
 import { Graph } from "./Graph.mjs";
 
 /**
