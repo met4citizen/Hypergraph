@@ -4,6 +4,8 @@ import { Graph3D } from "./Graph3D.mjs";
 import { HDC } from "./HDC.mjs";
 import { SpriteText } from "./SpriteText.mjs";
 
+const hdc = new HDC();
+
 /**
 * @class User interface for rewriter
 * @author Mika Suominen
@@ -506,7 +508,7 @@ class Simulator extends Rewriter {
 					let b = this.G.V.get( parseInt(ps[1]) );
 					if ( a && b ) {
 						p.push( parseInt(ps[0]), parseInt(ps[1]) );
-						r.push( HDC.d( a.bc,b.bc ) );
+						r.push( hdc.d( a.bc,b.bc ) );
 						ret = this.G.geodesic( parseInt(ps[0]), parseInt(ps[1]), ps.includes("dir"), ps.includes("rev"), ps.includes("all") ).flat();
 						e.push( ret );
 					}
@@ -837,11 +839,11 @@ class Simulator extends Rewriter {
 				if ( ref ) {
 					if ( this.observer.view === 1 ) {
 						for ( const t of this.G.T.keys() ) {
-							setfn( t, HDC.d( t.bc, ref.bc ) );
+							setfn( t, hdc.d( t.bc, ref.bc ) );
 						}
 					} else if ( this.observer.view === 2 || this.observer.view === 3 ) {
 						for ( const t of this.G.T.keys() ) {
-							setfn( t, HDC.d( t.mw[ t.mw.length-1 ].bc, ref.bc ) );
+							setfn( t, hdc.d( t.mw[ t.mw.length-1 ].bc, ref.bc ) );
 						}
 					}
 				}

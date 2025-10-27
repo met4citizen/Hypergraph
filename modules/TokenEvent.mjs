@@ -1,5 +1,7 @@
 import { HDC } from "./HDC.mjs";
 
+const hdc = new HDC();
+
 /**
 * @class Token-Event graph
 * @author Mika Suominen
@@ -339,7 +341,7 @@ class TokenEvent {
 		// Find out parent coordinates
 		let bcs;
 		if ( x.parent.length === 0 ) {
-			bcs = [ HDC.random() ]; // Initial event, use random
+			bcs = [ hdc.random() ]; // Initial event, use random
 		} else if ( x.parent.length === 1 ) {
 			bcs = [ x.parent[0].bc ]; // Single parent, inherit
 		} else {
@@ -357,12 +359,12 @@ class TokenEvent {
 		if ( bcs.length === 1 || bcs.every( y => y === bcs[0] ) ) {
 			x.bc = bcs[0];
 		} else {
-			x.bc = HDC.maj( bcs );
+			x.bc = hdc.maj( bcs );
 		}
 
 		// If overlaps in rewrites, separate based on random coordinate
 		if ( !x.hasOwnProperty("past") && x.parent.some( y => y.child.length > 1 ) ) {
-			x.bc = HDC.maj( [ x.bc, HDC.random() ] );
+			x.bc = hdc.maj( [ x.bc, hdc.random() ] );
 		}
 	}
 

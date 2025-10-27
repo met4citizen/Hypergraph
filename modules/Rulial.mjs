@@ -1,6 +1,8 @@
 import { HDC } from "./HDC.mjs";
 import { Rewriter } from "./Rewriter.mjs";
 
+const hdc = new HDC();
+
 /**
 * @class The space of all rewriting rules.
 * @author Mika Suominen
@@ -148,7 +150,7 @@ class Rulial {
       r.spin = lhsrevs.reduce( (a,b) => a + rhsall.includes(b) ? 1 : 0, 0 );
 
       // Branchial coordinate (basis)
-      r.bc = HDC.random();
+      r.bc = hdc.random();
 
     }
 
